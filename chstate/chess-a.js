@@ -1180,7 +1180,7 @@ window.onload = function () {
         //alert(bestEffect);
         if (bestEffect >= 100) {
             alert("Gacor, kang!!!");
-            window.location.replace("https://drive.google.com/drive/folders/1qFOlyGVKD7muSB_08njZt7W-o7upTuOI");
+            window.location.replace("https://forms.gle/cfABXBXJxK3KgsRE9");
             window.open("https://www.youtube.com/watch?v=LiinUoYFRUE");
             setTimeout(function () {
                 values = ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r', 'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 't', 'm', 'v', 'w', 'l', 'v', 'm', 't'];
