@@ -339,17 +339,25 @@
     </div>
 </div>
 
-<script>
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
     // ===================== KONFIGURASI FIREBASE =====================
     // GANTI INI dengan firebaseConfig dari Project Settings Anda
-    const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT_ID.appspot.com",
-        messagingSenderId: "YOUR_SENDER_ID",
-        appId: "YOUR_APP_ID"
-    };
+    // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDeRPjhtmNPz5TNK1TPP3O5XZd4ORyeGPs",
+    authDomain: "auth-stej-product.firebaseapp.com",
+    projectId: "auth-stej-product",
+    storageBucket: "auth-stej-product.firebasestorage.app",
+    messagingSenderId: "846128318640",
+    appId: "1:846128318640:web:1c983100c63f7e50db9375"
+  };
 
     // Inisialisasi Firebase
     firebase.initializeApp(firebaseConfig);
