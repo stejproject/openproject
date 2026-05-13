@@ -64,17 +64,43 @@
             border-radius: 6px;
             padding: 15px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 10px;
             transition: border-color 0.2s;
             cursor: pointer;
         }
         .layanan-item:hover { border-color: #00ffcc; }
+        .layanan-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
         .layanan-info h3 { margin: 0 0 4px 0; font-size: 0.95rem; color: #ffffff; }
         .layanan-info p { margin: 0; font-size: 0.8rem; color: #a0a0a0; }
         .layanan-harga {
             color: #00ffcc; font-weight: bold; font-size: 0.9rem;
             white-space: nowrap; margin-left: 10px;
+        }
+        .layanan-qr {
+            width: 100%;
+            max-width: 200px;
+            align-self: center;
+            background: #fff;
+            border-radius: 6px;
+            padding: 4px;
+            display: none;
+        }
+        .layanan-qr img {
+            width: 100%;
+            display: block;
+            border-radius: 4px;
+        }
+        .layanan-qr.show { display: block; }
+        .qr-label {
+            font-size: 0.7rem;
+            color: #ffcc00;
+            text-align: center;
+            margin-top: 4px;
         }
 
         /* QRIS */
@@ -162,6 +188,23 @@
         .form-group input:focus, .form-group textarea:focus {
             outline: none; border-color: #6200ee;
         }
+        .form-group input[type="file"] {
+            padding: 8px;
+            font-size: 0.8rem;
+        }
+        .qr-preview-box {
+            margin-top: 10px;
+            max-width: 150px;
+            background: #fff;
+            border-radius: 6px;
+            padding: 4px;
+            display: none;
+        }
+        .qr-preview-box img {
+            width: 100%;
+            display: block;
+            border-radius: 4px;
+        }
         .admin-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
         .admin-table { width: 100%; margin-top: 20px; border-collapse: collapse; }
         .admin-table th {
@@ -172,10 +215,11 @@
             font-size: 0.85rem; padding: 10px 5px;
             border-bottom: 1px solid #2a2a2a; vertical-align: top;
         }
-        .admin-table td:first-child { width: 35%; }
-        .admin-table td:nth-child(2) { width: 20%; color: #00ffcc; }
-        .admin-table td:nth-child(3) { width: 25%; font-size: 0.75rem; color: #888; }
-        .admin-table td:last-child { width: 20%; text-align: right; }
+        .admin-table td:first-child { width: 30%; }
+        .admin-table td:nth-child(2) { width: 18%; color: #00ffcc; }
+        .admin-table td:nth-child(3) { width: 18%; font-size: 0.75rem; color: #888; }
+        .admin-table td:nth-child(4) { width: 18%; text-align: center; }
+        .admin-table td:last-child { width: 16%; text-align: right; }
         .badge {
             display: inline-block; background: #6200ee; color: #fff;
             font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; margin-bottom: 15px;
@@ -209,6 +253,17 @@
         .status-dot.online { background: #00ffcc; }
         .status-dot.offline { background: #cf6679; }
         #login-section, #crud-section { display: none; }
+        .tiny-qr {
+            width: 40px; height: 40px;
+            background: #fff;
+            border-radius: 4px;
+            padding: 2px;
+        }
+        .tiny-qr img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            border-radius: 2px;
+        }
     </style>
 <base target="_blank">
 </head>
@@ -266,7 +321,7 @@
     <div class="admin-container">
         <div class="admin-header">
             <h2>⚙️ Panel Admin STEJ</h2>
-            <button class="admin-close" onclick="tutupAdmin()">×</button>
+            <button class="admin-close" onclick="window.tutupAdmin()">×</button>
         </div>
 
         <span class="badge" id="mode-badge">CLOUD — Firebase Firestore</span>
@@ -276,11 +331,11 @@
             <p style="font-size:0.85rem; color:#a0a0a0; margin-bottom:15px;">
                 Login dengan Google untuk mengelola data. Data tersimpan di cloud dan bisa diakses dari perangkat mana saja.
             </p>
-            <button class="google" onclick="loginGoogle()">Login dengan Google</button>
+            <button class="google" onclick="window.loginGoogle()">Login dengan Google</button>
             <p style="font-size:0.75rem; color:#666; margin-top:10px; text-align:center;">
                 Atau gunakan mode offline dengan localStorage (data tidak sinkron antar perangkat).
             </p>
-            <button class="secondary" onclick="aktifkanOffline()" style="width:100%; margin-top:5px;">
+            <button class="secondary" onclick="window.aktifkanOffline()" style="width:100%; margin-top:5px;">
                 Gunakan Mode Offline
             </button>
         </div>
@@ -288,7 +343,7 @@
         <!-- SECTION: CRUD (Setelah Login) -->
         <div id="crud-section">
             <div class="user-info" id="user-info"></div>
-            <button class="secondary" onclick="logout()" style="width:auto; margin-bottom:15px;">Logout</button>
+            <button class="secondary" onclick="window.logout()" style="width:auto; margin-bottom:15px;">Logout</button>
 
             <div class="form-group">
                 <label>Nama Layanan</label>
@@ -306,14 +361,21 @@
                 <label>Link WhatsApp (bisa berbeda per layanan)</label>
                 <input type="text" id="input-wa" placeholder="https://wa.me/628...?text=Halo...">
             </div>
+            <div class="form-group">
+                <label>Upload Kode QR (QRIS / Saweria / Dll)</label>
+                <input type="file" id="input-qr" accept="image/*">
+                <div class="qr-preview-box" id="qr-preview-box">
+                    <img id="qr-preview-img" alt="Preview QR">
+                </div>
+            </div>
 
             <div class="admin-actions">
-                <button onclick="simpanLayanan()" id="btn-simpan">➕ Tambah Layanan</button>
-                <button class="secondary" onclick="resetForm()">Clear</button>
+                <button onclick="window.simpanLayanan()" id="btn-simpan">➕ Tambah Layanan</button>
+                <button class="secondary" onclick="window.resetForm()">Clear</button>
             </div>
 
             <table class="admin-table">
-                <thead><tr><th>Layanan</th><th>Harga</th><th>WA</th><th>Aksi</th></tr></thead>
+                <thead><tr><th>Layanan</th><th>Harga</th><th>WA</th><th>QR</th><th>Aksi</th></tr></thead>
                 <tbody id="admin-table-body"></tbody>
             </table>
 
@@ -325,11 +387,11 @@
                 </p>
                 <textarea class="backup-area" id="backup-area" placeholder='Klik Export untuk melihat JSON...'></textarea>
                 <div class="admin-actions" style="margin-top:10px;">
-                    <button class="secondary" onclick="exportData()">📋 Export JSON</button>
-                    <button class="success" onclick="importData()">📥 Import JSON</button>
-                    <button class="danger" onclick="hapusSemua()">🗑 Hapus Semua</button>
+                    <button class="secondary" onclick="window.exportData()">📋 Export JSON</button>
+                    <button class="success" onclick="window.importData()">📥 Import JSON</button>
+                    <button class="danger" onclick="window.hapusSemua()">🗑 Hapus Semua</button>
                 </div>
-                <input type="file" id="file-import" accept=".json" style="display:none;" onchange="handleFileImport(this)">
+                <input type="file" id="file-import" accept=".json" style="display:none;" onchange="window.handleFileImport(this)">
             </div>
         </div>
     </div>
@@ -362,6 +424,7 @@
     let isOffline = false;
     let currentUser = null;
     let unsubscribeSnapshot = null;
+    let qrBase64Cache = null; // untuk menyimpan base64 QR sementara
     const STORAGE_KEY = 'stej_portfolio_offline_v1';
 
     // ===================== AUTHENTICATION =====================
@@ -445,6 +508,34 @@
         if (isOffline) localStorage.setItem(STORAGE_KEY, JSON.stringify(dataLayanan));
     }
 
+    // ===================== QR UPLOAD HANDLER =====================
+    const inputQr = document.getElementById('input-qr');
+    const qrPreviewBox = document.getElementById('qr-preview-box');
+    const qrPreviewImg = document.getElementById('qr-preview-img');
+
+    inputQr.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) {
+            qrBase64Cache = null;
+            qrPreviewBox.style.display = 'none';
+            return;
+        }
+        if (file.size > 500 * 1024) {
+            alert('Gambar terlalu besar. Maksimal 500KB.');
+            inputQr.value = '';
+            qrBase64Cache = null;
+            qrPreviewBox.style.display = 'none';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            qrBase64Cache = evt.target.result;
+            qrPreviewImg.src = qrBase64Cache;
+            qrPreviewBox.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    });
+
     // ===================== RENDER CUSTOMER VIEW =====================
     window.renderLayanan = function() {
         const container = document.getElementById('layanan-container');
@@ -452,15 +543,26 @@
             container.innerHTML = '<div class="empty-state">Belum ada layanan. Buka panel admin untuk menambah.</div>';
             return;
         }
-        container.innerHTML = dataLayanan.map(item => `
+        container.innerHTML = dataLayanan.map(item => {
+            const hasQr = item.qrBase64 ? true : false;
+            return `
             <div class="layanan-item" onclick="window.klikLayanan('${item.id || ''}', '${escapeHtml(item.wa || '')}')">
-                <div class="layanan-info">
-                    <h3>${escapeHtml(item.nama)}</h3>
-                    <p>${escapeHtml(item.deskripsi || '')}</p>
+                <div class="layanan-row">
+                    <div class="layanan-info">
+                        <h3>${escapeHtml(item.nama)}</h3>
+                        <p>${escapeHtml(item.deskripsi || '')}</p>
+                    </div>
+                    <div class="layanan-harga">${escapeHtml(item.harga)}</div>
                 </div>
-                <div class="layanan-harga">${escapeHtml(item.harga)}</div>
+                ${hasQr ? `
+                <div class="layanan-qr show">
+                    <img src="${item.qrBase64}" alt="QR ${escapeHtml(item.nama)}">
+                </div>
+                <div class="qr-label">📱 Scan QR untuk bayar</div>
+                ` : ''}
             </div>
-        `).join('');
+            `;
+        }).join('');
     };
 
     window.klikLayanan = function(id, waLink) {
@@ -488,7 +590,7 @@
     window.renderAdminTable = function() {
         const tbody = document.getElementById('admin-table-body');
         if (dataLayanan.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Belum ada data</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Belum ada data</td></tr>';
             return;
         }
         tbody.innerHTML = dataLayanan.map(item => `
@@ -496,6 +598,11 @@
                 <td><strong>${escapeHtml(item.nama)}</strong><br><small style="color:#888">${escapeHtml(item.deskripsi||'')}</small></td>
                 <td>${escapeHtml(item.harga)}</td>
                 <td>${item.wa ? '<span style="color:#00ffcc">✓</span>' : '<span style="color:#666">—</span>'}</td>
+                <td>
+                    ${item.qrBase64 
+                        ? '<div class="tiny-qr"><img src="' + item.qrBase64 + '" alt="qr"></div>' 
+                        : '<span style="color:#666">—</span>'}
+                </td>
                 <td>
                     <button class="success" onclick="window.editLayanan('${item.id || ''}')">✎</button>
                     <button class="danger" onclick="window.hapusLayanan('${item.id || ''}')">🗑</button>
@@ -513,13 +620,27 @@
 
         if (!nama || !harga) { alert('Nama dan harga wajib diisi!'); return; }
 
-        const payload = { nama, deskripsi, harga, wa, updatedAt: new Date().toISOString() };
+        const payload = { 
+            nama, deskripsi, harga, wa, 
+            updatedAt: new Date().toISOString() 
+        };
+
+        // Tambahkan QR jika ada
+        if (qrBase64Cache) {
+            payload.qrBase64 = qrBase64Cache;
+        }
 
         try {
             if (isOffline) {
                 if (editId) {
                     const idx = dataLayanan.findIndex(x => x.id === editId);
-                    if (idx >= 0) dataLayanan[idx] = { ...dataLayanan[idx], ...payload };
+                    if (idx >= 0) {
+                        // kalau edit tapi tidak pilih QR baru, pertahankan QR lama
+                        if (!qrBase64Cache && dataLayanan[idx].qrBase64) {
+                            payload.qrBase64 = dataLayanan[idx].qrBase64;
+                        }
+                        dataLayanan[idx] = { ...dataLayanan[idx], ...payload };
+                    }
                 } else {
                     payload.id = 'local_' + Date.now();
                     dataLayanan.push(payload);
@@ -529,6 +650,11 @@
             } else {
                 if (!currentUser) { alert('Silakan login terlebih dahulu!'); return; }
                 if (editId) {
+                    // Pertahankan QR lama jika tidak upload baru
+                    if (!qrBase64Cache) {
+                        const existing = dataLayanan.find(x => x.id === editId);
+                        if (existing && existing.qrBase64) payload.qrBase64 = existing.qrBase64;
+                    }
                     await updateDoc(doc(db, 'layanan', editId), payload);
                 } else {
                     payload.createdAt = new Date().toISOString();
@@ -549,6 +675,18 @@
         document.getElementById('input-deskripsi').value = item.deskripsi || '';
         document.getElementById('input-harga').value = item.harga;
         document.getElementById('input-wa').value = item.wa || '';
+
+        // Tampilkan preview QR kalau ada
+        if (item.qrBase64) {
+            qrBase64Cache = item.qrBase64;
+            qrPreviewImg.src = item.qrBase64;
+            qrPreviewBox.style.display = 'block';
+        } else {
+            qrBase64Cache = null;
+            qrPreviewBox.style.display = 'none';
+            document.getElementById('input-qr').value = '';
+        }
+
         editId = id;
         document.getElementById('btn-simpan').textContent = '💾 Update Layanan';
     };
@@ -588,6 +726,10 @@
         document.getElementById('input-deskripsi').value = '';
         document.getElementById('input-harga').value = '';
         document.getElementById('input-wa').value = '';
+        document.getElementById('input-qr').value = '';
+        qrBase64Cache = null;
+        qrPreviewBox.style.display = 'none';
+        qrPreviewImg.src = '';
         editId = null;
         document.getElementById('btn-simpan').textContent = '➕ Tambah Layanan';
     }
