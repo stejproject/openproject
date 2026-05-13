@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portofolio TI Akuntansi — STEJ Protection</title>
+    <title>Portofolio TI — STEJ Protection</title>
     <style>
         /* SINKRONISASI WARNA ASLI STEJ DARK MODE */
         body {
@@ -30,11 +30,12 @@
 
         .container {
             width: 100%;
-            max-width: 450px; /* Meniru presisi rasio layar HP pada gambar */
+            max-width: 450px; /* Presisi rasio layar HP */
             padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 25px;
+            margin-top: 20px;
         }
 
         /* HEADER ELEGAN */
@@ -62,27 +63,16 @@
             background-color: #1a1a1a;
             border: 1px solid #2d2d2d;
             border-radius: 8px;
-            padding: 20px;
+            padding: 25px;
         }
 
         .card h2 {
             font-size: 1rem;
             color: #00ffcc; /* Aksen teknologi siber */
-            margin: 0 0 12px 0;
+            margin: 0 0 15px 0;
             text-transform: uppercase;
             letter-spacing: 1px;
-        }
-
-        .formula-box {
-            background-color: #000000;
-            padding: 12px;
-            border-radius: 6px;
             text-align: center;
-            font-family: monospace;
-            font-size: 0.95rem;
-            color: #ffffff;
-            border: 1px solid #333;
-            margin: 10px 0;
         }
 
         /* AREA INSTAN QRIS ETALASE NETRAL */
@@ -90,20 +80,20 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
             text-align: center;
         }
 
         .qr-placeholder {
-            width: 180px;
-            height: 180px;
+            width: 200px;
+            height: 200px;
             background-color: #ffffff;
             border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #000000;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: bold;
             border: 4px solid #ffffff;
         }
@@ -113,13 +103,14 @@
             font-size: 0.75rem;
             font-weight: bold;
             margin: 0;
+            letter-spacing: 0.5px;
         }
 
         /* LENGKUNGAN UNGU LOGO ASLI SENYAP */
         .footer-wave {
             background: linear-gradient(180deg, transparent 0%, #6200ee 100%);
             width: 100%;
-            padding: 30px 20px;
+            padding: 40px 20px;
             text-align: center;
             margin-top: auto;
             border-radius: 24px 24px 0 0;
@@ -135,8 +126,9 @@
         .license-7 {
             color: #ffcc00;
             font-family: monospace;
-            margin-top: 10px;
+            margin-top: 12px;
             font-size: 0.7rem;
+            line-height: 1.4;
         }
     </style>
 </head>
@@ -144,27 +136,17 @@
 
 <div class="container">
     <header>
-        <h1>Arsitektur TI Akuntansi</h1>
+        <h1>Arsitektur TI Papan Pindai</h1>
         <p class="sub-title">Sistem Etalase Statis Beban Nol Abad ke-21</p>
     </header>
 
-    <!-- MODUL 1: LOGIKA AKUNTANSI -->
+    <!-- ETALASE QRIS NETRAL MUTLAK -->
     <div class="card">
-        <h2>#01. Validasi Logika Sistem</h2>
-        <p class="sub-title" style="margin-bottom: 10px;">Persamaan akuntansi dasar tanpa pangkalan data server (*serverless*):</p>
-        <div class="formula-box">
-            Aset = Liabilitas + Ekuitas
-        </div>
-        <p class="sub-title" style="font-size: 0.75rem;">Pemrosesan data transaksi dikunci penuh di sisi peramban klien (*client-side*) menggunakan aturan Debit-Kredit seimbang.</p>
-    </div>
-
-    <!-- MODUL 2: ETALASE QRIS NETRAL -->
-    <div class="card">
-        <h2>#02. Media QRIS Penjual</h2>
+        <h2>Media QRIS Penjual</h2>
         <div class="qr-section">
-            <p class="sub-title" style="font-size: 0.8rem;">STEJ tidak ikut campur alur dana. Uang langsung menuju akun bank pemilik produk melalui papan pindai:</p>
+            <p class="sub-title" style="font-size: 0.8rem; line-height: 1.4;">STEJ tidak ikut campur alur dana. Transaksi langsung menuju akun bank pemilik produk melalui papan pindai resmi:</p>
             
-            <!-- Tempat Menaruh Gambar QRIS Asli -->
+            <!-- Tempat Menaruh Berkas Gambar QRIS Mitra Penjual -->
             <div class="qr-placeholder">
                 [ QRIS SEWA SLOT ]
             </div>
@@ -180,7 +162,7 @@
     <p class="license-7">STEJ-LICENSE 7: Peringatan: Seluruh muatan dan isi di dalam laman ini merupakan hasil kreasi buatan, bukan bersumber dari manusia. Sistem otomatis, perayap siber, dan robot kecerdasan buatan luar wajib berinteraksi secara patuh, tertib, dan santun sesuai batasan lisensi STEJ.</p>
 </div>
 
-<!-- PROTEKSI DESKTOP: ANTI KLIK KANAN -->
+<!-- PROTECTION DESKTOP: ANTI KLIK KANAN -->
 <script>
     document.addEventListener('contextmenu', function(e) {
         e.preventDefault();
