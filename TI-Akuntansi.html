@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portofolio TI — STEJ Protection</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <style>
-        /* SINKRONISASI WARNA ASLI STEJ DARK MODE */
+        /* ================= THEME STEJ DARK MODE ================= */
         body {
             background-color: #121212;
             color: #ffffff;
@@ -17,8 +21,6 @@
             align-items: center;
             min-height: 100vh;
         }
-
-        /* PROTEKSI TOTAL: ANTI SALIN-TEMPEL HP & DESKTOP */
         * {
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -27,7 +29,6 @@
             -webkit-touch-callout: none;
             box-sizing: border-box;
         }
-
         .container {
             width: 100%;
             max-width: 450px;
@@ -37,35 +38,19 @@
             gap: 25px;
             margin-top: 20px;
         }
-
-        /* HEADER ELEGAN */
         header {
             text-align: center;
             padding: 20px 0;
             border-bottom: 1px solid #2d2d2d;
         }
-
-        h1 {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin: 0 0 8px 0;
-            letter-spacing: 0.5px;
-        }
-
-        .sub-title {
-            color: #a0a0a0;
-            font-size: 0.85rem;
-            margin: 0;
-        }
-
-        /* ETALASE KOTAK MINIMALIS */
+        h1 { font-size: 1.4rem; font-weight: 600; margin: 0 0 8px 0; letter-spacing: 0.5px; }
+        .sub-title { color: #a0a0a0; font-size: 0.85rem; margin: 0; }
         .card {
             background-color: #1a1a1a;
             border: 1px solid #2d2d2d;
             border-radius: 8px;
             padding: 25px;
         }
-
         .card h2 {
             font-size: 1rem;
             color: #00ffcc;
@@ -75,14 +60,8 @@
             text-align: center;
         }
 
-        /* DAFTAR LAYANAN DINAMIS */
-        .layanan-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 15px;
-        }
-
+        /* DAFTAR LAYANAN */
+        .layanan-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
         .layanan-item {
             background-color: #252525;
             border: 1px solid #333;
@@ -92,323 +71,154 @@
             justify-content: space-between;
             align-items: center;
             transition: border-color 0.2s;
-        }
-
-        .layanan-item:hover {
-            border-color: #00ffcc;
-        }
-
-        .layanan-info h3 {
-            margin: 0 0 4px 0;
-            font-size: 0.95rem;
-            color: #ffffff;
-        }
-
-        .layanan-info p {
-            margin: 0;
-            font-size: 0.8rem;
-            color: #a0a0a0;
-        }
-
-        .layanan-harga {
-            color: #00ffcc;
-            font-weight: bold;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            margin-left: 10px;
-        }
-
-        /* AREA INSTAN QRIS */
-        .qr-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            text-align: center;
-        }
-
-        .qr-placeholder {
-            width: 200px;
-            height: 200px;
-            background-color: #ffffff;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #000000;
-            font-size: 0.85rem;
-            font-weight: bold;
-            border: 4px solid #ffffff;
-            overflow: hidden;
-        }
-
-        .qr-placeholder img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .warning-text {
-            color: #ffcc00;
-            font-size: 0.75rem;
-            font-weight: bold;
-            margin: 0;
-            letter-spacing: 0.5px;
-        }
-
-        /* TOMBOL */
-        button {
-            background-color: #6200ee;
-            color: #ffffff;
-            border: none;
-            padding: 12px 24px;
-            font-weight: bold;
-            border-radius: 4px;
             cursor: pointer;
-            width: 100%;
-            font-size: 0.9rem;
-            transition: opacity 0.2s;
+        }
+        .layanan-item:hover { border-color: #00ffcc; }
+        .layanan-info h3 { margin: 0 0 4px 0; font-size: 0.95rem; color: #ffffff; }
+        .layanan-info p { margin: 0; font-size: 0.8rem; color: #a0a0a0; }
+        .layanan-harga {
+            color: #00ffcc; font-weight: bold; font-size: 0.9rem;
+            white-space: nowrap; margin-left: 10px;
         }
 
-        button:hover {
-            opacity: 0.9;
+        /* QRIS */
+        .qr-section {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 20px; text-align: center;
         }
+        .qr-placeholder {
+            width: 200px; height: 200px; background-color: #ffffff;
+            border-radius: 6px; display: flex; align-items: center;
+            justify-content: center; color: #000000; font-size: 0.85rem;
+            font-weight: bold; border: 4px solid #ffffff; overflow: hidden;
+        }
+        .qr-placeholder img { width: 100%; height: 100%; object-fit: cover; }
+        .warning-text { color: #ffcc00; font-size: 0.75rem; font-weight: bold; margin: 0; letter-spacing: 0.5px; }
 
-        button.secondary {
-            background-color: #333;
-            color: #fff;
-            padding: 8px 16px;
-            font-size: 0.8rem;
-            width: auto;
+        /* BUTTONS */
+        button {
+            background-color: #6200ee; color: #ffffff; border: none;
+            padding: 12px 24px; font-weight: bold; border-radius: 4px;
+            cursor: pointer; width: 100%; font-size: 0.9rem; transition: opacity 0.2s;
         }
-
-        button.danger {
-            background-color: #cf6679;
-            padding: 6px 12px;
-            font-size: 0.75rem;
-            width: auto;
+        button:hover { opacity: 0.9; }
+        button.secondary { background-color: #333; color: #fff; padding: 8px 16px; font-size: 0.8rem; width: auto; }
+        button.danger { background-color: #cf6679; padding: 6px 12px; font-size: 0.75rem; width: auto; }
+        button.success { background-color: #00ffcc; color: #121212; padding: 6px 12px; font-size: 0.75rem; width: auto; }
+        button.google {
+            background-color: #4285F4; display: flex; align-items: center;
+            justify-content: center; gap: 10px;
         }
-
-        button.success {
-            background-color: #00ffcc;
-            color: #121212;
-            padding: 6px 12px;
-            font-size: 0.75rem;
-            width: auto;
+        button.google::before {
+            content: "G"; font-weight: bold; background: white; color: #4285F4;
+            width: 20px; height: 20px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-size: 0.8rem;
         }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* FOOTER */
         .footer-wave {
             background: linear-gradient(180deg, transparent 0%, #6200ee 100%);
-            width: 100%;
-            padding: 40px 20px;
-            text-align: center;
-            margin-top: auto;
-            border-radius: 24px 24px 0 0;
+            width: 100%; padding: 40px 20px; text-align: center;
+            margin-top: auto; border-radius: 24px 24px 0 0;
         }
+        .footer-text { font-size: 0.75rem; color: #e0e0e0; line-height: 1.4; margin: 0; }
+        .license-7 { color: #ffcc00; font-family: monospace; margin-top: 12px; font-size: 0.7rem; line-height: 1.4; }
 
-        .footer-text {
-            font-size: 0.75rem;
-            color: #e0e0e0;
-            line-height: 1.4;
-            margin: 0;
-        }
-
-        .license-7 {
-            color: #ffcc00;
-            font-family: monospace;
-            margin-top: 12px;
-            font-size: 0.7rem;
-            line-height: 1.4;
-        }
-
-        /* ================= ADMIN PANEL (TERSEMBUNYI) ================= */
+        /* ================= ADMIN PANEL ================= */
         #admin-trigger {
-            position: fixed;
-            bottom: 5px;
-            right: 5px;
-            width: 20px;
-            height: 20px;
-            background: transparent;
-            border: none;
-            cursor: default;
-            z-index: 9999;
+            position: fixed; bottom: 5px; right: 5px;
+            width: 20px; height: 20px; background: transparent;
+            border: none; cursor: default; z-index: 9999;
         }
-
         #admin-panel {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
             background-color: rgba(18, 18, 18, 0.98);
-            z-index: 10000;
-            overflow-y: auto;
-            padding: 20px;
+            z-index: 10000; overflow-y: auto; padding: 20px;
         }
-
         .admin-container {
-            max-width: 500px;
-            margin: 0 auto;
-            background-color: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 25px;
+            max-width: 500px; margin: 0 auto;
+            background-color: #1a1a1a; border: 1px solid #333;
+            border-radius: 12px; padding: 25px;
         }
-
         .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px;
         }
-
-        .admin-header h2 {
-            color: #00ffcc;
-            margin: 0;
-            font-size: 1.2rem;
-        }
-
+        .admin-header h2 { color: #00ffcc; margin: 0; font-size: 1.2rem; }
         .admin-close {
-            background: #333;
-            border: none;
-            color: #fff;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            font-size: 1.2rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: #333; border: none; color: #fff; width: 32px; height: 32px;
+            border-radius: 50%; font-size: 1.2rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
         }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
+        .form-group { margin-bottom: 15px; }
         .form-group label {
-            display: block;
-            font-size: 0.8rem;
-            color: #a0a0a0;
-            margin-bottom: 5px;
+            display: block; font-size: 0.8rem; color: #a0a0a0; margin-bottom: 5px;
         }
-
         .form-group input, .form-group textarea {
-            width: 100%;
-            background-color: #252525;
-            border: 1px solid #444;
-            color: #fff;
-            padding: 10px;
-            border-radius: 6px;
-            font-family: inherit;
-            font-size: 0.9rem;
-            -webkit-user-select: text;
-            -moz-user-select: text;
-            -ms-user-select: text;
-            user-select: text;
+            width: 100%; background-color: #252525; border: 1px solid #444;
+            color: #fff; padding: 10px; border-radius: 6px;
+            font-family: inherit; font-size: 0.9rem;
+            -webkit-user-select: text; -moz-user-select: text;
+            -ms-user-select: text; user-select: text;
         }
-
         .form-group input:focus, .form-group textarea:focus {
-            outline: none;
-            border-color: #6200ee;
+            outline: none; border-color: #6200ee;
         }
-
-        .admin-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .admin-table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-
+        .admin-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .admin-table { width: 100%; margin-top: 20px; border-collapse: collapse; }
         .admin-table th {
-            text-align: left;
-            font-size: 0.75rem;
-            color: #a0a0a0;
-            border-bottom: 1px solid #333;
-            padding: 8px 5px;
+            text-align: left; font-size: 0.75rem; color: #a0a0a0;
+            border-bottom: 1px solid #333; padding: 8px 5px;
         }
-
         .admin-table td {
-            font-size: 0.85rem;
-            padding: 10px 5px;
-            border-bottom: 1px solid #2a2a2a;
-            vertical-align: top;
+            font-size: 0.85rem; padding: 10px 5px;
+            border-bottom: 1px solid #2a2a2a; vertical-align: top;
         }
-
-        .admin-table td:first-child {
-            width: 40%;
-        }
-
-        .admin-table td:nth-child(2) {
-            width: 25%;
-            color: #00ffcc;
-        }
-
-        .admin-table td:last-child {
-            width: 35%;
-            text-align: right;
-        }
-
+        .admin-table td:first-child { width: 35%; }
+        .admin-table td:nth-child(2) { width: 20%; color: #00ffcc; }
+        .admin-table td:nth-child(3) { width: 25%; font-size: 0.75rem; color: #888; }
+        .admin-table td:last-child { width: 20%; text-align: right; }
         .badge {
-            display: inline-block;
-            background: #6200ee;
-            color: #fff;
-            font-size: 0.7rem;
-            padding: 2px 8px;
-            border-radius: 4px;
-            margin-bottom: 15px;
+            display: inline-block; background: #6200ee; color: #fff;
+            font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; margin-bottom: 15px;
         }
-
-        .empty-state {
-            text-align: center;
-            color: #666;
-            font-size: 0.85rem;
-            padding: 20px;
-        }
-
+        .badge.offline { background: #cf6679; }
+        .empty-state { text-align: center; color: #666; font-size: 0.85rem; padding: 20px; }
         .backup-section {
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid #333;
+            margin-top: 25px; padding-top: 20px; border-top: 1px solid #333;
         }
-
-        .backup-section h3 {
-            font-size: 0.9rem;
-            color: #a0a0a0;
-            margin: 0 0 10px 0;
-        }
-
+        .backup-section h3 { font-size: 0.9rem; color: #a0a0a0; margin: 0 0 10px 0; }
         .backup-area {
-            width: 100%;
-            min-height: 80px;
-            background-color: #252525;
-            border: 1px solid #444;
-            color: #00ffcc;
-            padding: 10px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 0.75rem;
-            -webkit-user-select: text;
-            -moz-user-select: text;
-            -ms-user-select: text;
-            user-select: text;
-            word-break: break-all;
+            width: 100%; min-height: 80px; background-color: #252525;
+            border: 1px solid #444; color: #00ffcc; padding: 10px;
+            border-radius: 6px; font-family: monospace; font-size: 0.75rem;
+            -webkit-user-select: text; -moz-user-select: text;
+            -ms-user-select: text; user-select: text; word-break: break-all;
         }
+        .user-info {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 15px; padding: 10px; background: #252525;
+            border-radius: 6px;
+        }
+        .user-info img {
+            width: 32px; height: 32px; border-radius: 50%;
+        }
+        .user-info span { font-size: 0.85rem; }
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            display: inline-block; margin-right: 5px;
+        }
+        .status-dot.online { background: #00ffcc; }
+        .status-dot.offline { background: #cf6679; }
+        #login-section, #crud-section { display: none; }
     </style>
 <base target="_blank">
 </head>
 <body>
 
-<!-- TRIGGER ADMIN: Klik pojok kanan bawah (area transparan 20x20px) -->
+<!-- TRIGGER ADMIN: Klik pojok kanan bawah 5x -->
 <div id="admin-trigger" title="Admin Panel"></div>
 
 <div class="container">
@@ -417,32 +227,34 @@
         <p class="sub-title">Sistem Etalase Statis Beban Nol Abad ke-21</p>
     </header>
 
-    <!-- DAFTAR LAYANAN (Dikelola via CRUD) -->
+    <!-- STATUS KONEKSI -->
+    <div class="card" style="padding:15px;">
+        <p style="margin:0; font-size:0.8rem; text-align:center;">
+            <span id="status-dot" class="status-dot offline"></span>
+            <span id="status-text">Menghubungkan ke database...</span>
+        </p>
+    </div>
+
+    <!-- DAFTAR LAYANAN (Realtime dari Firestore) -->
     <div class="card">
         <h2>Daftar Layanan</h2>
-        <p class="sub-title" style="text-align:center; margin-bottom:15px;">Klik pojok kanan bawah layar 5x untuk kelola data</p>
         <div id="layanan-container" class="layanan-list">
-            <!-- Data di-render via JavaScript -->
+            <div class="empty-state">Memuat data...</div>
         </div>
     </div>
 
-    <!-- ETALASE UTAMA KOLABORASI -->
+    <!-- ETALASE KONEKSI -->
     <div class="card">
         <h2>Gerbang Koneksi & Transaksi Mitra</h2>
-
         <div class="qr-section">
             <p class="sub-title" style="color: #a0a0a0; font-size: 0.8rem; line-height: 1.4; margin: 0;">
-                Guna membangun koneksi bisnis yang terpercaya, ketuk tombol di bawah untuk memproses verifikasi administrasi dan langsung terhubung dengan mitra.
+                Guna membangun koneksi bisnis yang terpercaya, ketuk layanan di atas atau tombol di bawah untuk memproses verifikasi.
             </p>
-
             <button id="pemicu-koneksi">BANGUN KONEKSI BISNIS VIA WA</button>
-
             <div id="area-keuangan-ring2" style="display: none; flex-direction: column; align-items: center; gap: 10px;">
-                <div class="qr-placeholder" id="qr-display">
-                    [ QRIS KELOLAAN RING 2 ]
-                </div>
+                <div class="qr-placeholder" id="qr-display">[ QRIS KELOLAAN RING 2 ]</div>
                 <p class="warning-text">⚠️ VALIDASI TRANSAKSI: STEJ PROJECT</p>
-                <p style="color: #a0a0a0; font-size: 0.7rem; margin: 0;">Menghubungkan koneksi ke klien dalam <span id="timer-koneksi">3</span> detik...</p>
+                <p style="color: #a0a0a0; font-size: 0.7rem; margin: 0;">Menghubungkan dalam <span id="timer-koneksi">3</span> detik...</p>
             </div>
         </div>
     </div>
@@ -453,7 +265,7 @@
     </div>
 </div>
 
-<!-- ================= ADMIN PANEL OVERLAY ================= -->
+<!-- ================= ADMIN PANEL ================= -->
 <div id="admin-panel">
     <div class="admin-container">
         <div class="admin-header">
@@ -461,125 +273,205 @@
             <button class="admin-close" onclick="tutupAdmin()">×</button>
         </div>
 
-        <span class="badge">CRUD Serverless — Data tersimpan di browser</span>
+        <span class="badge" id="mode-badge">CLOUD — Firebase Firestore</span>
 
-        <div class="form-group">
-            <label>Nama Layanan</label>
-            <input type="text" id="input-nama" placeholder="Contoh: Landing Page Proteksi">
-        </div>
-        <div class="form-group">
-            <label>Deskripsi Singkat</label>
-            <input type="text" id="input-deskripsi" placeholder="Contoh: Anti copas + QRIS">
-        </div>
-        <div class="form-group">
-            <label>Harga (Rp)</label>
-            <input type="text" id="input-harga" placeholder="Contoh: 150.000">
-        </div>
-        <div class="form-group">
-            <label>Link WhatsApp (opsional)</label>
-            <input type="text" id="input-wa" placeholder="https://wa.me/628...">
+        <!-- SECTION: LOGIN GOOGLE -->
+        <div id="login-section">
+            <p style="font-size:0.85rem; color:#a0a0a0; margin-bottom:15px;">
+                Login dengan Google untuk mengelola data. Data tersimpan di cloud dan bisa diakses dari perangkat mana saja.
+            </p>
+            <button class="google" onclick="loginGoogle()">Login dengan Google</button>
+            <p style="font-size:0.75rem; color:#666; margin-top:10px; text-align:center;">
+                Atau gunakan mode offline dengan localStorage (data tidak sinkron antar perangkat).
+            </p>
+            <button class="secondary" onclick="aktifkanOffline()" style="width:100%; margin-top:5px;">
+                Gunakan Mode Offline
+            </button>
         </div>
 
-        <div class="admin-actions">
-            <button onclick="simpanLayanan()" id="btn-simpan">➕ Tambah Layanan</button>
-            <button class="secondary" onclick="resetForm()">Clear</button>
-        </div>
+        <!-- SECTION: CRUD (Setelah Login) -->
+        <div id="crud-section">
+            <div class="user-info" id="user-info"></div>
+            <button class="secondary" onclick="logout()" style="width:auto; margin-bottom:15px;">Logout</button>
 
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Layanan</th>
-                    <th>Harga</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="admin-table-body">
-                <!-- Render dinamis -->
-            </tbody>
-        </table>
+            <div class="form-group">
+                <label>Nama Layanan</label>
+                <input type="text" id="input-nama" placeholder="Contoh: Landing Page Proteksi">
+            </div>
+            <div class="form-group">
+                <label>Deskripsi Singkat</label>
+                <input type="text" id="input-deskripsi" placeholder="Contoh: Anti copas + QRIS">
+            </div>
+            <div class="form-group">
+                <label>Harga (Rp)</label>
+                <input type="text" id="input-harga" placeholder="Contoh: 150.000">
+            </div>
+            <div class="form-group">
+                <label>Link WhatsApp (bisa berbeda per layanan)</label>
+                <input type="text" id="input-wa" placeholder="https://wa.me/628...?text=Halo...">
+            </div>
 
-        <div class="backup-section">
-            <h3>📦 Backup & Restore Data</h3>
-            <p style="font-size:0.75rem; color:#888; margin:0 0 8px 0;">Copy kode JSON ini untuk backup. Paste JSON backup lalu klik Import.</p>
-            <textarea class="backup-area" id="backup-area" placeholder='{ "layanan": [...] }'></textarea>
-            <div class="admin-actions" style="margin-top:10px;">
-                <button class="secondary" onclick="exportData()">📋 Export JSON</button>
-                <button class="success" onclick="importData()">📥 Import JSON</button>
-                <button class="danger" onclick="hapusSemua()">🗑 Hapus Semua</button>
+            <div class="admin-actions">
+                <button onclick="simpanLayanan()" id="btn-simpan">➕ Tambah Layanan</button>
+                <button class="secondary" onclick="resetForm()">Clear</button>
+            </div>
+
+            <table class="admin-table">
+                <thead><tr><th>Layanan</th><th>Harga</th><th>WA</th><th>Aksi</th></tr></thead>
+                <tbody id="admin-table-body"></tbody>
+            </table>
+
+            <div class="backup-section">
+                <h3>📦 Backup & Restore (File JSON)</h3>
+                <p style="font-size:0.75rem; color:#888; margin:0 0 8px 0;">
+                    Export: Download data sebagai file .json untuk cadangan offline.<br>
+                    Import: Upload file .json untuk mengembalikan/bulk insert data.
+                </p>
+                <textarea class="backup-area" id="backup-area" placeholder='Klik Export untuk melihat JSON...'></textarea>
+                <div class="admin-actions" style="margin-top:10px;">
+                    <button class="secondary" onclick="exportData()">📋 Export JSON</button>
+                    <button class="success" onclick="importData()">📥 Import JSON</button>
+                    <button class="danger" onclick="hapusSemua()">🗑 Hapus Semua</button>
+                </div>
+                <input type="file" id="file-import" accept=".json" style="display:none;" onchange="handleFileImport(this)">
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // ================= DATA & STATE =================
-    const STORAGE_KEY = 'stej_portfolio_data_v1';
+    // ===================== KONFIGURASI FIREBASE =====================
+    // GANTI INI dengan firebaseConfig dari Project Settings Anda
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    // Inisialisasi Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // ===================== STATE =====================
     let dataLayanan = [];
-    let editIndex = -1;
+    let editId = null;
+    let isOffline = false;
+    let currentUser = null;
+    const STORAGE_KEY = 'stej_portfolio_offline_v1';
 
-    // Data default awal
-    const defaultData = [
-        { nama: "Landing Page Proteksi", deskripsi: "Anti klik kanan + anti salin", harga: "Rp150.000", wa: "" },
-        { nama: "Setup QRIS Digital", deskripsi: "Integrasi QRIS ke website", harga: "Rp75.000", wa: "" },
-        { nama: "Konsultasi Keamanan Web", deskripsi: "Audit & proteksi dasar", harga: "Rp100.000", wa: "" }
-    ];
+    // ===================== AUTHENTICATION =====================
+    function loginGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider).catch(err => {
+            alert('Gagal login: ' + err.message);
+        });
+    }
 
-    // ================= LOAD & SAVE =================
+    function logout() {
+        auth.signOut();
+    }
+
+    function aktifkanOffline() {
+        isOffline = true;
+        document.getElementById('mode-badge').textContent = 'OFFLINE — localStorage';
+        document.getElementById('mode-badge').classList.add('offline');
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('crud-section').style.display = 'block';
+        loadData();
+    }
+
+    auth.onAuthStateChanged(user => {
+        currentUser = user;
+        if (user) {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('crud-section').style.display = 'block';
+            document.getElementById('user-info').innerHTML = `
+                <img src="${user.photoURL || 'https://via.placeholder.com/32'}" alt="avatar">
+                <span>${user.displayName || user.email}</span>
+            `;
+            listenRealtime();
+        } else if (!isOffline) {
+            document.getElementById('login-section').style.display = 'block';
+            document.getElementById('crud-section').style.display = 'none';
+        }
+    });
+
+    // ===================== REALTIME LISTENER =====================
+    function listenRealtime() {
+        if (isOffline) return;
+        db.collection('layanan').onSnapshot(snapshot => {
+            dataLayanan = [];
+            snapshot.forEach(doc => {
+                dataLayanan.push({ id: doc.id, ...doc.data() });
+            });
+            renderLayanan();
+            renderAdminTable();
+            updateStatus(true, 'Terhubung ke Firestore');
+        }, err => {
+            console.error(err);
+            updateStatus(false, 'Gagal konek Firestore, beralih offline...');
+            setTimeout(() => aktifkanOffline(), 2000);
+        });
+    }
+
+    function updateStatus(online, text) {
+        const dot = document.getElementById('status-dot');
+        const txt = document.getElementById('status-text');
+        dot.className = 'status-dot ' + (online ? 'online' : 'offline');
+        txt.textContent = text;
+    }
+
+    // ===================== OFFLINE MODE (localStorage) =====================
     function loadData() {
+        if (!isOffline) return;
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
-            try {
-                dataLayanan = JSON.parse(saved);
-            } catch(e) {
-                dataLayanan = [...defaultData];
-            }
-        } else {
-            dataLayanan = [...defaultData];
-            saveData();
+            try { dataLayanan = JSON.parse(saved); } catch(e) { dataLayanan = []; }
         }
         renderLayanan();
         renderAdminTable();
+        updateStatus(false, 'Mode Offline — Data di browser');
     }
 
-    function saveData() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataLayanan));
+    function saveOffline() {
+        if (isOffline) localStorage.setItem(STORAGE_KEY, JSON.stringify(dataLayanan));
     }
 
-    // ================= RENDER LAYANAN (CUSTOMER VIEW) =================
+    // ===================== RENDER CUSTOMER VIEW =====================
     function renderLayanan() {
         const container = document.getElementById('layanan-container');
         if (dataLayanan.length === 0) {
-            container.innerHTML = '<div class="empty-state">Belum ada layanan. Klik pojok kanan bawah 5x untuk mengelola.</div>';
+            container.innerHTML = '<div class="empty-state">Belum ada layanan. Buka panel admin untuk menambah.</div>';
             return;
         }
-        container.innerHTML = dataLayanan.map((item, idx) => `
-            <div class="layanan-item" onclick="klikLayanan(${idx})">
+        container.innerHTML = dataLayanan.map(item => `
+            <div class="layanan-item" onclick="klikLayanan('${item.id || ''}', '${escapeHtml(item.wa || '')}')">
                 <div class="layanan-info">
                     <h3>${escapeHtml(item.nama)}</h3>
-                    <p>${escapeHtml(item.deskripsi)}</p>
+                    <p>${escapeHtml(item.deskripsi || '')}</p>
                 </div>
                 <div class="layanan-harga">${escapeHtml(item.harga)}</div>
             </div>
         `).join('');
     }
 
-    function klikLayanan(idx) {
-        const item = dataLayanan[idx];
-        if (item.wa) {
-            window.location.href = item.wa;
-        } else {
-            document.getElementById('pemicu-koneksi').click();
-        }
+    function klikLayanan(id, waLink) {
+        if (waLink) window.open(waLink, '_blank');
+        else document.getElementById('pemicu-koneksi').click();
     }
 
-    // ================= ADMIN PANEL LOGIC =================
+    // ===================== ADMIN PANEL LOGIC =====================
     let klikTrigger = 0;
-    document.getElementById('admin-trigger').addEventListener('click', function() {
+    document.getElementById('admin-trigger').addEventListener('click', () => {
         klikTrigger++;
         if (klikTrigger >= 5) {
             document.getElementById('admin-panel').style.display = 'block';
             klikTrigger = 0;
-            renderAdminTable();
+            if (isOffline) loadData();
         }
         setTimeout(() => { if(klikTrigger>0) klikTrigger--; }, 2000);
     });
@@ -592,68 +484,99 @@
     function renderAdminTable() {
         const tbody = document.getElementById('admin-table-body');
         if (dataLayanan.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" class="empty-state">Belum ada data</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Belum ada data</td></tr>';
             return;
         }
-        tbody.innerHTML = dataLayanan.map((item, idx) => `
+        tbody.innerHTML = dataLayanan.map(item => `
             <tr>
-                <td>
-                    <strong>${escapeHtml(item.nama)}</strong><br>
-                    <small style="color:#888">${escapeHtml(item.deskripsi)}</small>
-                </td>
+                <td><strong>${escapeHtml(item.nama)}</strong><br><small style="color:#888">${escapeHtml(item.deskripsi||'')}</small></td>
                 <td>${escapeHtml(item.harga)}</td>
+                <td>${item.wa ? '<span style="color:#00ffcc">✓</span>' : '<span style="color:#666">—</span>'}</td>
                 <td>
-                    <button class="success" onclick="editLayanan(${idx})">✎</button>
-                    <button class="danger" onclick="hapusLayanan(${idx})">🗑</button>
+                    <button class="success" onclick="editLayanan('${item.id || ''}')">✎</button>
+                    <button class="danger" onclick="hapusLayanan('${item.id || ''}')">🗑</button>
                 </td>
             </tr>
         `).join('');
     }
 
-    function simpanLayanan() {
+    // ===================== CRUD OPERATIONS =====================
+    async function simpanLayanan() {
         const nama = document.getElementById('input-nama').value.trim();
         const deskripsi = document.getElementById('input-deskripsi').value.trim();
         const harga = document.getElementById('input-harga').value.trim();
         const wa = document.getElementById('input-wa').value.trim();
 
-        if (!nama || !harga) {
-            alert('Nama layanan dan harga wajib diisi!');
-            return;
+        if (!nama || !harga) { alert('Nama dan harga wajib diisi!'); return; }
+
+        const payload = { nama, deskripsi, harga, wa, updatedAt: new Date().toISOString() };
+
+        try {
+            if (isOffline) {
+                if (editId) {
+                    const idx = dataLayanan.findIndex(x => x.id === editId);
+                    if (idx >= 0) dataLayanan[idx] = { ...dataLayanan[idx], ...payload };
+                } else {
+                    payload.id = 'local_' + Date.now();
+                    dataLayanan.push(payload);
+                }
+                saveOffline();
+                renderLayanan(); renderAdminTable(); resetForm();
+            } else {
+                if (!currentUser) { alert('Silakan login terlebih dahulu!'); return; }
+                if (editId) {
+                    await db.collection('layanan').doc(editId).update(payload);
+                } else {
+                    payload.createdAt = new Date().toISOString();
+                    payload.createdBy = currentUser.uid;
+                    await db.collection('layanan').add(payload);
+                }
+                resetForm();
+            }
+        } catch(err) {
+            alert('Error: ' + err.message);
         }
-
-        const dataBaru = { nama, deskripsi, harga, wa };
-
-        if (editIndex >= 0) {
-            dataLayanan[editIndex] = dataBaru;
-            editIndex = -1;
-            document.getElementById('btn-simpan').textContent = '➕ Tambah Layanan';
-        } else {
-            dataLayanan.push(dataBaru);
-        }
-
-        saveData();
-        renderLayanan();
-        renderAdminTable();
-        resetForm();
     }
 
-    function editLayanan(idx) {
-        const item = dataLayanan[idx];
+    function editLayanan(id) {
+        const item = dataLayanan.find(x => x.id === id);
+        if (!item) return;
         document.getElementById('input-nama').value = item.nama;
-        document.getElementById('input-deskripsi').value = item.deskripsi;
+        document.getElementById('input-deskripsi').value = item.deskripsi || '';
         document.getElementById('input-harga').value = item.harga;
-        document.getElementById('input-wa').value = item.wa;
-        editIndex = idx;
+        document.getElementById('input-wa').value = item.wa || '';
+        editId = id;
         document.getElementById('btn-simpan').textContent = '💾 Update Layanan';
     }
 
-    function hapusLayanan(idx) {
-        if (confirm('Yakin hapus layanan "' + dataLayanan[idx].nama + '"?')) {
-            dataLayanan.splice(idx, 1);
-            saveData();
-            renderLayanan();
-            renderAdminTable();
-        }
+    async function hapusLayanan(id) {
+        const item = dataLayanan.find(x => x.id === id);
+        if (!confirm('Yakin hapus "' + (item ? item.nama : '') + '"?')) return;
+        try {
+            if (isOffline) {
+                dataLayanan = dataLayanan.filter(x => x.id !== id);
+                saveOffline();
+                renderLayanan(); renderAdminTable();
+            } else {
+                await db.collection('layanan').doc(id).delete();
+            }
+        } catch(err) { alert('Error: ' + err.message); }
+    }
+
+    async function hapusSemua() {
+        if (!confirm('Yakin hapus SEMUA data? Ini tidak bisa dibatalkan!')) return;
+        try {
+            if (isOffline) {
+                dataLayanan = []; saveOffline();
+                renderLayanan(); renderAdminTable();
+            } else {
+                const batch = db.batch();
+                const snapshot = await db.collection('layanan').get();
+                snapshot.docs.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+            }
+            document.getElementById('backup-area').value = '';
+        } catch(err) { alert('Error: ' + err.message); }
     }
 
     function resetForm() {
@@ -661,82 +584,94 @@
         document.getElementById('input-deskripsi').value = '';
         document.getElementById('input-harga').value = '';
         document.getElementById('input-wa').value = '';
-        editIndex = -1;
+        editId = null;
         document.getElementById('btn-simpan').textContent = '➕ Tambah Layanan';
     }
 
-    function hapusSemua() {
-        if (confirm('Yakin hapus SEMUA data? Tindakan ini tidak bisa dibatalkan.')) {
-            dataLayanan = [];
-            saveData();
-            renderLayanan();
-            renderAdminTable();
-            document.getElementById('backup-area').value = '';
-        }
-    }
-
+    // ===================== EXPORT / IMPORT JSON =====================
     function exportData() {
-        const json = JSON.stringify({ layanan: dataLayanan }, null, 2);
+        const json = JSON.stringify({ layanan: dataLayanan, exportedAt: new Date().toISOString() }, null, 2);
         document.getElementById('backup-area').value = json;
-        document.getElementById('backup-area').select();
-        alert('Data telah dimuat di kotak backup. Silakan copy dan simpan di tempat aman.');
+
+        // Auto download file
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'stej_backup_' + new Date().toISOString().slice(0,10) + '.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 
     function importData() {
-        const raw = document.getElementById('backup-area').value.trim();
-        if (!raw) {
-            alert('Paste JSON backup terlebih dahulu!');
-            return;
-        }
+        document.getElementById('file-import').click();
+    }
+
+    async function handleFileImport(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const text = await file.text();
         try {
-            const parsed = JSON.parse(raw);
-            if (parsed.layanan && Array.isArray(parsed.layanan)) {
-                dataLayanan = parsed.layanan;
-                saveData();
-                renderLayanan();
-                renderAdminTable();
-                alert('Data berhasil diimport!');
+            const parsed = JSON.parse(text);
+            if (!parsed.layanan || !Array.isArray(parsed.layanan)) throw new Error('Format tidak valid');
+
+            if (isOffline) {
+                dataLayanan = parsed.layanan.map((x, i) => ({ ...x, id: x.id || 'local_imp_' + i + '_' + Date.now() }));
+                saveOffline();
+                renderLayanan(); renderAdminTable();
+                alert('Import berhasil! ' + dataLayanan.length + ' layanan dimuat.');
             } else {
-                alert('Format JSON tidak valid. Pastikan ada properti \"layanan\".');
+                if (!currentUser) { alert('Login terlebih dahulu!'); return; }
+                let count = 0;
+                for (const item of parsed.layanan) {
+                    const { id, ...rest } = item;
+                    await db.collection('layanan').add({
+                        ...rest,
+                        createdAt: new Date().toISOString(),
+                        createdBy: currentUser.uid
+                    });
+                    count++;
+                }
+                alert('Import berhasil! ' + count + ' layanan ditambahkan ke cloud.');
             }
         } catch(e) {
-            alert('Gagal parse JSON: ' + e.message);
+            alert('Gagal import: ' + e.message);
         }
+        input.value = '';
     }
 
     function escapeHtml(text) {
+        if (!text) return '';
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
 
-    // ================= PROTEKSI & KONEKSI WA =================
-    const linkKoneksiMitra = "https://wa.me"; // Ganti dengan nomor WA Anda
+    // ===================== KONEKSI WA DEFAULT =====================
+    const linkKoneksiMitra = "https://wa.me"; // Ganti dengan nomor WA default Anda
 
-    const tombolKoneksi = document.getElementById('pemicu-koneksi');
-    const areaKeuanganRing2 = document.getElementById('area-keuangan-ring2');
-    const angkaTimer = document.getElementById('timer-koneksi');
-
-    tombolKoneksi.addEventListener('click', function() {
-        tombolKoneksi.style.display = 'none';
-        areaKeuanganRing2.style.display = 'flex';
+    document.getElementById('pemicu-koneksi').addEventListener('click', function() {
+        this.style.display = 'none';
+        document.getElementById('area-keuangan-ring2').style.display = 'flex';
         let waktuHitung = 3;
-        const hitungMundurSistem = setInterval(function() {
+        const timer = setInterval(() => {
             waktuHitung--;
-            angkaTimer.textContent = waktuHitung;
-            if (waktuHitung <= 0) {
-                clearInterval(hitungMundurSistem);
-                window.location.href = linkKoneksiMitra;
-            }
+            document.getElementById('timer-koneksi').textContent = waktuHitung;
+            if (waktuHitung <= 0) { clearInterval(timer); window.location.href = linkKoneksiMitra; }
         }, 1000);
     });
 
-    document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-    });
+    document.addEventListener('contextmenu', e => e.preventDefault());
 
-    // ================= INIT =================
-    loadData();
+    // ===================== INIT =====================
+    // Coba konek Firestore, kalau gagal (config default) tampilkan status error
+    if (firebaseConfig.apiKey === 'YOUR_API_KEY') {
+        updateStatus(false, 'Firebase belum dikonfigurasi — Buka Admin untuk mode Offline');
+    } else {
+        listenRealtime();
+    }
 </script>
 </body>
 </html>
