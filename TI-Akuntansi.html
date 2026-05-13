@@ -140,21 +140,62 @@
         <p class="sub-title">Sistem Etalase Statis Beban Nol Abad ke-21</p>
     </header>
 
-    <!-- ETALASE QRIS NETRAL MUTLAK -->
-    <div class="card">
-        <h2>Media QRIS Penjual</h2>
-        <div class="qr-section">
-            <p class="sub-title" style="font-size: 0.8rem; line-height: 1.4;">STEJ tidak ikut campur alur dana. Transaksi langsung menuju akun bank pemilik produk melalui papan pindai resmi:</p>
-            
-            <!-- Tempat Menaruh Berkas Gambar QRIS Mitra Penjual -->
-            <div class="qr-placeholder">
-                [ QRIS SEWA SLOT ]
+    <!-- ETALASE UTAMA KOLABORASI RING 1 & RING 2 -->
+<div class="card" style="background-color: #1a1a1a; border: 1px solid #2d2d2d; border-radius: 8px; padding: 25px;">
+    <h2 style="font-size: 1rem; color: #00ffcc; text-transform: uppercase; text-align: center; margin: 0 0 15px 0;">Gerbang Koneksi & Transaksi Mitra</h2>
+    
+    <div class="qr-section" style="display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center;">
+        <p class="sub-title" style="color: #a0a0a0; font-size: 0.8rem; line-height: 1.4; margin: 0;">
+            Guna membangun koneksi bisnis yang terpercaya, ketuk tombol di bawah untuk memproses verifikasi administrasi dan langsung terhubung dengan mitra.
+        </p>
+        
+        <!-- TOMBOL KONEKSI UTAMA RING 1 -->
+        <button id="pemicu-koneksi" style="background-color: #6200ee; color: #ffffff; border: none; padding: 12px 24px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%;">
+            BANGUN KONEKSI BISNIS VIA WA
+        </button>
+
+        <!-- AREA KELOLA FINANSIAL QRIS (DIKENDALIKAN RING 2) -->
+        <div id="area-keuangan-ring2" style="display: none; flex-direction: column; align-items: center; gap: 10px;">
+            <div style="width: 200px; height: 200px; background-color: #ffffff; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #000000; font-size: 0.85rem; font-weight: bold; border: 4px solid #ffffff;">
+                <!-- Ring 2 bertugas menempelkan gambar QRIS resmi di sini untuk dikelola keuangannya -->
+                [ QRIS KELOLAAN RING 2 ]
             </div>
-            
-            <p class="warning-text">⚠️ PASTIKAN NAMA TERTERA: STEJ PROJECT</p>
+            <p style="color: #ffcc00; font-size: 0.75rem; font-weight: bold; margin: 0;">⚠️ VALIDASI TRANSAKSI: STEJ PROJECT</p>
+            <p style="color: #a0a0a0; font-size: 0.7rem; margin: 0;">Menghubungkan koneksi ke klien dalam <span id="timer-koneksi">3</span> detik...</p>
         </div>
     </div>
 </div>
+
+<script>
+    // DATA LINK MITRA (KONEKSI RING 1)
+    const linkKoneksiMitra = "wa.me"; // Nomor WhatsApp Klien Anda
+
+    const tombolKoneksi = document.getElementById('pemicu-koneksi');
+    const areaKeuanganRing2 = document.getElementById('area-keuangan-ring2');
+    const angkaTimer = document.getElementById('timer-koneksi');
+
+    tombolKoneksi.addEventListener('click', function() {
+        // 1. Amankan tombol agar tidak terjadi duplikasi klik
+        tombolKoneksi.style.display = 'none';
+        
+        // 2. Munculkan QRIS agar Ring 2 bisa mengelola data keuangan yang masuk
+        areaKeuanganRing2.style.display = 'flex';
+        
+        // 3. Proses hitung mundur untuk pengalihan koneksi Ring 1
+        let waktuHitung = 3;
+        const hitungMundurSistem = setInterval(function() {
+            waktuHitung--;
+            angkaTimer.textContent = waktuHitung;
+            
+            if (waktuHitung <= 0) {
+                clearInterval(hitungMundurSistem);
+                // 4. Dialihkan ke koneksi chat klien utama Ring 1
+                window.location.href = linkKoneksiMitra;
+            }
+        }, 1000);
+    });
+</script>
+
 
 <!-- FOOTER AKSEN UNGU DAN LISENSI BARU -->
 <div class="footer-wave">
