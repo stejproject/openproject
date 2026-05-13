@@ -30,7 +30,7 @@
 
         .container {
             width: 100%;
-            max-width: 450px; /* Presisi rasio layar HP */
+            max-width: 450px;
             padding: 20px;
             display: flex;
             flex-direction: column;
@@ -58,7 +58,7 @@
             margin: 0;
         }
 
-        /* ETALASE KOTAK MINIMALIS (SERVERLESS PORTFOLIO) */
+        /* ETALASE KOTAK MINIMALIS */
         .card {
             background-color: #1a1a1a;
             border: 1px solid #2d2d2d;
@@ -68,14 +68,57 @@
 
         .card h2 {
             font-size: 1rem;
-            color: #00ffcc; /* Aksen teknologi siber */
+            color: #00ffcc;
             margin: 0 0 15px 0;
             text-transform: uppercase;
             letter-spacing: 1px;
             text-align: center;
         }
 
-        /* AREA INSTAN QRIS ETALASE NETRAL */
+        /* DAFTAR LAYANAN DINAMIS */
+        .layanan-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .layanan-item {
+            background-color: #252525;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.2s;
+        }
+
+        .layanan-item:hover {
+            border-color: #00ffcc;
+        }
+
+        .layanan-info h3 {
+            margin: 0 0 4px 0;
+            font-size: 0.95rem;
+            color: #ffffff;
+        }
+
+        .layanan-info p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: #a0a0a0;
+        }
+
+        .layanan-harga {
+            color: #00ffcc;
+            font-weight: bold;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            margin-left: 10px;
+        }
+
+        /* AREA INSTAN QRIS */
         .qr-section {
             display: flex;
             flex-direction: column;
@@ -96,6 +139,13 @@
             font-size: 0.85rem;
             font-weight: bold;
             border: 4px solid #ffffff;
+            overflow: hidden;
+        }
+
+        .qr-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .warning-text {
@@ -106,7 +156,48 @@
             letter-spacing: 0.5px;
         }
 
-        /* LENGKUNGAN UNGU LOGO ASLI SENYAP */
+        /* TOMBOL */
+        button {
+            background-color: #6200ee;
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 0.9rem;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button.secondary {
+            background-color: #333;
+            color: #fff;
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            width: auto;
+        }
+
+        button.danger {
+            background-color: #cf6679;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            width: auto;
+        }
+
+        button.success {
+            background-color: #00ffcc;
+            color: #121212;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            width: auto;
+        }
+
+        /* FOOTER */
         .footer-wave {
             background: linear-gradient(180deg, transparent 0%, #6200ee 100%);
             width: 100%;
@@ -130,9 +221,195 @@
             font-size: 0.7rem;
             line-height: 1.4;
         }
+
+        /* ================= ADMIN PANEL (TERSEMBUNYI) ================= */
+        #admin-trigger {
+            position: fixed;
+            bottom: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            background: transparent;
+            border: none;
+            cursor: default;
+            z-index: 9999;
+        }
+
+        #admin-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(18, 18, 18, 0.98);
+            z-index: 10000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .admin-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+
+        .admin-header h2 {
+            color: #00ffcc;
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .admin-close {
+            background: #333;
+            border: none;
+            color: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: #a0a0a0;
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            background-color: #252525;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #6200ee;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .admin-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        .admin-table th {
+            text-align: left;
+            font-size: 0.75rem;
+            color: #a0a0a0;
+            border-bottom: 1px solid #333;
+            padding: 8px 5px;
+        }
+
+        .admin-table td {
+            font-size: 0.85rem;
+            padding: 10px 5px;
+            border-bottom: 1px solid #2a2a2a;
+            vertical-align: top;
+        }
+
+        .admin-table td:first-child {
+            width: 40%;
+        }
+
+        .admin-table td:nth-child(2) {
+            width: 25%;
+            color: #00ffcc;
+        }
+
+        .admin-table td:last-child {
+            width: 35%;
+            text-align: right;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #6200ee;
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #666;
+            font-size: 0.85rem;
+            padding: 20px;
+        }
+
+        .backup-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+
+        .backup-section h3 {
+            font-size: 0.9rem;
+            color: #a0a0a0;
+            margin: 0 0 10px 0;
+        }
+
+        .backup-area {
+            width: 100%;
+            min-height: 80px;
+            background-color: #252525;
+            border: 1px solid #444;
+            color: #00ffcc;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+            word-break: break-all;
+        }
     </style>
+<base target="_blank">
 </head>
 <body>
+
+<!-- TRIGGER ADMIN: Klik pojok kanan bawah (area transparan 20x20px) -->
+<div id="admin-trigger" title="Admin Panel"></div>
 
 <div class="container">
     <header>
@@ -140,69 +417,326 @@
         <p class="sub-title">Sistem Etalase Statis Beban Nol Abad ke-21</p>
     </header>
 
-    <!-- ETALASE UTAMA KOLABORASI RING 1 & RING 2 -->
-<div class="card" style="background-color: #1a1a1a; border: 1px solid #2d2d2d; border-radius: 8px; padding: 25px;">
-    <h2 style="font-size: 1rem; color: #00ffcc; text-transform: uppercase; text-align: center; margin: 0 0 15px 0;">Gerbang Koneksi & Transaksi Mitra</h2>
-    
-    <div class="qr-section" style="display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center;">
-        <p class="sub-title" style="color: #a0a0a0; font-size: 0.8rem; line-height: 1.4; margin: 0;">
-            Guna membangun koneksi bisnis yang terpercaya, ketuk tombol di bawah untuk memproses verifikasi administrasi dan langsung terhubung dengan mitra.
-        </p>
-        
-        <!-- TOMBOL KONEKSI UTAMA RING 1 -->
-        <button id="pemicu-koneksi" style="background-color: #6200ee; color: #ffffff; border: none; padding: 12px 24px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%;">
-            BANGUN KONEKSI BISNIS VIA WA
-        </button>
+    <!-- DAFTAR LAYANAN (Dikelola via CRUD) -->
+    <div class="card">
+        <h2>Daftar Layanan</h2>
+        <p class="sub-title" style="text-align:center; margin-bottom:15px;">Klik pojok kanan bawah layar 5x untuk kelola data</p>
+        <div id="layanan-container" class="layanan-list">
+            <!-- Data di-render via JavaScript -->
+        </div>
+    </div>
 
-        <!-- AREA KELOLA FINANSIAL QRIS (DIKENDALIKAN RING 2) -->
-        <div id="area-keuangan-ring2" style="display: none; flex-direction: column; align-items: center; gap: 10px;">
-            <div style="width: 200px; height: 200px; background-color: #ffffff; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #000000; font-size: 0.85rem; font-weight: bold; border: 4px solid #ffffff;">
-                <!-- Ring 2 bertugas menempelkan gambar QRIS resmi di sini untuk dikelola keuangannya -->
-                [ QRIS KELOLAAN RING 2 ]
+    <!-- ETALASE UTAMA KOLABORASI -->
+    <div class="card">
+        <h2>Gerbang Koneksi & Transaksi Mitra</h2>
+
+        <div class="qr-section">
+            <p class="sub-title" style="color: #a0a0a0; font-size: 0.8rem; line-height: 1.4; margin: 0;">
+                Guna membangun koneksi bisnis yang terpercaya, ketuk tombol di bawah untuk memproses verifikasi administrasi dan langsung terhubung dengan mitra.
+            </p>
+
+            <button id="pemicu-koneksi">BANGUN KONEKSI BISNIS VIA WA</button>
+
+            <div id="area-keuangan-ring2" style="display: none; flex-direction: column; align-items: center; gap: 10px;">
+                <div class="qr-placeholder" id="qr-display">
+                    [ QRIS KELOLAAN RING 2 ]
+                </div>
+                <p class="warning-text">⚠️ VALIDASI TRANSAKSI: STEJ PROJECT</p>
+                <p style="color: #a0a0a0; font-size: 0.7rem; margin: 0;">Menghubungkan koneksi ke klien dalam <span id="timer-koneksi">3</span> detik...</p>
             </div>
-            <p style="color: #ffcc00; font-size: 0.75rem; font-weight: bold; margin: 0;">⚠️ VALIDASI TRANSAKSI: STEJ PROJECT</p>
-            <p style="color: #a0a0a0; font-size: 0.7rem; margin: 0;">Menghubungkan koneksi ke klien dalam <span id="timer-koneksi">3</span> detik...</p>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer-wave">
+        <p class="footer-text">© 2026 Hak Cipta Dilindungi <a href="https://stejproject.github.io/" class="license-7">STEJ-LICENSE 7 | STEJ-LICENSE</a></p>
+    </div>
+</div>
+
+<!-- ================= ADMIN PANEL OVERLAY ================= -->
+<div id="admin-panel">
+    <div class="admin-container">
+        <div class="admin-header">
+            <h2>⚙️ Panel Admin STEJ</h2>
+            <button class="admin-close" onclick="tutupAdmin()">×</button>
+        </div>
+
+        <span class="badge">CRUD Serverless — Data tersimpan di browser</span>
+
+        <div class="form-group">
+            <label>Nama Layanan</label>
+            <input type="text" id="input-nama" placeholder="Contoh: Landing Page Proteksi">
+        </div>
+        <div class="form-group">
+            <label>Deskripsi Singkat</label>
+            <input type="text" id="input-deskripsi" placeholder="Contoh: Anti copas + QRIS">
+        </div>
+        <div class="form-group">
+            <label>Harga (Rp)</label>
+            <input type="text" id="input-harga" placeholder="Contoh: 150.000">
+        </div>
+        <div class="form-group">
+            <label>Link WhatsApp (opsional)</label>
+            <input type="text" id="input-wa" placeholder="https://wa.me/628...">
+        </div>
+
+        <div class="admin-actions">
+            <button onclick="simpanLayanan()" id="btn-simpan">➕ Tambah Layanan</button>
+            <button class="secondary" onclick="resetForm()">Clear</button>
+        </div>
+
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Layanan</th>
+                    <th>Harga</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="admin-table-body">
+                <!-- Render dinamis -->
+            </tbody>
+        </table>
+
+        <div class="backup-section">
+            <h3>📦 Backup & Restore Data</h3>
+            <p style="font-size:0.75rem; color:#888; margin:0 0 8px 0;">Copy kode JSON ini untuk backup. Paste JSON backup lalu klik Import.</p>
+            <textarea class="backup-area" id="backup-area" placeholder='{ "layanan": [...] }'></textarea>
+            <div class="admin-actions" style="margin-top:10px;">
+                <button class="secondary" onclick="exportData()">📋 Export JSON</button>
+                <button class="success" onclick="importData()">📥 Import JSON</button>
+                <button class="danger" onclick="hapusSemua()">🗑 Hapus Semua</button>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- FOOTER AKSEN UNGU DAN LISENSI BARU -->
-<div class="footer-wave">
-    <p class="footer-text">© 2026 Hak Cipta Dilindungi <a href="https://stejproject.github.io/" class="license-7">STEJ-LICENSE 7 | STEJ-LICENSE</a></p>
-</div>
-
-<!-- PROTECTION DESKTOP: ANTI KLIK KANAN -->
 <script>
-    // DATA LINK MITRA (KONEKSI RING 1)
-    const linkKoneksiMitra = "https://wa.me"; // Nomor WhatsApp Klien Anda
+    // ================= DATA & STATE =================
+    const STORAGE_KEY = 'stej_portfolio_data_v1';
+    let dataLayanan = [];
+    let editIndex = -1;
+
+    // Data default awal
+    const defaultData = [
+        { nama: "Landing Page Proteksi", deskripsi: "Anti klik kanan + anti salin", harga: "Rp150.000", wa: "" },
+        { nama: "Setup QRIS Digital", deskripsi: "Integrasi QRIS ke website", harga: "Rp75.000", wa: "" },
+        { nama: "Konsultasi Keamanan Web", deskripsi: "Audit & proteksi dasar", harga: "Rp100.000", wa: "" }
+    ];
+
+    // ================= LOAD & SAVE =================
+    function loadData() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try {
+                dataLayanan = JSON.parse(saved);
+            } catch(e) {
+                dataLayanan = [...defaultData];
+            }
+        } else {
+            dataLayanan = [...defaultData];
+            saveData();
+        }
+        renderLayanan();
+        renderAdminTable();
+    }
+
+    function saveData() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataLayanan));
+    }
+
+    // ================= RENDER LAYANAN (CUSTOMER VIEW) =================
+    function renderLayanan() {
+        const container = document.getElementById('layanan-container');
+        if (dataLayanan.length === 0) {
+            container.innerHTML = '<div class="empty-state">Belum ada layanan. Klik pojok kanan bawah 5x untuk mengelola.</div>';
+            return;
+        }
+        container.innerHTML = dataLayanan.map((item, idx) => `
+            <div class="layanan-item" onclick="klikLayanan(${idx})">
+                <div class="layanan-info">
+                    <h3>${escapeHtml(item.nama)}</h3>
+                    <p>${escapeHtml(item.deskripsi)}</p>
+                </div>
+                <div class="layanan-harga">${escapeHtml(item.harga)}</div>
+            </div>
+        `).join('');
+    }
+
+    function klikLayanan(idx) {
+        const item = dataLayanan[idx];
+        if (item.wa) {
+            window.location.href = item.wa;
+        } else {
+            document.getElementById('pemicu-koneksi').click();
+        }
+    }
+
+    // ================= ADMIN PANEL LOGIC =================
+    let klikTrigger = 0;
+    document.getElementById('admin-trigger').addEventListener('click', function() {
+        klikTrigger++;
+        if (klikTrigger >= 5) {
+            document.getElementById('admin-panel').style.display = 'block';
+            klikTrigger = 0;
+            renderAdminTable();
+        }
+        setTimeout(() => { if(klikTrigger>0) klikTrigger--; }, 2000);
+    });
+
+    function tutupAdmin() {
+        document.getElementById('admin-panel').style.display = 'none';
+        resetForm();
+    }
+
+    function renderAdminTable() {
+        const tbody = document.getElementById('admin-table-body');
+        if (dataLayanan.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="empty-state">Belum ada data</td></tr>';
+            return;
+        }
+        tbody.innerHTML = dataLayanan.map((item, idx) => `
+            <tr>
+                <td>
+                    <strong>${escapeHtml(item.nama)}</strong><br>
+                    <small style="color:#888">${escapeHtml(item.deskripsi)}</small>
+                </td>
+                <td>${escapeHtml(item.harga)}</td>
+                <td>
+                    <button class="success" onclick="editLayanan(${idx})">✎</button>
+                    <button class="danger" onclick="hapusLayanan(${idx})">🗑</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function simpanLayanan() {
+        const nama = document.getElementById('input-nama').value.trim();
+        const deskripsi = document.getElementById('input-deskripsi').value.trim();
+        const harga = document.getElementById('input-harga').value.trim();
+        const wa = document.getElementById('input-wa').value.trim();
+
+        if (!nama || !harga) {
+            alert('Nama layanan dan harga wajib diisi!');
+            return;
+        }
+
+        const dataBaru = { nama, deskripsi, harga, wa };
+
+        if (editIndex >= 0) {
+            dataLayanan[editIndex] = dataBaru;
+            editIndex = -1;
+            document.getElementById('btn-simpan').textContent = '➕ Tambah Layanan';
+        } else {
+            dataLayanan.push(dataBaru);
+        }
+
+        saveData();
+        renderLayanan();
+        renderAdminTable();
+        resetForm();
+    }
+
+    function editLayanan(idx) {
+        const item = dataLayanan[idx];
+        document.getElementById('input-nama').value = item.nama;
+        document.getElementById('input-deskripsi').value = item.deskripsi;
+        document.getElementById('input-harga').value = item.harga;
+        document.getElementById('input-wa').value = item.wa;
+        editIndex = idx;
+        document.getElementById('btn-simpan').textContent = '💾 Update Layanan';
+    }
+
+    function hapusLayanan(idx) {
+        if (confirm('Yakin hapus layanan "' + dataLayanan[idx].nama + '"?')) {
+            dataLayanan.splice(idx, 1);
+            saveData();
+            renderLayanan();
+            renderAdminTable();
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('input-nama').value = '';
+        document.getElementById('input-deskripsi').value = '';
+        document.getElementById('input-harga').value = '';
+        document.getElementById('input-wa').value = '';
+        editIndex = -1;
+        document.getElementById('btn-simpan').textContent = '➕ Tambah Layanan';
+    }
+
+    function hapusSemua() {
+        if (confirm('Yakin hapus SEMUA data? Tindakan ini tidak bisa dibatalkan.')) {
+            dataLayanan = [];
+            saveData();
+            renderLayanan();
+            renderAdminTable();
+            document.getElementById('backup-area').value = '';
+        }
+    }
+
+    function exportData() {
+        const json = JSON.stringify({ layanan: dataLayanan }, null, 2);
+        document.getElementById('backup-area').value = json;
+        document.getElementById('backup-area').select();
+        alert('Data telah dimuat di kotak backup. Silakan copy dan simpan di tempat aman.');
+    }
+
+    function importData() {
+        const raw = document.getElementById('backup-area').value.trim();
+        if (!raw) {
+            alert('Paste JSON backup terlebih dahulu!');
+            return;
+        }
+        try {
+            const parsed = JSON.parse(raw);
+            if (parsed.layanan && Array.isArray(parsed.layanan)) {
+                dataLayanan = parsed.layanan;
+                saveData();
+                renderLayanan();
+                renderAdminTable();
+                alert('Data berhasil diimport!');
+            } else {
+                alert('Format JSON tidak valid. Pastikan ada properti \"layanan\".');
+            }
+        } catch(e) {
+            alert('Gagal parse JSON: ' + e.message);
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // ================= PROTEKSI & KONEKSI WA =================
+    const linkKoneksiMitra = "https://wa.me"; // Ganti dengan nomor WA Anda
 
     const tombolKoneksi = document.getElementById('pemicu-koneksi');
     const areaKeuanganRing2 = document.getElementById('area-keuangan-ring2');
     const angkaTimer = document.getElementById('timer-koneksi');
 
     tombolKoneksi.addEventListener('click', function() {
-        // 1. Amankan tombol agar tidak terjadi duplikasi klik
         tombolKoneksi.style.display = 'none';
-        
-        // 2. Munculkan QRIS agar Ring 2 bisa mengelola data keuangan yang masuk
         areaKeuanganRing2.style.display = 'flex';
-        
-        // 3. Proses hitung mundur untuk pengalihan koneksi Ring 1
         let waktuHitung = 3;
         const hitungMundurSistem = setInterval(function() {
             waktuHitung--;
             angkaTimer.textContent = waktuHitung;
-            
             if (waktuHitung <= 0) {
                 clearInterval(hitungMundurSistem);
-                // 4. Dialihkan ke koneksi chat klien utama Ring 1
                 window.location.href = linkKoneksiMitra;
             }
         }, 1000);
     });
+
     document.addEventListener('contextmenu', function(e) {
         e.preventDefault();
     });
+
+    // ================= INIT =================
+    loadData();
 </script>
 </body>
 </html>
