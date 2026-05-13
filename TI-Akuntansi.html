@@ -292,21 +292,12 @@
         <div id="layanan-container" class="layanan-list">
             <div class="empty-state">Memuat data...</div>
         </div>
-    </div>
 
-    <!-- ETALASE KONEKSI -->
-    <div class="card">
-        <h2>Gerbang Koneksi & Transaksi Mitra</h2>
-        <div class="qr-section">
-            <p class="sub-title" style="color: #a0a0a0; font-size: 0.8rem; line-height: 1.4; margin: 0;">
-                Guna membangun koneksi bisnis yang terpercaya, ketuk layanan di atas atau tombol di bawah untuk memproses verifikasi.
-            </p>
-            <button id="pemicu-koneksi">BANGUN KONEKSI BISNIS VIA WA</button>
-            <div id="area-keuangan-ring2" style="display: none; flex-direction: column; align-items: center; gap: 10px;">
-                <div class="qr-placeholder" id="qr-display">[ QRIS KELOLAAN RING 2 ]</div>
-                <p class="warning-text">⚠️ VALIDASI TRANSAKSI: STEJ PROJECT</p>
-                <p style="color: #a0a0a0; font-size: 0.7rem; margin: 0;">Menghubungkan dalam <span id="timer-koneksi">3</span> detik...</p>
-            </div>
+        <!-- AREA VALIDASI QRIS — MENAMPILKAN GAMBAR DARI DATABASE -->
+        <div id="area-keuangan-ring2" style="display: none; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #2d2d2d;">
+            <div class="qr-placeholder" id="qr-display">[ PILIH LAYANAN ]</div>
+            <p class="warning-text">⚠️ VALIDASI TRANSAKSI: STEJ PROJECT</p>
+            <p id="qr-nama-layanan" style="color: #a0a0a0; font-size: 0.8rem; margin: 0; text-align: center;">Ketuk layanan untuk menampilkan QRIS</p>
         </div>
     </div>
 
@@ -546,7 +537,7 @@
         container.innerHTML = dataLayanan.map(item => {
             const hasQr = item.qrBase64 ? true : false;
             return `
-            <div class="layanan-item" onclick="window.klikLayanan('${item.id || ''}', '${escapeHtml(item.wa || '')}')">
+            <div class="layanan-item" onclick="window.klikLayanan('${item.id || ''}')">
                 <div class="layanan-row">
                     <div class="layanan-info">
                         <h3>${escapeHtml(item.nama)}</h3>
@@ -565,9 +556,23 @@
         }).join('');
     };
 
-    window.klikLayanan = function(id, waLink) {
-        if (waLink) window.open(waLink, '_blank');
-        else document.getElementById('pemicu-koneksi').click();
+    // ===================== KLIK LAYANAN: TAMPILKAN QR BESAR =====================
+    window.klikLayanan = function(id) {
+        const item = dataLayanan.find(x => x.id === id);
+        if (!item) return;
+
+        const areaQr = document.getElementById('area-keuangan-ring2');
+        const qrDisplay = document.getElementById('qr-display');
+        const qrNama = document.getElementById('qr-nama-layanan');
+
+        if (item.qrBase64) {
+            qrDisplay.innerHTML = `<img src="${item.qrBase64}" alt="QR ${escapeHtml(item.nama)}" style="width:100%;height:100%;object-fit:cover;">`;
+        } else {
+            qrDisplay.textContent = '[ QRIS TIDAK TERSEDIA ]';
+        }
+
+        qrNama.innerHTML = `<strong>${escapeHtml(item.nama)}</strong>${item.harga ? ' — ' + escapeHtml(item.harga) : ''}`;
+        areaQr.style.display = 'flex';
     };
 
     // ===================== ADMIN PANEL LOGIC =====================
@@ -794,20 +799,6 @@
         div.textContent = text;
         return div.innerHTML;
     }
-
-    // ===================== KONEKSI WA DEFAULT =====================
-    const linkKoneksiMitra = "https://wa.me"; // Ganti dengan nomor WA default Anda
-
-    document.getElementById('pemicu-koneksi').addEventListener('click', function() {
-        this.style.display = 'none';
-        document.getElementById('area-keuangan-ring2').style.display = 'flex';
-        let waktuHitung = 3;
-        const timer = setInterval(() => {
-            waktuHitung--;
-            document.getElementById('timer-koneksi').textContent = waktuHitung;
-            if (waktuHitung <= 0) { clearInterval(timer); window.location.href = linkKoneksiMitra; }
-        }, 1000);
-    });
 
     document.addEventListener('contextmenu', e => e.preventDefault());
 
