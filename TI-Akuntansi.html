@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portofolio TI — STEJ Protection</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <style>
         /* ================= THEME STEJ DARK MODE ================= */
         body {
@@ -340,59 +336,57 @@
 </div>
 
 <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+    // ===================== FIREBASE MODULAR SDK v12.13.0 =====================
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-    // ===================== KONFIGURASI FIREBASE =====================
-    // GANTI INI dengan firebaseConfig dari Project Settings Anda
     // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyDeRPjhtmNPz5TNK1TPP3O5XZd4ORyeGPs",
-    authDomain: "auth-stej-product.firebaseapp.com",
-    projectId: "auth-stej-product",
-    storageBucket: "auth-stej-product.firebasestorage.app",
-    messagingSenderId: "846128318640",
-    appId: "1:846128318640:web:1c983100c63f7e50db9375"
-  };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDeRPjhtmNPz5TNK1TPP3O5XZd4ORyeGPs",
+        authDomain: "auth-stej-product.firebaseapp.com",
+        projectId: "auth-stej-product",
+        storageBucket: "auth-stej-product.firebasestorage.app",
+        messagingSenderId: "846128318640",
+        appId: "1:846128318640:web:1c983100c63f7e50db9375"
+    };
 
-    // Inisialisasi Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
     // ===================== STATE =====================
     let dataLayanan = [];
     let editId = null;
     let isOffline = false;
     let currentUser = null;
+    let unsubscribeSnapshot = null;
     const STORAGE_KEY = 'stej_portfolio_offline_v1';
 
     // ===================== AUTHENTICATION =====================
-    function loginGoogle() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider).catch(err => {
+    window.loginGoogle = function() {
+        const provider = new GoogleAuthProvider();
+        signInWithPopup(auth, provider).catch(err => {
             alert('Gagal login: ' + err.message);
         });
-    }
+    };
 
-    function logout() {
-        auth.signOut();
-    }
+    window.logout = function() {
+        signOut(auth);
+    };
 
-    function aktifkanOffline() {
+    window.aktifkanOffline = function() {
         isOffline = true;
         document.getElementById('mode-badge').textContent = 'OFFLINE — localStorage';
         document.getElementById('mode-badge').classList.add('offline');
         document.getElementById('login-section').style.display = 'none';
         document.getElementById('crud-section').style.display = 'block';
+        if (unsubscribeSnapshot) unsubscribeSnapshot();
         loadData();
-    }
+    };
 
-    auth.onAuthStateChanged(user => {
+    onAuthStateChanged(auth, user => {
         currentUser = user;
         if (user) {
             document.getElementById('login-section').style.display = 'none';
@@ -411,10 +405,12 @@
     // ===================== REALTIME LISTENER =====================
     function listenRealtime() {
         if (isOffline) return;
-        db.collection('layanan').onSnapshot(snapshot => {
+        if (unsubscribeSnapshot) unsubscribeSnapshot();
+
+        unsubscribeSnapshot = onSnapshot(collection(db, 'layanan'), snapshot => {
             dataLayanan = [];
-            snapshot.forEach(doc => {
-                dataLayanan.push({ id: doc.id, ...doc.data() });
+            snapshot.forEach(docSnap => {
+                dataLayanan.push({ id: docSnap.id, ...docSnap.data() });
             });
             renderLayanan();
             renderAdminTable();
@@ -450,14 +446,14 @@
     }
 
     // ===================== RENDER CUSTOMER VIEW =====================
-    function renderLayanan() {
+    window.renderLayanan = function() {
         const container = document.getElementById('layanan-container');
         if (dataLayanan.length === 0) {
             container.innerHTML = '<div class="empty-state">Belum ada layanan. Buka panel admin untuk menambah.</div>';
             return;
         }
         container.innerHTML = dataLayanan.map(item => `
-            <div class="layanan-item" onclick="klikLayanan('${item.id || ''}', '${escapeHtml(item.wa || '')}')">
+            <div class="layanan-item" onclick="window.klikLayanan('${item.id || ''}', '${escapeHtml(item.wa || '')}')">
                 <div class="layanan-info">
                     <h3>${escapeHtml(item.nama)}</h3>
                     <p>${escapeHtml(item.deskripsi || '')}</p>
@@ -465,12 +461,12 @@
                 <div class="layanan-harga">${escapeHtml(item.harga)}</div>
             </div>
         `).join('');
-    }
+    };
 
-    function klikLayanan(id, waLink) {
+    window.klikLayanan = function(id, waLink) {
         if (waLink) window.open(waLink, '_blank');
         else document.getElementById('pemicu-koneksi').click();
-    }
+    };
 
     // ===================== ADMIN PANEL LOGIC =====================
     let klikTrigger = 0;
@@ -484,12 +480,12 @@
         setTimeout(() => { if(klikTrigger>0) klikTrigger--; }, 2000);
     });
 
-    function tutupAdmin() {
+    window.tutupAdmin = function() {
         document.getElementById('admin-panel').style.display = 'none';
         resetForm();
-    }
+    };
 
-    function renderAdminTable() {
+    window.renderAdminTable = function() {
         const tbody = document.getElementById('admin-table-body');
         if (dataLayanan.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Belum ada data</td></tr>';
@@ -501,15 +497,15 @@
                 <td>${escapeHtml(item.harga)}</td>
                 <td>${item.wa ? '<span style="color:#00ffcc">✓</span>' : '<span style="color:#666">—</span>'}</td>
                 <td>
-                    <button class="success" onclick="editLayanan('${item.id || ''}')">✎</button>
-                    <button class="danger" onclick="hapusLayanan('${item.id || ''}')">🗑</button>
+                    <button class="success" onclick="window.editLayanan('${item.id || ''}')">✎</button>
+                    <button class="danger" onclick="window.hapusLayanan('${item.id || ''}')">🗑</button>
                 </td>
             </tr>
         `).join('');
-    }
+    };
 
     // ===================== CRUD OPERATIONS =====================
-    async function simpanLayanan() {
+    window.simpanLayanan = async function() {
         const nama = document.getElementById('input-nama').value.trim();
         const deskripsi = document.getElementById('input-deskripsi').value.trim();
         const harga = document.getElementById('input-harga').value.trim();
@@ -533,20 +529,20 @@
             } else {
                 if (!currentUser) { alert('Silakan login terlebih dahulu!'); return; }
                 if (editId) {
-                    await db.collection('layanan').doc(editId).update(payload);
+                    await updateDoc(doc(db, 'layanan', editId), payload);
                 } else {
                     payload.createdAt = new Date().toISOString();
                     payload.createdBy = currentUser.uid;
-                    await db.collection('layanan').add(payload);
+                    await addDoc(collection(db, 'layanan'), payload);
                 }
                 resetForm();
             }
         } catch(err) {
             alert('Error: ' + err.message);
         }
-    }
+    };
 
-    function editLayanan(id) {
+    window.editLayanan = function(id) {
         const item = dataLayanan.find(x => x.id === id);
         if (!item) return;
         document.getElementById('input-nama').value = item.nama;
@@ -555,9 +551,9 @@
         document.getElementById('input-wa').value = item.wa || '';
         editId = id;
         document.getElementById('btn-simpan').textContent = '💾 Update Layanan';
-    }
+    };
 
-    async function hapusLayanan(id) {
+    window.hapusLayanan = async function(id) {
         const item = dataLayanan.find(x => x.id === id);
         if (!confirm('Yakin hapus "' + (item ? item.nama : '') + '"?')) return;
         try {
@@ -566,26 +562,26 @@
                 saveOffline();
                 renderLayanan(); renderAdminTable();
             } else {
-                await db.collection('layanan').doc(id).delete();
+                await deleteDoc(doc(db, 'layanan', id));
             }
         } catch(err) { alert('Error: ' + err.message); }
-    }
+    };
 
-    async function hapusSemua() {
+    window.hapusSemua = async function() {
         if (!confirm('Yakin hapus SEMUA data? Ini tidak bisa dibatalkan!')) return;
         try {
             if (isOffline) {
                 dataLayanan = []; saveOffline();
                 renderLayanan(); renderAdminTable();
             } else {
-                const batch = db.batch();
-                const snapshot = await db.collection('layanan').get();
-                snapshot.docs.forEach(doc => batch.delete(doc.ref));
+                const snapshot = await getDocs(collection(db, 'layanan'));
+                const batch = writeBatch(db);
+                snapshot.docs.forEach(d => batch.delete(d.ref));
                 await batch.commit();
             }
             document.getElementById('backup-area').value = '';
         } catch(err) { alert('Error: ' + err.message); }
-    }
+    };
 
     function resetForm() {
         document.getElementById('input-nama').value = '';
@@ -595,13 +591,13 @@
         editId = null;
         document.getElementById('btn-simpan').textContent = '➕ Tambah Layanan';
     }
+    window.resetForm = resetForm;
 
     // ===================== EXPORT / IMPORT JSON =====================
-    function exportData() {
+    window.exportData = function() {
         const json = JSON.stringify({ layanan: dataLayanan, exportedAt: new Date().toISOString() }, null, 2);
         document.getElementById('backup-area').value = json;
 
-        // Auto download file
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -611,13 +607,13 @@
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-    }
+    };
 
-    function importData() {
+    window.importData = function() {
         document.getElementById('file-import').click();
-    }
+    };
 
-    async function handleFileImport(input) {
+    window.handleFileImport = async function(input) {
         const file = input.files[0];
         if (!file) return;
         const text = await file.text();
@@ -635,7 +631,7 @@
                 let count = 0;
                 for (const item of parsed.layanan) {
                     const { id, ...rest } = item;
-                    await db.collection('layanan').add({
+                    await addDoc(collection(db, 'layanan'), {
                         ...rest,
                         createdAt: new Date().toISOString(),
                         createdBy: currentUser.uid
@@ -648,7 +644,7 @@
             alert('Gagal import: ' + e.message);
         }
         input.value = '';
-    }
+    };
 
     function escapeHtml(text) {
         if (!text) return '';
@@ -674,12 +670,7 @@
     document.addEventListener('contextmenu', e => e.preventDefault());
 
     // ===================== INIT =====================
-    // Coba konek Firestore, kalau gagal (config default) tampilkan status error
-    if (firebaseConfig.apiKey === 'YOUR_API_KEY') {
-        updateStatus(false, 'Firebase belum dikonfigurasi — Buka Admin untuk mode Offline');
-    } else {
-        listenRealtime();
-    }
+    listenRealtime();
 </script>
 </body>
 </html>
