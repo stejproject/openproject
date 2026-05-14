@@ -301,6 +301,21 @@
         </div>
     </div>
 
+    <!-- PUSAT BANTUAN — TIMER WA -->
+    <div class="card">
+        <h2>Pusat Bantuan</h2>
+        <div class="qr-section">
+            <p class="sub-title" style="color: #a0a0a0; font-size: 0.8rem; line-height: 1.4; margin: 0 0 15px 0;">
+                Butuh bantuan atau ada pertanyaan? Hubungi tim kami via WhatsApp.
+            </p>
+            <button id="pemicu-bantuan">HUBUNGI BANTUAN VIA WA</button>
+            <div id="area-bantuan-wa" style="display: none; flex-direction: column; align-items: center; gap: 10px; margin-top: 15px;">
+                <p class="warning-text">⚠️ MENGHUBUNGKAN KE TIM BANTUAN</p>
+                <p style="color: #a0a0a0; font-size: 0.7rem; margin: 0;">Menghubungkan dalam <span id="timer-bantuan">3</span> detik...</p>
+            </div>
+        </div>
+    </div>
+
     <!-- FOOTER -->
     <div class="footer-wave">
         <p class="footer-text">© 2026 Hak Cipta Dilindungi <a href="https://stejproject.github.io/" class="license-7">STEJ-LICENSE 7 | STEJ-LICENSE</a></p>
@@ -799,6 +814,20 @@
         div.textContent = text;
         return div.innerHTML;
     }
+
+    // ===================== BANTUAN WA =====================
+    const linkBantuanWA = "https://wa.me/6281234567890"; // Ganti dengan nomor bantuan Anda
+
+    document.getElementById('pemicu-bantuan').addEventListener('click', function() {
+        this.style.display = 'none';
+        document.getElementById('area-bantuan-wa').style.display = 'flex';
+        let waktuHitung = 3;
+        const timer = setInterval(() => {
+            waktuHitung--;
+            document.getElementById('timer-bantuan').textContent = waktuHitung;
+            if (waktuHitung <= 0) { clearInterval(timer); window.location.href = linkBantuanWA; }
+        }, 1000);
+    });
 
     document.addEventListener('contextmenu', e => e.preventDefault());
 
