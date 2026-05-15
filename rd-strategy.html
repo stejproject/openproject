@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI R&D Strategic Audit Bot</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1f2937;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.3);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --border: #374151;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 300px 1fr 320px;
+            height: 100vh;
+        }
+
+        /* Sidebar Kiri - Navigation & Upload */
+        .sidebar-left {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .logo-text h1 {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .logo-text p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--accent);
+            background: var(--bg-tertiary);
+        }
+
+        .upload-zone input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .upload-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .upload-text strong {
+            color: var(--accent);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .db-config {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .input-group input {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent);
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        .status-inactive {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        /* Main Chat Area */
+        .main-chat {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+            position: relative;
+        }
+
+        .chat-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h2 {
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .pulse::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+            opacity: 0.4;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.4; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .message {
+            max-width: 85%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-user {
+            align-self: flex-end;
+            background: var(--accent);
+            color: white;
+            padding: 14px 18px;
+            border-radius: 18px 18px 4px 18px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message-ai {
+            align-self: flex-start;
+            display: flex;
+            gap: 12px;
+        }
+
+        .ai-avatar {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .ai-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            padding: 16px 20px;
+            border-radius: 4px 18px 18px 18px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .ai-content h3 {
+            font-size: 14px;
+            margin: 12px 0 6px;
+            color: var(--accent);
+        }
+
+        .ai-content ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .ai-content li {
+            margin: 4px 0;
+        }
+
+        .ai-content strong {
+            color: var(--warning);
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .chat-input-area {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 4px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            padding: 12px 16px;
+            font-size: 14px;
+            outline: none;
+            resize: none;
+            max-height: 120px;
+        }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--accent);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            align-self: flex-end;
+            margin: 4px;
+        }
+
+        .send-btn:hover {
+            background: #2563eb;
+            transform: scale(1.05);
+        }
+
+        /* Sidebar Kanan - Resource Audit */
+        .sidebar-right {
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .audit-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .audit-card h3 {
+            font-size: 13px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .resource-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+        }
+
+        .resource-item:last-child {
+            border-bottom: none;
+        }
+
+        .resource-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-primary);
+            border-radius: 3px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .resource-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .score-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0 auto 12px;
+            position: relative;
+        }
+
+        .score-high { border-color: var(--success); color: var(--success); }
+        .score-mid { border-color: var(--warning); color: var(--warning); }
+        .score-low { border-color: var(--danger); color: var(--danger); }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin: 2px;
+        }
+
+        .tag-threat {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        .tag-opportunity {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .quick-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .quick-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--bg-primary);
+        }
+
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .file-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        .file-chip .remove {
+            margin-left: auto;
+            cursor: pointer;
+            color: var(--danger);
+            font-weight: bold;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .app-container {
+                grid-template-columns: 260px 1fr 280px;
+            }
+        }
+
+        @media (max-width: 968px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar-left, .sidebar-right {
+                display: none;
+            }
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Sidebar Kiri -->
+    <aside class="sidebar-left">
+        <div class="logo">
+            <div class="logo-icon">🧠</div>
+            <div class="logo-text">
+                <h1>R&D Strategic AI</h1>
+                <p>Resource & Knowledge Audit</p>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title">Sumber Data</div>
+            <div class="upload-zone" id="dropZone">
+                <input type="file" id="fileInput" accept=".docx,.md,.txt" multiple>
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">
+                    <strong>Klik atau Drop File</strong>
+                    .docx, .md, .txt dari lokal
+                </div>
+            </div>
+            <div class="file-list" id="fileList"></div>
+        </div>
+
+        <div class="db-config">
+            <div class="section-title">Database Online</div>
+            <div class="input-group">
+                <label>URL database.md</label>
+                <input type="url" id="dbUrl" placeholder="https://example.com/database.md">
+            </div>
+            <button class="btn" onclick="loadDatabase()">
+                <span>🌐</span> Hubungkan Database
+            </button>
+            <div id="dbStatus"></div>
+        </div>
+
+        <div>
+            <div class="section-title">Analisis Cepat</div>
+            <div class="quick-actions">
+                <button class="quick-btn" onclick="quickAnalyze('resource')">💰 Sumber Daya</button>
+                <button class="quick-btn" onclick="quickAnalyze('knowledge')">📚 Pengetahuan</button>
+                <button class="quick-btn" onclick="quickAnalyze('competitor')">🎯 Pesaing</button>
+                <button class="quick-btn" onclick="quickAnalyze('threat')">⚠️ Ancaman</button>
+                <button class="quick-btn" onclick="quickAnalyze('gap')">🔍 Gap Analysis</button>
+                <button class="quick-btn" onclick="quickAnalyze('strategy')">🚀 Strategi</button>
+            </div>
+        </div>
+
+        <button class="btn btn-secondary" onclick="clearAllData()" style="margin-top: auto;">
+            <span>🗑️</span> Reset Semua Data
+        </button>
+    </aside>
+
+    <!-- Main Chat -->
+    <main class="main-chat">
+        <div class="chat-header">
+            <h2>
+                <span class="pulse"></span>
+                AI R&D Auditor
+            </h2>
+            <span style="font-size: 12px; color: var(--text-secondary);">
+                Model: Strategic-Analyzer v1.0
+            </span>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message message-ai">
+                <div class="ai-avatar">🤖</div>
+                <div class="ai-content">
+                    <strong>Selamat datang di R&D Strategic AI.</strong><br><br>
+                    Saya dirancang untuk membantu Anda mengaudit dan mengembangkan sumber daya modal serta pengetahuan yang terbatas agar dapat menyeimbangi pesaing dan ancaman.<br><br>
+                    <strong>Langkah awal:</strong>
+                    <ul>
+                        <li>Upload dokumen <code>.docx</code> lokal (laporan keuangan, HR, paten, dll)</li>
+                        <li>Hubungkan <code>database.md</code> online untuk data kompetitor & intel</li>
+                        <li>Gunakan tombol analisis cepat atau tanyakan langsung</li>
+                    </ul>
+                    Data Anda diproses secara lokal di browser — tidak ada data yang dikirim ke server eksternal.
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <div class="input-wrapper">
+                <textarea 
+                    class="chat-input" 
+                    id="chatInput" 
+                    placeholder="Tanyakan tentang audit sumber daya, analisis pesaing, atau strategi R&D..."
+                    rows="1"
+                    onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendMessage();}"
+                ></textarea>
+                <button class="send-btn" onclick="sendMessage()">➤</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Sidebar Kanan -->
+    <aside class="sidebar-right">
+        <div>
+            <div class="section-title">Audit Score</div>
+            <div class="audit-card">
+                <div class="score-circle score-mid" id="overallScore">--</div>
+                <div style="text-align: center; font-size: 12px; color: var(--text-secondary);">
+                    Keseimbangan Daya Saing
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title">Sumber Daya Modal</div>
+            <div class="audit-card">
+                <div class="resource-item">
+                    <span>Finansial</span>
+                    <span id="finScore">--</span>
+                </div>
+                <div class="resource-bar"><div class="resource-fill" id="finBar" style="width: 0%; background: var(--accent);"></div></div>
+                
+                <div class="resource-item" style="margin-top: 10px;">
+                    <span>Fisik & Infrastruktur</span>
+                    <span id="physScore">--</span>
+                </div>
+                <div class="resource-bar"><div class="resource-fill" id="physBar" style="width: 0%; background: var(--success);"></div></div>
+                
+                <div class="resource-item" style="margin-top: 10px;">
+                    <span>Sumber Daya Manusia</span>
+                    <span id="hrScore">--</span>
+                </div>
+                <div class="resource-bar"><div class="resource-fill" id="hrBar" style="width: 0%; background: var(--warning);"></div></div>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title">Pengetahuan & Intelektual</div>
+            <div class="audit-card">
+                <div class="resource-item">
+                    <span>Paten & IP</span>
+                    <span id="ipScore">--</span>
+                </div>
+                <div class="resource-bar"><div class="resource-fill" id="ipBar" style="width: 0%; background: #8b5cf6;"></div></div>
+                
+                <div class="resource-item" style="margin-top: 10px;">
+                    <span>Tacit Knowledge</span>
+                    <span id="tacitScore">--</span>
+                </div>
+                <div class="resource-bar"><div class="resource-fill" id="tacitBar" style="width: 0%; background: #ec4899;"></div></div>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title">Intelijen Ancaman</div>
+            <div class="audit-card" id="threatIntel">
+                <p style="font-size: 12px; color: var(--text-secondary); text-align: center;">
+                    Upload dokumen atau hubungkan database untuk melihat analisis ancaman.
+                </p>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<script>
+// ===== STATE MANAGEMENT =====
+const state = {
+    files: [],
+    databaseContent: '',
+    chatHistory: [],
+    resources: {
+        financial: 50,
+        physical: 50,
+        human: 50,
+        ip: 50,
+        tacit: 50
+    },
+    competitors: [],
+    threats: [],
+    knowledge: []
+};
+
+// ===== DOM ELEMENTS =====
+const chatMessages = document.getElementById('chatMessages');
+const chatInput = document.getElementById('chatInput');
+const fileInput = document.getElementById('fileInput');
+const dropZone = document.getElementById('dropZone');
+const fileList = document.getElementById('fileList');
+
+// ===== FILE HANDLING =====
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+});
+
+dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragover');
+});
+
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+});
+
+fileInput.addEventListener('change', (e) => {
+    handleFiles(e.dataTransfer?.files || e.target.files);
+});
+
+async function handleFiles(fileList) {
+    for (const file of fileList) {
+        if (file.name.endsWith('.docx')) {
+            await parseDocx(file);
+        } else if (file.name.endsWith('.md') || file.name.endsWith('.txt')) {
+            await parseText(file);
+        }
+    }
+    updateFileList();
+    addMessage('ai', `📄 Berhasil memproses ${fileList.length} dokumen. Data telah diintegrasikan ke basis pengetahuan untuk analisis R&D.`);
+}
+
+async function parseDocx(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    const text = result.value;
+    
+    state.files.push({
+        name: file.name,
+        type: 'docx',
+        content: text,
+        size: file.size
+    });
+    
+    extractEntities(text);
+}
+
+async function parseText(file) {
+    const text = await file.text();
+    state.files.push({
+        name: file.name,
+        type: 'md',
+        content: text,
+        size: file.size
+    });
+    extractEntities(text);
+}
+
+function extractEntities(text) {
+    // Extract financial figures
+    const financialMatches = text.match(/(?:Rp\.?|USD|€|£)\s?[\d.,]+(?:\s?(?:M|B|K|juta|miliar|ribu))?/gi);
+    if (financialMatches) {
+        state.resources.financial = Math.min(100, state.resources.financial + financialMatches.length * 5);
+    }
+    
+    // Extract personnel counts
+    const hrMatches = text.match(/(?:karyawan|pegawai|researcher|staff|tim|team)\s*:?\s*(\d+)/gi);
+    if (hrMatches) {
+        state.resources.human = Math.min(100, state.resources.human + hrMatches.length * 8);
+    }
+    
+    // Extract IP/patents
+    const ipMatches = text.match(/(?:paten|patent|IP|hak cipta|copyright|trademark|merek)/gi);
+    if (ipMatches) {
+        state.resources.ip = Math.min(100, state.resources.ip + ipMatches.length * 10);
+    }
+    
+    // Extract competitors
+    const competitorMatches = text.match(/(?:competitor|pesaing|rival|pemain)\s*:?\s*([A-Z][A-Za-z0-9\s&]+)/gi);
+    if (competitorMatches) {
+        state.competitors.push(...competitorMatches);
+    }
+    
+    // Extract threats
+    const threatMatches = text.match(/(?:threat|ancaman|risk|risiko|challenge|hambatan)\s*:?\s*([A-Z][A-Za-z0-9\s]+)/gi);
+    if (threatMatches) {
+        state.threats.push(...threatMatches);
+    }
+    
+    updateDashboard();
+}
+
+// ===== DATABASE LOADING =====
+async function loadDatabase() {
+    const url = document.getElementById('dbUrl').value;
+    if (!url) {
+        alert('Masukkan URL database.md terlebih dahulu');
+        return;
+    }
+    
+    try {
+        addMessage('ai', '🌐 Menghubungkan ke database online...');
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Gagal mengambil data');
+        
+        const content = await response.text();
+        state.databaseContent = content;
+        
+        // Parse markdown database
+        parseDatabase(content);
+        
+        document.getElementById('dbStatus').innerHTML = `
+            <span class="status-badge status-active">
+                <span>●</span> Database Terhubung
+            </span>
+        `;
+        
+        addMessage('ai', '✅ Database online berhasil dihubungkan. Data kompetitor, ancaman, dan inventori sumber daya telah dimuat ke sistem.');
+    } catch (error) {
+        document.getElementById('dbStatus').innerHTML = `
+            <span class="status-badge status-inactive">
+                <span>●</span> Gagal Terhubung
+            </span>
+        `;
+        addMessage('ai', '❌ Gagal menghubungkan database: ' + error.message);
+    }
+}
+
+function parseDatabase(content) {
+    // Simple markdown section parser
+    const sections = content.split(/(?=^#{1,3}\s)/m);
+    
+    sections.forEach(section => {
+        if (section.includes('Competitor') || section.includes('Pesaing')) {
+            const lines = section.split('\n').filter(l => l.trim().startsWith('-'));
+            lines.forEach(line => state.competitors.push(line.replace(/^-\s*/, '')));
+        }
+        if (section.includes('Threat') || section.includes('Ancaman')) {
+            const lines = section.split('\n').filter(l => l.trim().startsWith('-'));
+            lines.forEach(line => state.threats.push(line.replace(/^-\s*/, '')));
+        }
+        if (section.includes('Resource') || section.includes('Sumber Daya')) {
+            // Update resource scores based on database
+            if (section.includes('Financial') || section.includes('Finansial')) {
+                const match = section.match(/(\d+)%/);
+                if (match) state.resources.financial = parseInt(match[1]);
+            }
+        }
+    });
+    
+    updateDashboard();
+}
+
+// ===== CHAT SYSTEM =====
+function addMessage(role, content) {
+    const div = document.createElement('div');
+    div.className = `message message-${role}`;
+    
+    if (role === 'ai') {
+        div.innerHTML = `
+            <div class="ai-avatar">🤖</div>
+            <div class="ai-content">${marked.parse(content)}</div>
+        `;
+    } else {
+        div.innerHTML = `<div class="message-user">${escapeHtml(content)}</div>`;
+    }
+    
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function showTyping() {
+    const div = document.createElement('div');
+    div.className = 'message message-ai';
+    div.id = 'typingIndicator';
+    div.innerHTML = `
+        <div class="ai-avatar">🤖</div>
+        <div class="ai-content typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>
+    `;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return div;
+}
+
+function removeTyping() {
+    const el = document.getElementById('typingIndicator');
+    if (el) el.remove();
+}
+
+function sendMessage() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+    
+    addMessage('user', text);
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+    
+    showTyping();
+    
+    // Simulate AI thinking
+    setTimeout(() => {
+        removeTyping();
+        const response = generateResponse(text);
+        addMessage('ai', response);
+    }, 1500 + Math.random() * 1000);
+}
+
+function quickAnalyze(type) {
+    const prompts = {
+        resource: 'Analisis komprehensif sumber daya modal kami saat ini',
+        knowledge: 'Audit sumber daya pengetahuan dan intellectual property',
+        competitor: 'Analisis posisi kompetitif dan benchmarking pesaing',
+        threat: 'Identifikasi ancaman strategis dan mitigasinya',
+        gap: 'Gap analysis antara kemampuan saat ini dan kebutuhan pasar',
+        strategy: 'Rekomendasi strategi R&D untuk mengejar ketertinggalan'
+    };
+    
+    chatInput.value = prompts[type];
+    sendMessage();
+}
+
+// ===== AI RESPONSE ENGINE =====
+function generateResponse(input) {
+    const lower = input.toLowerCase();
+    
+    // Resource Analysis
+    if (lower.includes('sumber daya') || lower.includes('resource') || lower.includes('modal')) {
+        const fin = state.resources.financial;
+        const phys = state.resources.physical;
+        const hr = state.resources.human;
+        
+        let analysis = `## 📊 Audit Sumber Daya Modal\n\n`;
+        analysis += `**Financial Resources:** ${fin}/100 — `;
+        analysis += fin < 50 ? '⚠️ **KRITIS** — Dana R&D terbatas membatasi inovasi skala besar.\n' : '✅ Cukup memadai untuk operasional.\n';
+        
+        analysis += `**Infrastruktur Fisik:** ${phys}/100 — `;
+        analysis += phys < 60 ? '⚠️ Perlu upgrade fasilitas riset.\n' : '✅ Infrastruktur mendukung.\n';
+        
+        analysis += `**Sumber Daya Manusia:** ${hr}/100 — `;
+        analysis += hr < 60 ? '⚠️ **KEKURANGAN TALENTA** — Rekomendasi: hiring spesialis AI/data atau partnership akademik.\n' : '✅ Tim riset solid.\n';
+        
+        analysis += `\n### 💡 Rekomendasi Strategis:\n`;
+        analysis += `- **Prioritaskan** alokasi ke teknologi enabling (AI, cloud infrastructure)\n`;
+        analysis += `- **Efisiensi:** Gunakan open-source tools untuk mengurangi CAPEX\n`;
+        analysis += `- **Kolaborasi:** Joint R&D dengan startup/universitas untuk memperluas kapasitas tanpa menambah headcount penuh waktu\n`;
+        
+        return analysis;
+    }
+    
+    // Knowledge Audit
+    if (lower.includes('pengetahuan') || lower.includes('knowledge') || lower.includes('paten') || lower.includes('ip')) {
+        const ip = state.resources.ip;
+        const tacit = state.resources.tacit;
+        
+        let analysis = `## 📚 Audit Sumber Daya Pengetahuan\n\n`;
+        analysis += `**Paten & IP:** ${ip}/100\n`;
+        analysis += `**Tacit Knowledge:** ${tacit}/100\n\n`;
+        
+        if (ip < 50) {
+            analysis += `⚠️ **Portfolio IP lemah.** Risiko: mudah ditiru pesaing.\n\n`;
+            analysis += `**Tindakan Segera:**\n- Filing provisional patents untuk inovasi internal\n- Dokumentasikan SOP dan know-how yang selama ini hanya dimiliki key personnel\n- Implementasikan knowledge management system\n`;
+        } else {
+            analysis += `✅ Portfolio IP cukup kuat. Pertimbangkan licensing untuk revenue tambahan.\n`;
+        }
+        
+        analysis += `\n**Knowledge Gap Terdeteksi:**\n`;
+        analysis += `- Kurangnya dokumentasi failure/success pattern dari eksperimen sebelumnya\n`;
+        analysis += `- Tidak ada sistem mentoring formal untuk transfer tacit knowledge\n`;
+        
+        return analysis;
+    }
+    
+    // Competitor Analysis
+    if (lower.includes('pesaing') || lower.includes('competitor') || lower.includes('rival')) {
+        let analysis = `## 🎯 Analisis Kompetitif\n\n`;
+        
+        if (state.competitors.length > 0) {
+            analysis += `**Pesaing Teridentifikasi (${state.competitors.length}):**\n`;
+            state.competitors.slice(0, 5).forEach((c, i) => {
+                analysis += `${i + 1}. ${c}\n`;
+            });
+        } else {
+            analysis += `⚠️ Belum ada data pesaing. Upload dokumen intelijen pasar atau hubungkan database.\n`;
+        }
+        
+        analysis += `\n### 📈 Positioning Strategy:\n`;
+        analysis += `Dengan sumber daya terbatas, **hindari head-to-head competition**. Fokus pada:\n`;
+        analysis += `- **Niche domination:** Kuasai segmen spesifik yang besar abaikan\n`;
+        analysis += `- **Speed-to-market:** Leverage struktur ramping untuk iterasi cepat\n`;
+        analysis += `- **Partnership:** Jadikan kelemahan ukuran sebagai keunggulan fleksibilitas\n`;
+        
+        return analysis;
+    }
+    
+    // Threat Analysis
+    if (lower.includes('ancaman') || lower.includes('threat') || lower.includes('risiko')) {
+        let analysis = `## ⚠️ Intelijen Ancaman\n\n`;
+        
+        if (state.threats.length > 0) {
+            analysis += `**Ancaman Terdeteksi:**\n`;
+            state.threats.slice(0, 5).forEach((t, i) => {
+                analysis += `- ${t} <span class="tag tag-threat">HIGH</span>\n`;
+            });
+        }
+        
+        analysis += `\n**Ancaman Umum Industri R&D:**\n`;
+        analysis += `- <span class="tag tag-threat">Disruptive Tech</span> Teknologi baru yang membuat R&D Anda obsolete\n`;
+        analysis += `- <span class="tag tag-threat">Talent War</span> Perebutan talenta teknis dengan perusahaan besar\n`;
+        analysis += `- <span class="tag tag-threat">Regulatory</span> Perubahan regulasi yang memperlambat approval\n`;
+        
+        analysis += `\n**Mitigasi:**\n`;
+        analysis += `1. **Diversifikasi portofolio R&D** — jangan bergantung pada 1 teknologi\n`;
+        analysis += `2. **Talent retention program** — equity/sweat equity untuk key researchers\n`;
+        analysis += `3. **Regulatory sandbox** — kolaborasi dengan pemerintah untuk uji coba\n`;
+        
+        return analysis;
+    }
+    
+    // Gap Analysis
+    if (lower.includes('gap') || lower.includes('jurang') || lower.includes('kekurangan')) {
+        const gaps = [];
+        if (state.resources.financial < 60) gaps.push('Finansial');
+        if (state.resources.human < 60) gaps.push('SDM/Talenta');
+        if (state.resources.ip < 50) gaps.push('Proteksi IP');
+        
+        let analysis = `## 🔍 Gap Analysis\n\n`;
+        analysis += `**Gap Kritis Terdeteksi:** ${gaps.length > 0 ? gaps.join(', ') : 'Minimal — fokus pada optimasi'}\n\n`;
+        
+        analysis += `| Dimensi | Saat Ini | Target Industri | Gap |\n`;
+        analysis += `|---------|----------|-----------------|-----|\n`;
+        analysis += `| R&D Budget | ${state.resources.financial}% | 75% | ${Math.max(0, 75 - state.resources.financial)}% |\n`;
+        analysis += `| Research Headcount | ${state.resources.human}% | 80% | ${Math.max(0, 80 - state.resources.human)}% |\n`;
+        analysis += `| IP Protection | ${state.resources.ip}% | 70% | ${Math.max(0, 70 - state.resources.ip)}% |\n`;
+        analysis += `| Knowledge Mgmt | ${state.resources.tacit}% | 65% | ${Math.max(0, 65 - state.resources.tacit)}% |\n\n`;
+        
+        analysis += `**Roadmap Penutupan Gap (12 bulan):**\n`;
+        analysis += `Q1: Knowledge management + SOP dokumentasi\n`;
+        analysis += `Q2: Hiring 2-3 spesialis kunci atau outsourcing R&D\n`;
+        analysis += `Q3: Filing 3-5 paten baru\n`;
+        analysis += `Q4: Joint venture / strategic partnership\n`;
+        
+        return analysis;
+    }
+    
+    // Strategy
+    if (lower.includes('strategi') || lower.includes('strategy') || lower.includes('rekomendasi')) {
+        let analysis = `## 🚀 Strategi R&D Adaptif (Resource-Constrained)\n\n`;
+        analysis += `Berdasarkan profil sumber daya Anda, ini adalah pendekatan **"Lean R&D"** yang direkomendasikan:\n\n`;
+        
+        analysis += `### 1. Fokus & Konsentrasi (Focus)\n`;
+        analysis += `Jangan sebarkan tipis. Pilih **1-2 teknologi core** yang menjadi differentiator. Matikan proyek R&D yang tidak aligned.\n\n`;
+        
+        analysis += `### 2. Open Innovation (Leverage)\n`;
+        analysis += `Gunakan ekosistem eksternal:\n`;
+        analysis += `- Licensing teknologi dari universitas (murah vs. riset dari nol)\n`;
+        analysis += `- R&D as-a-service: gunakan CRO (Contract Research Organization) untuk eksperimen skala kecil\n`;
+        analysis += `- Crowdsourcing: Kaggle, InnoCentive untuk problem-solving spesifik\n\n`;
+        
+        analysis += `### 3. Fast Follower + Improvement (Smart Imitation)\n`;
+        analysis += `Dengan resource terbatas, menjadi **first mover** berisiko tinggi. Strategi lebih aman:\n`;
+        analysis += `- Pantau paten pesaing (public setelah 18 bulan)\n`;
+        analysis += `- Buat improvement/variant yang menghindari infringement\n`;
+        analysis += `- Fokus pada user experience, bukan fundamental breakthrough\n\n`;
+        
+        analysis += `### 4. Strategic Partnerships (Share)\n`;
+        analysis += `- Co-development dengan supplier/customer besar (mereka funding, Anda eksekusi)\n`;
+        analysis += `- Consortium R&D dengan pemerintah/grant internasional\n\n`;
+        
+        analysis += `**KPI Utama:** Time-to-prototype, bukan jumlah paten. Validasi cepat > Penemuan sempurna.`;
+        
+        return analysis;
+    }
+    
+    // Default response with context awareness
+    let response = `Saya telah menganalisis konteks R&D Anda. Berdasarkan data yang tersedia:\n\n`;
+    response += `- **${state.files.length} dokumen** telah diupload\n`;
+    response += `- **${state.competitors.length} pesaing** teridentifikasi\n`;
+    response += `- **${state.threats.length} ancaman** tercatat\n\n`;
+    response += `Anda bisa menanyakan hal spesifik seperti:\n`;
+    response += `- "Analisis sumber daya modal kami"\n`;
+    response += `- "Bagaimana mengatasi ancaman dari [nama pesaing]?"`;
+    response += `- "Buatkan roadmap 12 bulan untuk menutup gap"`;
+    
+    return response;
+}
+
+// ===== DASHBOARD UPDATE =====
+function updateDashboard() {
+    // Update bars
+    updateBar('fin', state.resources.financial);
+    updateBar('phys', state.resources.physical);
+    updateBar('hr', state.resources.human);
+    updateBar('ip', state.resources.ip);
+    updateBar('tacit', state.resources.tacit);
+    
+    // Calculate overall
+    const overall = Math.round(
+        (state.resources.financial + state.resources.physical + state.resources.human + 
+         state.resources.ip + state.resources.tacit) / 5
+    );
+    
+    const scoreEl = document.getElementById('overallScore');
+    scoreEl.textContent = overall;
+    scoreEl.className = `score-circle ${overall >= 70 ? 'score-high' : overall >= 50 ? 'score-mid' : 'score-low'}`;
+    
+    // Update threat intel
+    const threatContainer = document.getElementById('threatIntel');
+    if (state.threats.length > 0 || state.competitors.length > 0) {
+        let html = '';
+        if (state.threats.length > 0) {
+            html += `<div style="margin-bottom: 10px;"><strong style="font-size: 12px;">Ancaman:</strong><br>`;
+            state.threats.slice(0, 3).forEach(t => {
+                html += `<span class="tag tag-threat">${t.substring(0, 30)}</span> `;
+            });
+            html += `</div>`;
+        }
+        if (state.competitors.length > 0) {
+            html += `<div><strong style="font-size: 12px;">Pesaing:</strong><br>`;
+            state.competitors.slice(0, 3).forEach(c => {
+                html += `<span class="tag tag-opportunity">${c.substring(0, 25)}</span> `;
+            });
+            html += `</div>`;
+        }
+        threatContainer.innerHTML = html;
+    }
+}
+
+function updateBar(type, value) {
+    const bar = document.getElementById(`${type}Bar`);
+    const score = document.getElementById(`${type}Score`);
+    if (bar) bar.style.width = `${value}%`;
+    if (score) score.textContent = `${value}%`;
+}
+
+function updateFileList() {
+    fileList.innerHTML = state.files.map((f, i) => `
+        <div class="file-chip">
+            <span>${f.type === 'docx' ? '📘' : '📄'}</span>
+            <span style="overflow: hidden; text-overflow: ellipsis;">${f.name}</span>
+            <span class="remove" onclick="removeFile(${i})">×</span>
+        </div>
+    `).join('');
+}
+
+function removeFile(index) {
+    state.files.splice(index, 1);
+    updateFileList();
+}
+
+function clearAllData() {
+    if (!confirm('Yakin ingin menghapus semua data?')) return;
+    state.files = [];
+    state.databaseContent = '';
+    state.competitors = [];
+    state.threats = [];
+    state.resources = { financial: 50, physical: 50, human: 50, ip: 50, tacit: 50 };
+    updateFileList();
+    updateDashboard();
+    chatMessages.innerHTML = '';
+    addMessage('ai', '🗑️ Semua data telah direset. Sistem siap untuk analisis baru.');
+}
+
+// ===== UTILITIES =====
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Auto-resize textarea
+chatInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// Initialize
+updateDashboard();
+</script>
+
+</body>
+</html>
