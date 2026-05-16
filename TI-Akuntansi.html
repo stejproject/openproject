@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="https://stejproject.github.io/favicon-128.ico">
     <title>Portofolio TI — STEJ Protection</title>
     <style>
         /* ================= THEME STEJ DARK MODE ================= */
@@ -71,6 +70,10 @@
             cursor: pointer;
         }
         .layanan-item:hover { border-color: #00ffcc; }
+        .layanan-item.aktif {
+            border-color: #00ffcc;
+            background-color: #2a2a2a;
+        }
         .layanan-row {
             display: flex;
             justify-content: space-between;
@@ -81,27 +84,6 @@
         .layanan-harga {
             color: #00ffcc; font-weight: bold; font-size: 0.9rem;
             white-space: nowrap; margin-left: 10px;
-        }
-        .layanan-video {
-            width: 100%;
-            max-width: 200px;
-            align-self: center;
-            border-radius: 6px;
-            overflow: hidden;
-            display: none;
-            background: #000;
-        }
-        .layanan-video.show { display: block; }
-        .layanan-video video {
-            width: 100%;
-            display: block;
-            border-radius: 6px;
-        }
-        .video-label {
-            font-size: 0.7rem;
-            color: #00ffcc;
-            text-align: center;
-            margin-top: 4px;
         }
         .layanan-actions {
             display: flex;
@@ -122,39 +104,67 @@
         }
         .btn-wa:hover { opacity: 0.85; }
 
-        /* QRIS */
-        .qr-section {
-            display: flex; flex-direction: column; align-items: center;
-            gap: 20px; text-align: center;
+        /* AREA DETAIL SETELAH KLIK */
+        .detail-area {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+            animation: fadeIn 0.3s ease;
         }
-        .qr-placeholder {
-            width: 200px; height: 200px; background-color: #ffffff;
-            border-radius: 6px; display: flex; align-items: center;
-            justify-content: center; color: #000000; font-size: 0.85rem;
-            font-weight: bold; border: 4px solid #ffffff; overflow: hidden;
+        .detail-area.show { display: flex; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .qr-placeholder img { width: 100%; height: 100%; object-fit: cover; }
-        .warning-text { color: #ffcc00; font-size: 0.75rem; font-weight: bold; margin: 0; letter-spacing: 0.5px; }
-
-        /* AREA DETAIL (VIDEO + QR BESAR) */
         .detail-video-box {
             width: 100%;
             max-width: 300px;
             border-radius: 8px;
             overflow: hidden;
             background: #000;
-            display: none;
         }
-        .detail-video-box.show { display: block; }
         .detail-video-box video {
             width: 100%;
             display: block;
         }
-        .detail-label {
-            font-size: 0.75rem;
-            color: #00ffcc;
+        .detail-qr-box {
+            width: 200px;
+            height: 200px;
+            background-color: #ffffff;
+            border-radius: 6px;
+            border: 4px solid #ffffff;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .detail-qr-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .detail-qr-box.kosong {
+            color: #000;
+            font-size: 0.8rem;
+            font-weight: bold;
             text-align: center;
-            margin-top: 8px;
+            padding: 10px;
+        }
+        .detail-label {
+            font-size: 0.7rem;
+            color: #ffcc00;
+            text-align: center;
+            margin: 0;
+        }
+        .detail-nama {
+            color: #a0a0a0;
+            font-size: 0.8rem;
+            margin: 0;
+            text-align: center;
         }
 
         /* BUTTONS */
@@ -256,11 +266,12 @@
             font-size: 0.85rem; padding: 10px 5px;
             border-bottom: 1px solid #2a2a2a; vertical-align: top;
         }
-        .admin-table td:first-child { width: 30%; }
-        .admin-table td:nth-child(2) { width: 18%; color: #00ffcc; }
-        .admin-table td:nth-child(3) { width: 18%; font-size: 0.75rem; color: #888; }
-        .admin-table td:nth-child(4) { width: 18%; text-align: center; }
-        .admin-table td:last-child { width: 16%; text-align: right; }
+        .admin-table td:first-child { width: 25%; }
+        .admin-table td:nth-child(2) { width: 15%; color: #00ffcc; }
+        .admin-table td:nth-child(3) { width: 15%; font-size: 0.75rem; color: #888; }
+        .admin-table td:nth-child(4) { width: 15%; text-align: center; }
+        .admin-table td:nth-child(5) { width: 15%; text-align: center; }
+        .admin-table td:last-child { width: 15%; text-align: right; }
         .badge {
             display: inline-block; background: #6200ee; color: #fff;
             font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; margin-bottom: 15px;
@@ -327,38 +338,43 @@
         </p>
     </div>
 
-    <!-- DAFTAR LAYANAN (Realtime dari Firestore) -->
+    <!-- DAFTAR LAYANAN -->
     <div class="card">
         <h2>Daftar Layanan</h2>
         <div id="layanan-container" class="layanan-list">
             <div class="empty-state">Memuat data...</div>
         </div>
 
-        <!-- AREA DETAIL: VIDEO REVIEW + QRIS BESAR -->
-        <div id="area-detail-produk" style="display: none; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #2d2d2d;">
+        <!-- AREA DETAIL SETELAH KLIK -->
+        <div id="area-detail-produk" style="display: none; flex-direction: column; align-items: center; gap: 12px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #2d2d2d;">
             <!-- VIDEO REVIEW -->
-            <div class="detail-video-box" id="detail-video-box">
+            <div class="detail-video-box" id="detail-video-box" style="display: none;">
                 <video id="detail-video" autoplay muted loop playsinline></video>
             </div>
-            <p id="detail-video-label" class="detail-label" style="display:none;">▶️ Review Produk</p>
+            <p id="detail-video-label" class="detail-label" style="display: none;">▶️ Review Produk</p>
             
-            <!-- QRIS BESAR -->
-            <div class="qr-placeholder" id="qr-display">[ PILIH LAYANAN ]</div>
-            <p class="warning-text">⚠️ VALIDASI TRANSAKSI: STEJ PROJECT</p>
-            <p id="qr-nama-layanan" style="color: #a0a0a0; font-size: 0.8rem; margin: 0; text-align: center;">Ketuk layanan untuk menampilkan detail</p>
+            <!-- TOMBOL WA -->
+            <div id="detail-wa-area" style="display: none; width: 100%; max-width: 300px;">
+                <button class="btn-wa" id="detail-wa-btn" style="width: 100%; padding: 10px;">💬 Chat WhatsApp</button>
+            </div>
+            
+            <!-- QR BESAR -->
+            <div class="detail-qr-box" id="qr-display">[ PILIH LAYANAN ]</div>
+            <p class="detail-label">⚠️ VALIDASI TRANSAKSI: STEJ PROJECT</p>
+            <p id="qr-nama-layanan" class="detail-nama">Ketuk layanan untuk melihat detail</p>
         </div>
     </div>
 
-    <!-- PUSAT BANTUAN — TIMER WA -->
+    <!-- PUSAT BANTUAN -->
     <div class="card">
         <h2>Pusat Bantuan</h2>
-        <div class="qr-section">
-            <p class="sub-title" style="color: #a0a0a0; font-size: 0.8rem; line-height: 1.4; margin: 0 0 15px 0;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 15px; text-align: center;">
+            <p style="color: #a0a0a0; font-size: 0.8rem; line-height: 1.4; margin: 0;">
                 Butuh bantuan atau ada pertanyaan? Hubungi tim kami via WhatsApp.
             </p>
             <button id="pemicu-bantuan">HUBUNGI BANTUAN VIA WA</button>
-            <div id="area-bantuan-wa" style="display: none; flex-direction: column; align-items: center; gap: 10px; margin-top: 15px;">
-                <p class="warning-text">⚠️ MENGHUBUNGKAN KE TIM BANTUAN</p>
+            <div id="area-bantuan-wa" style="display: none; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px;">
+                <p style="color: #ffcc00; font-size: 0.75rem; font-weight: bold; margin: 0;">⚠️ MENGHUBUNGKAN KE TIM BANTUAN</p>
                 <p style="color: #a0a0a0; font-size: 0.7rem; margin: 0;">Menghubungkan dalam <span id="timer-bantuan">3</span> detik...</p>
             </div>
         </div>
@@ -394,7 +410,7 @@
             </button>
         </div>
 
-        <!-- SECTION: CRUD (Setelah Login) -->
+        <!-- SECTION: CRUD -->
         <div id="crud-section">
             <div class="user-info" id="user-info"></div>
             <button class="secondary" onclick="window.logout()" style="width:auto; margin-bottom:15px;">Logout</button>
@@ -412,22 +428,20 @@
                 <input type="text" id="input-harga" placeholder="Contoh: 150.000">
             </div>
             <div class="form-group">
-                <label>Link WhatsApp (bisa berbeda per layanan)</label>
+                <label>Link WhatsApp</label>
                 <input type="text" id="input-wa" placeholder="https://wa.me/628...?text=Halo...">
             </div>
             <div class="form-group">
-                <label>Upload Kode QR (QRIS / Saweria / Dll)</label>
+                <label>Upload Kode QR (QRIS)</label>
                 <input type="file" id="input-qr" accept="image/*">
                 <div class="qr-preview-box" id="qr-preview-box">
                     <img id="qr-preview-img" alt="Preview QR">
                 </div>
             </div>
             <div class="form-group">
-                <label>Link Video Review (MP4, WebM, atau URL eksternal)</label>
-                <input type="text" id="input-video-url" placeholder="https://cdn.contoh.com/video.mp4 atau https://youtube.com/embed/...">
-                <p style="font-size:0.7rem; color:#666; margin-top:4px;">
-                    Bisa langsung link file video, atau link embed YouTube. Maksimal 10MB untuk performa.
-                </p>
+                <label>Link Video Review</label>
+                <input type="text" id="input-video-url" placeholder="https://cdn.contoh.com/video.mp4">
+                <p style="font-size:0.7rem; color:#666; margin-top:4px;">Link langsung ke file MP4/WebM. Maksimal 10MB.</p>
                 <div class="video-preview-box" id="video-preview-box">
                     <video id="video-preview" controls muted></video>
                 </div>
@@ -444,11 +458,7 @@
             </table>
 
             <div class="backup-section">
-                <h3>📦 Backup & Restore (File JSON)</h3>
-                <p style="font-size:0.75rem; color:#888; margin:0 0 8px 0;">
-                    Export: Download data sebagai file .json untuk cadangan offline.<br>
-                    Import: Upload file .json untuk mengembalikan/bulk insert data.
-                </p>
+                <h3>📦 Backup & Restore</h3>
                 <textarea class="backup-area" id="backup-area" placeholder='Klik Export untuk melihat JSON...'></textarea>
                 <div class="admin-actions" style="margin-top:10px;">
                     <button class="secondary" onclick="window.exportData()">📋 Export JSON</button>
@@ -462,12 +472,11 @@
 </div>
 
 <script type="module">
-    // ===================== FIREBASE MODULAR SDK v12.13.0 =====================
+    // ===================== FIREBASE =====================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-    // Your web app's Firebase configuration
     const firebaseConfig = {
         apiKey: "AIzaSyDeRPjhtmNPz5TNK1TPP3O5XZd4ORyeGPs",
         authDomain: "auth-stej-product.firebaseapp.com",
@@ -477,7 +486,6 @@
         appId: "1:846128318640:web:1c983100c63f7e50db9375"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
@@ -490,20 +498,15 @@
     let unsubscribeSnapshot = null;
     let qrBase64Cache = null;
     let videoUrlCache = null;
-    const STORAGE_KEY = 'stej_portfolio_offline_v2';
+    let activeItemId = null;
+    const STORAGE_KEY = 'stej_portfolio_offline_v3';
 
-    // ===================== AUTHENTICATION =====================
+    // ===================== AUTH =====================
     window.loginGoogle = function() {
         const provider = new GoogleAuthProvider();
-        signInWithPopup(auth, provider).catch(err => {
-            alert('Gagal login: ' + err.message);
-        });
+        signInWithPopup(auth, provider).catch(err => alert('Gagal login: ' + err.message));
     };
-
-    window.logout = function() {
-        signOut(auth);
-    };
-
+    window.logout = function() { signOut(auth); };
     window.aktifkanOffline = function() {
         isOffline = true;
         document.getElementById('mode-badge').textContent = 'OFFLINE — localStorage';
@@ -530,16 +533,12 @@
         }
     });
 
-    // ===================== REALTIME LISTENER =====================
     function listenRealtime() {
         if (isOffline) return;
         if (unsubscribeSnapshot) unsubscribeSnapshot();
-
         unsubscribeSnapshot = onSnapshot(collection(db, 'layanan'), snapshot => {
             dataLayanan = [];
-            snapshot.forEach(docSnap => {
-                dataLayanan.push({ id: docSnap.id, ...docSnap.data() });
-            });
+            snapshot.forEach(docSnap => dataLayanan.push({ id: docSnap.id, ...docSnap.data() }));
             renderLayanan();
             renderAdminTable();
             updateStatus(true, 'Terhubung ke Firestore');
@@ -557,69 +556,42 @@
         txt.textContent = text;
     }
 
-    // ===================== OFFLINE MODE (localStorage) =====================
     function loadData() {
         if (!isOffline) return;
         const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            try { dataLayanan = JSON.parse(saved); } catch(e) { dataLayanan = []; }
-        }
+        if (saved) { try { dataLayanan = JSON.parse(saved); } catch(e) { dataLayanan = []; } }
         renderLayanan();
         renderAdminTable();
         updateStatus(false, 'Mode Offline — Data di browser');
     }
-
     function saveOffline() {
         if (isOffline) localStorage.setItem(STORAGE_KEY, JSON.stringify(dataLayanan));
     }
 
-    // ===================== QR & VIDEO UPLOAD HANDLER =====================
+    // ===================== UPLOAD HANDLERS =====================
     const inputQr = document.getElementById('input-qr');
     const qrPreviewBox = document.getElementById('qr-preview-box');
     const qrPreviewImg = document.getElementById('qr-preview-img');
-
     inputQr.addEventListener('change', function(e) {
         const file = e.target.files[0];
-        if (!file) {
-            qrBase64Cache = null;
-            qrPreviewBox.style.display = 'none';
-            return;
-        }
-        if (file.size > 500 * 1024) {
-            alert('Gambar terlalu besar. Maksimal 500KB.');
-            inputQr.value = '';
-            qrBase64Cache = null;
-            qrPreviewBox.style.display = 'none';
-            return;
-        }
+        if (!file) { qrBase64Cache = null; qrPreviewBox.style.display = 'none'; return; }
+        if (file.size > 500 * 1024) { alert('Gambar terlalu besar. Maksimal 500KB.'); inputQr.value = ''; qrBase64Cache = null; qrPreviewBox.style.display = 'none'; return; }
         const reader = new FileReader();
-        reader.onload = function(evt) {
-            qrBase64Cache = evt.target.result;
-            qrPreviewImg.src = qrBase64Cache;
-            qrPreviewBox.style.display = 'block';
-        };
+        reader.onload = function(evt) { qrBase64Cache = evt.target.result; qrPreviewImg.src = qrBase64Cache; qrPreviewBox.style.display = 'block'; };
         reader.readAsDataURL(file);
     });
 
-    // Video URL input handler
     const inputVideoUrl = document.getElementById('input-video-url');
     const videoPreviewBox = document.getElementById('video-preview-box');
     const videoPreview = document.getElementById('video-preview');
-
     inputVideoUrl.addEventListener('input', function(e) {
         const url = e.target.value.trim();
         videoUrlCache = url || null;
-        if (url) {
-            videoPreview.src = url;
-            videoPreviewBox.style.display = 'block';
-            videoPreview.load();
-        } else {
-            videoPreviewBox.style.display = 'none';
-            videoPreview.src = '';
-        }
+        if (url) { videoPreview.src = url; videoPreviewBox.style.display = 'block'; videoPreview.load(); }
+        else { videoPreviewBox.style.display = 'none'; videoPreview.src = ''; }
     });
 
-    // ===================== RENDER CUSTOMER VIEW =====================
+    // ===================== RENDER LAYANAN =====================
     window.renderLayanan = function() {
         const container = document.getElementById('layanan-container');
         if (dataLayanan.length === 0) {
@@ -627,11 +599,9 @@
             return;
         }
         container.innerHTML = dataLayanan.map(item => {
-            const hasQr = item.qrBase64 ? true : false;
-            const hasWa = item.wa ? true : false;
-            const hasVideo = item.videoUrl ? true : false;
+            const isAktif = item.id === activeItemId;
             return `
-            <div class="layanan-item" onclick="window.klikLayanan('${item.id || ''}')">
+            <div class="layanan-item ${isAktif ? 'aktif' : ''}" onclick="window.klikLayanan('${item.id || ''}')" id="item-${item.id}">
                 <div class="layanan-row">
                     <div class="layanan-info">
                         <h3>${escapeHtml(item.nama)}</h3>
@@ -639,65 +609,75 @@
                     </div>
                     <div class="layanan-harga">${escapeHtml(item.harga)}</div>
                 </div>
-                ${hasWa ? `
-                <div class="layanan-actions">
-                    <button class="btn-wa" onclick="window.bukaWA(event, '${escapeHtml(item.wa)}')">💬 Chat WhatsApp</button>
-                </div>
-                ` : ''}
-                ${hasVideo ? `
-                <div class="layanan-video show">
-                    <video src="${item.videoUrl}" autoplay muted loop playsinline preload="metadata"></video>
-                </div>
-                <div class="video-label">▶️ Review Produk</div>
-                ` : ''}
             </div>
             `;
         }).join('');
     };
 
-    // ===================== CHAT WA PER LAYANAN =====================
-    window.bukaWA = function(e, url) {
-        e.stopPropagation();
-        if (url) window.open(url, '_blank');
-    };
-
-    // ===================== KLIK LAYANAN: TAMPILKAN VIDEO + QR BESAR =====================
+    // ===================== KLIK LAYANAN: TAMPILKAN DETAIL =====================
     window.klikLayanan = function(id) {
         const item = dataLayanan.find(x => x.id === id);
         if (!item) return;
+
+        // Toggle: klik lagi = tutup
+        if (activeItemId === id) {
+            activeItemId = null;
+            document.getElementById('area-detail-produk').style.display = 'none';
+            renderLayanan();
+            return;
+        }
+
+        activeItemId = id;
+        renderLayanan(); // Update highlight aktif
 
         const areaDetail = document.getElementById('area-detail-produk');
         const detailVideoBox = document.getElementById('detail-video-box');
         const detailVideo = document.getElementById('detail-video');
         const detailVideoLabel = document.getElementById('detail-video-label');
+        const detailWaArea = document.getElementById('detail-wa-area');
+        const detailWaBtn = document.getElementById('detail-wa-btn');
         const qrDisplay = document.getElementById('qr-display');
         const qrNama = document.getElementById('qr-nama-layanan');
 
-        // Tampilkan video review jika ada
+        // VIDEO
         if (item.videoUrl) {
             detailVideo.src = item.videoUrl;
-            detailVideoBox.classList.add('show');
+            detailVideoBox.style.display = 'block';
             detailVideoLabel.style.display = 'block';
             detailVideo.load();
             detailVideo.play().catch(() => {});
         } else {
-            detailVideoBox.classList.remove('show');
+            detailVideoBox.style.display = 'none';
             detailVideoLabel.style.display = 'none';
             detailVideo.src = '';
         }
 
-        // Tampilkan QR besar jika ada
+        // TOMBOL WA
+        if (item.wa) {
+            detailWaArea.style.display = 'block';
+            detailWaBtn.onclick = () => window.open(item.wa, '_blank');
+        } else {
+            detailWaArea.style.display = 'none';
+            detailWaBtn.onclick = null;
+        }
+
+        // QR BESAR
         if (item.qrBase64) {
-            qrDisplay.innerHTML = `<img src="${item.qrBase64}" alt="QR ${escapeHtml(item.nama)}" style="width:100%;height:100%;object-fit:cover;">`;
+            qrDisplay.innerHTML = `<img src="${item.qrBase64}" alt="QR ${escapeHtml(item.nama)}">`;
+            qrDisplay.className = 'detail-qr-box';
         } else {
             qrDisplay.textContent = '[ QRIS TIDAK TERSEDIA ]';
+            qrDisplay.className = 'detail-qr-box kosong';
         }
 
         qrNama.innerHTML = `<strong>${escapeHtml(item.nama)}</strong>${item.harga ? ' — ' + escapeHtml(item.harga) : ''}`;
         areaDetail.style.display = 'flex';
+
+        // Scroll ke area detail
+        setTimeout(() => areaDetail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
     };
 
-    // ===================== ADMIN PANEL LOGIC =====================
+    // ===================== ADMIN PANEL =====================
     let klikTrigger = 0;
     document.getElementById('admin-trigger').addEventListener('click', () => {
         klikTrigger++;
@@ -725,16 +705,8 @@
                 <td><strong>${escapeHtml(item.nama)}</strong><br><small style="color:#888">${escapeHtml(item.deskripsi||'')}</small></td>
                 <td>${escapeHtml(item.harga)}</td>
                 <td>${item.wa ? '<span style="color:#00ffcc">✓</span>' : '<span style="color:#666">—</span>'}</td>
-                <td>
-                    ${item.qrBase64 
-                        ? '<div class="tiny-qr"><img src="' + item.qrBase64 + '" alt="qr"></div>' 
-                        : '<span style="color:#666">—</span>'}
-                </td>
-                <td>
-                    ${item.videoUrl 
-                        ? '<span style="color:#00ffcc">✓</span>' 
-                        : '<span style="color:#666">—</span>'}
-                </td>
+                <td>${item.qrBase64 ? '<div class="tiny-qr"><img src="' + item.qrBase64 + '" alt="qr"></div>' : '<span style="color:#666">—</span>'}</td>
+                <td>${item.videoUrl ? '<span style="color:#00ffcc">✓</span>' : '<span style="color:#666">—</span>'}</td>
                 <td>
                     <button class="success" onclick="window.editLayanan('${item.id || ''}')">✎</button>
                     <button class="danger" onclick="window.hapusLayanan('${item.id || ''}')">🗑</button>
@@ -743,7 +715,7 @@
         `).join('');
     };
 
-    // ===================== CRUD OPERATIONS =====================
+    // ===================== CRUD =====================
     window.simpanLayanan = async function() {
         const nama = document.getElementById('input-nama').value.trim();
         const deskripsi = document.getElementById('input-deskripsi').value.trim();
@@ -753,11 +725,7 @@
 
         if (!nama || !harga) { alert('Nama dan harga wajib diisi!'); return; }
 
-        const payload = { 
-            nama, deskripsi, harga, wa, videoUrl,
-            updatedAt: new Date().toISOString() 
-        };
-
+        const payload = { nama, deskripsi, harga, wa, videoUrl, updatedAt: new Date().toISOString() };
         if (qrBase64Cache) payload.qrBase64 = qrBase64Cache;
 
         try {
@@ -794,9 +762,7 @@
                 }
                 resetForm();
             }
-        } catch(err) {
-            alert('Error: ' + err.message);
-        }
+        } catch(err) { alert('Error: ' + err.message); }
     };
 
     window.editLayanan = function(id) {
@@ -808,28 +774,11 @@
         document.getElementById('input-wa').value = item.wa || '';
         document.getElementById('input-video-url').value = item.videoUrl || '';
 
-        // Preview QR
-        if (item.qrBase64) {
-            qrBase64Cache = item.qrBase64;
-            qrPreviewImg.src = item.qrBase64;
-            qrPreviewBox.style.display = 'block';
-        } else {
-            qrBase64Cache = null;
-            qrPreviewBox.style.display = 'none';
-            document.getElementById('input-qr').value = '';
-        }
+        if (item.qrBase64) { qrBase64Cache = item.qrBase64; qrPreviewImg.src = item.qrBase64; qrPreviewBox.style.display = 'block'; }
+        else { qrBase64Cache = null; qrPreviewBox.style.display = 'none'; document.getElementById('input-qr').value = ''; }
 
-        // Preview Video
-        if (item.videoUrl) {
-            videoUrlCache = item.videoUrl;
-            videoPreview.src = item.videoUrl;
-            videoPreviewBox.style.display = 'block';
-            videoPreview.load();
-        } else {
-            videoUrlCache = null;
-            videoPreviewBox.style.display = 'none';
-            videoPreview.src = '';
-        }
+        if (item.videoUrl) { videoUrlCache = item.videoUrl; videoPreview.src = item.videoUrl; videoPreviewBox.style.display = 'block'; videoPreview.load(); }
+        else { videoUrlCache = null; videoPreviewBox.style.display = 'none'; videoPreview.src = ''; }
 
         editId = id;
         document.getElementById('btn-simpan').textContent = '💾 Update Layanan';
@@ -839,28 +788,19 @@
         const item = dataLayanan.find(x => x.id === id);
         if (!confirm('Yakin hapus "' + (item ? item.nama : '') + '"?')) return;
         try {
-            if (isOffline) {
-                dataLayanan = dataLayanan.filter(x => x.id !== id);
-                saveOffline();
-                renderLayanan(); renderAdminTable();
-            } else {
-                await deleteDoc(doc(db, 'layanan', id));
-            }
+            if (isOffline) { dataLayanan = dataLayanan.filter(x => x.id !== id); saveOffline(); renderLayanan(); renderAdminTable(); }
+            else { await deleteDoc(doc(db, 'layanan', id)); }
+            if (activeItemId === id) { activeItemId = null; document.getElementById('area-detail-produk').style.display = 'none'; }
         } catch(err) { alert('Error: ' + err.message); }
     };
 
     window.hapusSemua = async function() {
         if (!confirm('Yakin hapus SEMUA data? Ini tidak bisa dibatalkan!')) return;
         try {
-            if (isOffline) {
-                dataLayanan = []; saveOffline();
-                renderLayanan(); renderAdminTable();
-            } else {
-                const snapshot = await getDocs(collection(db, 'layanan'));
-                const batch = writeBatch(db);
-                snapshot.docs.forEach(d => batch.delete(d.ref));
-                await batch.commit();
-            }
+            if (isOffline) { dataLayanan = []; saveOffline(); renderLayanan(); renderAdminTable(); }
+            else { const snapshot = await getDocs(collection(db, 'layanan')); const batch = writeBatch(db); snapshot.docs.forEach(d => batch.delete(d.ref)); await batch.commit(); }
+            activeItemId = null;
+            document.getElementById('area-detail-produk').style.display = 'none';
             document.getElementById('backup-area').value = '';
         } catch(err) { alert('Error: ' + err.message); }
     };
@@ -872,67 +812,46 @@
         document.getElementById('input-wa').value = '';
         document.getElementById('input-qr').value = '';
         document.getElementById('input-video-url').value = '';
-        qrBase64Cache = null;
-        videoUrlCache = null;
-        qrPreviewBox.style.display = 'none';
-        qrPreviewImg.src = '';
-        videoPreviewBox.style.display = 'none';
-        videoPreview.src = '';
+        qrBase64Cache = null; videoUrlCache = null;
+        qrPreviewBox.style.display = 'none'; qrPreviewImg.src = '';
+        videoPreviewBox.style.display = 'none'; videoPreview.src = '';
         editId = null;
         document.getElementById('btn-simpan').textContent = '➕ Tambah Layanan';
     }
     window.resetForm = resetForm;
 
-    // ===================== EXPORT / IMPORT JSON =====================
+    // ===================== EXPORT / IMPORT =====================
     window.exportData = function() {
         const json = JSON.stringify({ layanan: dataLayanan, exportedAt: new Date().toISOString() }, null, 2);
         document.getElementById('backup-area').value = json;
-
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
-        a.download = 'stej_backup_' + new Date().toISOString().slice(0,10) + '.json';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        a.href = url; a.download = 'stej_backup_' + new Date().toISOString().slice(0,10) + '.json';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     };
-
-    window.importData = function() {
-        document.getElementById('file-import').click();
-    };
-
+    window.importData = function() { document.getElementById('file-import').click(); };
     window.handleFileImport = async function(input) {
-        const file = input.files[0];
-        if (!file) return;
+        const file = input.files[0]; if (!file) return;
         const text = await file.text();
         try {
             const parsed = JSON.parse(text);
             if (!parsed.layanan || !Array.isArray(parsed.layanan)) throw new Error('Format tidak valid');
-
             if (isOffline) {
                 dataLayanan = parsed.layanan.map((x, i) => ({ ...x, id: x.id || 'local_imp_' + i + '_' + Date.now() }));
-                saveOffline();
-                renderLayanan(); renderAdminTable();
+                saveOffline(); renderLayanan(); renderAdminTable();
                 alert('Import berhasil! ' + dataLayanan.length + ' layanan dimuat.');
             } else {
                 if (!currentUser) { alert('Login terlebih dahulu!'); return; }
                 let count = 0;
                 for (const item of parsed.layanan) {
                     const { id, ...rest } = item;
-                    await addDoc(collection(db, 'layanan'), {
-                        ...rest,
-                        createdAt: new Date().toISOString(),
-                        createdBy: currentUser.uid
-                    });
+                    await addDoc(collection(db, 'layanan'), { ...rest, createdAt: new Date().toISOString(), createdBy: currentUser.uid });
                     count++;
                 }
                 alert('Import berhasil! ' + count + ' layanan ditambahkan ke cloud.');
             }
-        } catch(e) {
-            alert('Gagal import: ' + e.message);
-        }
+        } catch(e) { alert('Gagal import: ' + e.message); }
         input.value = '';
     };
 
@@ -945,7 +864,6 @@
 
     // ===================== BANTUAN WA =====================
     const linkBantuanWA = "https://wa.me/6281234567890";
-
     document.getElementById('pemicu-bantuan').addEventListener('click', function() {
         this.style.display = 'none';
         document.getElementById('area-bantuan-wa').style.display = 'flex';
