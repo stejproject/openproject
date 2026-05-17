@@ -592,11 +592,20 @@ body {
 <!-- ═══ LOGIN SCREEN ═══ -->
 <div id="loginScreen">
   <div class="login-card">
-    <div class="login-logo">🏪</div>
-    <div class="login-title">Dashboard Admin</div>
-    <p class="login-sub">Masuk untuk mengelola toko Anda</p>
 
-    <div class="alert" id="loginAlert"></div>
+    <!-- Loading saat kembali dari redirect Google -->
+    <div id="redirectLoading" style="text-align:center;padding:2rem 0;display:none;">
+      <div style="width:36px;height:36px;border:3px solid #e4e7e0;border-top-color:#16a34a;
+                  border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 1rem;"></div>
+      <p style="font-size:0.85rem;color:#9ca3af;">Memverifikasi login...</p>
+    </div>
+
+    <div id="loginForm">
+      <div class="login-logo">🏪</div>
+      <div class="login-title">Dashboard Admin</div>
+      <p class="login-sub">Masuk untuk mengelola toko Anda</p>
+
+      <div class="alert" id="loginAlert"></div>
 
     <!-- Google -->
     <button class="btn-social" id="btnGoogle">
@@ -651,6 +660,7 @@ body {
       </div>
     </div>
 
+    </div><!-- /loginForm -->
   </div>
 </div>
 
@@ -917,18 +927,24 @@ body {
      FIREBASE CONFIG
 ═══════════════════════════════════════════ -->
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js';
-import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, RecaptchaVerifier, signInWithPhoneNumber, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js';
-import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-storage.js';
+import { initializeApp }                          from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js';
+import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult,
+         GoogleAuthProvider,
+         RecaptchaVerifier, signInWithPhoneNumber,
+         signOut, onAuthStateChanged }            from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc,
+         updateDoc, addDoc, collection,
+         getDocs }                                from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js';
+import { getStorage, ref, uploadBytesResumable,
+         getDownloadURL }                         from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-storage.js';
 
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCzypMmy_vzYPTfaBZjUaSdt921o-y3YNQ",
-  authDomain: "katalog-toko-saya.firebaseapp.com",
-  projectId: "katalog-toko-saya",
-  storageBucket: "katalog-toko-saya.firebasestorage.app",
+  apiKey:            "AIzaSyCzypMmy_vzYPTfaBZjUaSdt921o-y3YNQ",
+  authDomain:        "katalog-toko-saya.firebaseapp.com",
+  projectId:         "katalog-toko-saya",
+  storageBucket:     "katalog-toko-saya.firebasestorage.app",
   messagingSenderId: "822538166386",
-  appId: "1:822538166386:web:94f1ffd879a929aa17e2eb"
+  appId:             "1:822538166386:web:94f1ffd879a929aa17e2eb",
 };
 
 const STORE_ID = new URLSearchParams(location.search).get('store') || 'toko-saya';
@@ -972,26 +988,76 @@ function clearAlert() {
    AUTH STATE + REDIRECT RESULT
 ══════════════════════════════ */
 
-/* Tangkap hasil redirect Google saat halaman dimuat kembali */
-getRedirectResult(auth).catch(err => {
-  if (err && err.code !== 'auth/cancelled-popup-request') {
-    console.error('Redirect error:', err.message);
-  }
-});
+/* ══════════════════════════════
+   AUTH STATE + REDIRECT RESULT
+══════════════════════════════ */
 
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('dashScreen').style.display  = 'block';
-    const initial = (user.displayName || user.email || user.phoneNumber || 'A').charAt(0).toUpperCase();
-    document.getElementById('userAvatar').textContent = initial;
-    await loadStoreData();
-    await loadOverviewStats();
-  } else {
-    document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('dashScreen').style.display  = 'none';
-  }
-});
+/* Tunggu redirect result selesai dulu sebelum onAuthStateChanged berjalan.
+   Ini mencegah halaman login muncul sebelum Firebase tahu user sudah login. */
+/* ══════════════════════════════
+   AUTH FLOW — redirect-first
+══════════════════════════════ */
+
+function showDashboard(user) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashScreen').style.display  = 'block';
+  const initial = (user.displayName || user.email || user.phoneNumber || 'A').charAt(0).toUpperCase();
+  document.getElementById('userAvatar').textContent = initial;
+  loadStoreData();
+  loadOverviewStats();
+}
+
+function showLogin() {
+  document.getElementById('redirectLoading').style.display = 'none';
+  document.getElementById('loginForm').style.display       = 'block';
+  document.getElementById('loginScreen').style.display     = 'flex';
+  document.getElementById('dashScreen').style.display      = 'none';
+}
+
+/* Sembunyikan semua dulu saat load */
+document.getElementById('loginScreen').style.display = 'none';
+document.getElementById('dashScreen').style.display  = 'none';
+
+/* Kalau balik dari redirect Google, tampilkan spinner */
+if (sessionStorage.getItem('googleRedirectPending')) {
+  document.getElementById('loginScreen').style.display    = 'flex';
+  document.getElementById('redirectLoading').style.display = 'block';
+  document.getElementById('loginForm').style.display       = 'none';
+}
+
+/* Step 1: cek redirect result dulu */
+getRedirectResult(auth)
+  .then(result => {
+    sessionStorage.removeItem('googleRedirectPending');
+    if (result && result.user) {
+      /* Login via redirect berhasil */
+      showDashboard(result.user);
+    } else {
+      /* Tidak ada redirect result — cek apakah sudah login sebelumnya */
+      onAuthStateChanged(auth, user => {
+        if (user) {
+          showDashboard(user);
+        } else {
+          showLogin();
+        }
+      });
+    }
+  })
+  .catch(err => {
+    sessionStorage.removeItem('googleRedirectPending');
+    console.error('getRedirectResult error:', err.code, err.message);
+    /* Tetap cek auth state meski redirect error */
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        showDashboard(user);
+      } else {
+        showLogin();
+        if (err.code !== 'auth/cancelled-popup-request') {
+          showAlert('Login gagal: ' + err.message);
+        }
+      }
+    });
+  });
 
 /* ══════════════════════════════
    LOGIN — GOOGLE
@@ -1002,6 +1068,7 @@ document.getElementById('btnGoogle').addEventListener('click', async () => {
   btn.disabled = true; btn.textContent = 'Mengarahkan ke Google...';
   try {
     const provider = new GoogleAuthProvider();
+    sessionStorage.setItem('googleRedirectPending', '1');
     await signInWithRedirect(auth, provider);
     /* Halaman akan redirect — tidak perlu handle di sini */
   } catch (err) {
