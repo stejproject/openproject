@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet" />
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --brand:       #16a34a;
+  --brand-dark:  #15803d;
+  --brand-light: #dcfce7;
+  --brand-50:    #f0fdf4;
+  --surface:     #ffffff;
+  --bg:          #f6f7f2;
+  --border:      #e4e7e0;
+  --text-1:      #111713;
+  --text-2:      #4b5563;
+  --text-3:      #9ca3af;
+  --danger:      #ef4444;
+  --danger-bg:   #fef2f2;
+  --warn-bg:     #fffbeb;
+  --warn:        #d97706;
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   18px;
+  --radius-xl:   24px;
+  --shadow-sm:   0 1px 3px rgba(0,0,0,.07);
+  --shadow-md:   0 4px 16px rgba(0,0,0,.10);
+  --font-head:   'Sora', sans-serif;
+  --font-body:   'Plus Jakarta Sans', sans-serif;
+  --transition:  .2s cubic-bezier(.4,0,.2,1);
+  --sidebar-w:   240px;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text-1);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════
+   LOGIN SCREEN
+═══════════════════════════════ */
+#loginScreen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #052e16 0%, #14532d 60%, #166534 100%);
+}
+
+.login-card {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: var(--shadow-md);
+}
+
+.login-logo {
+  width: 48px; height: 48px;
+  background: var(--brand-light);
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.login-title {
+  font-family: var(--font-head);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 4px;
+}
+
+.login-sub {
+  font-size: 0.85rem;
+  color: var(--text-3);
+  margin-bottom: 1.5rem;
+}
+
+
+.form-group { margin-bottom: 1rem; }
+
+.form-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: 5px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--text-1);
+  background: var(--surface);
+  outline: none;
+  transition: border-color var(--transition);
+}
+.form-input:focus { border-color: var(--brand); }
+.form-input.err   { border-color: var(--danger); }
+
+/* Phone input with prefix */
+.phone-wrap {
+  display: flex;
+  gap: 0;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: border-color var(--transition);
+}
+.phone-wrap:focus-within { border-color: var(--brand); }
+.phone-prefix {
+  padding: 0.65rem 0.75rem;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  font-size: 0.9rem;
+  color: var(--text-2);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.phone-wrap input {
+  flex: 1;
+  border: none;
+  padding: 0.65rem 0.9rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--text-1);
+  background: var(--surface);
+  outline: none;
+}
+
+/* OTP input row */
+.otp-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+.otp-input {
+  flex: 1;
+  text-align: center;
+  padding: 0.7rem 0;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-1);
+  background: var(--surface);
+  outline: none;
+  transition: border-color var(--transition);
+}
+.otp-input:focus { border-color: var(--brand); }
+
+.btn-primary {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-head);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition), opacity var(--transition);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-bottom: 0.75rem;
+}
+.btn-primary:hover    { background: var(--brand-dark); }
+.btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+
+/* Social login buttons */
+.btn-social {
+  width: 100%;
+  padding: 0.7rem;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-1);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: background var(--transition), border-color var(--transition);
+  margin-bottom: 0.75rem;
+}
+.btn-social:hover    { background: var(--bg); border-color: #aaa; }
+.btn-social:disabled { opacity: .55; cursor: not-allowed; }
+.btn-social svg      { width: 20px; height: 20px; flex-shrink: 0; }
+
+
+.divider {
+  display: flex; align-items: center; gap: 10px;
+  margin: 0.75rem 0;
+  font-size: 0.75rem; color: var(--text-3);
+}
+.divider::before, .divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* Resend timer */
+.resend-row {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-3);
+  margin-top: 0.5rem;
+}
+.resend-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--brand); font-size: 0.78rem; font-weight: 600;
+  padding: 0; text-decoration: underline;
+}
+.resend-btn:disabled { color: var(--text-3); text-decoration: none; cursor: default; }
+
+.alert {
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  margin-bottom: 1rem;
+  display: none;
+}
+.alert.danger { background: var(--danger-bg); color: var(--danger); display: block; }
+.alert.warn   { background: var(--warn-bg);   color: var(--warn);   display: block; }
+.alert.success { background: #f0fdf4; color: var(--brand-dark); display: block; }
+
+/* ═══════════════════════════════
+   DASHBOARD LAYOUT
+═══════════════════════════════ */
+#dashScreen { display: none; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  transition: transform var(--transition);
+}
+
+.sidebar-brand {
+  padding: 1.25rem 1.25rem 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+
+.sidebar-logo {
+  width: 34px; height: 34px;
+  background: var(--brand-light);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+
+.sidebar-store-name {
+  font-family: var(--font-head);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1.2;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-store-id {
+  font-size: 0.68rem;
+  color: var(--text-3);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 0.75rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all var(--transition);
+  border: none; background: none; width: 100%; text-align: left;
+}
+.nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+.nav-item:hover  { background: var(--bg); color: var(--text-1); }
+.nav-item.active { background: var(--brand-light); color: var(--brand-dark); font-weight: 600; }
+
+.sidebar-footer {
+  padding: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.btn-logout {
+  width: 100%;
+  display: flex; align-items: center; gap: 8px;
+  padding: 0.6rem 0.75rem;
+  background: none; border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--danger);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.btn-logout:hover { background: var(--danger-bg); }
+.btn-logout svg { width: 17px; height: 17px; }
+
+/* Main content */
+.main {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  height: 58px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+
+.topbar-title {
+  font-family: var(--font-head);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.topbar-user {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-2);
+}
+
+.user-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--brand-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--brand-dark);
+}
+
+.content {
+  padding: 1.75rem 1.5rem;
+  flex: 1;
+  max-width: 860px;
+}
+
+/* ═══════════════════════════════
+   SECTION PANELS
+═══════════════════════════════ */
+.panel { display: none; }
+.panel.active { display: block; }
+
+.panel-title {
+  font-family: var(--font-head);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 1.5rem;
+}
+
+/* Card */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.card-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 1.1rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title svg { width: 17px; height: 17px; color: var(--brand); }
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+@media (max-width: 600px) { .field-row { grid-template-columns: 1fr; } }
+
+.field-full { grid-column: 1 / -1; }
+
+.form-textarea {
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--text-1);
+  background: var(--surface);
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color var(--transition);
+}
+.form-textarea:focus { border-color: var(--brand); }
+
+/* Upload zone */
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  background: var(--bg);
+  position: relative;
+}
+.upload-zone:hover, .upload-zone.drag { border-color: var(--brand); background: var(--brand-50); }
+.upload-zone input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.upload-text { font-size: 0.85rem; color: var(--text-2); }
+.upload-sub  { font-size: 0.75rem; color: var(--text-3); margin-top: 3px; }
+
+.img-preview {
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  margin-top: 0.75rem;
+  display: none;
+}
+
+/* Progress bar */
+.upload-progress {
+  display: none;
+  margin-top: 0.75rem;
+}
+.progress-track {
+  height: 4px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--brand);
+  border-radius: 99px;
+  transition: width .2s;
+  width: 0%;
+}
+.progress-label { font-size: 0.75rem; color: var(--text-3); margin-top: 4px; }
+
+/* Save button */
+.btn-save {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 0.65rem 1.5rem;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-head);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition), opacity var(--transition);
+}
+.btn-save:hover    { background: var(--brand-dark); }
+.btn-save:disabled { opacity: .55; cursor: not-allowed; }
+.btn-save svg { width: 16px; height: 16px; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 1.5rem; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--text-1); color: #fff;
+  padding: 0.6rem 1.25rem;
+  border-radius: 999px;
+  font-size: 0.82rem; font-weight: 500;
+  white-space: nowrap;
+  z-index: 9999;
+  transition: transform .3s, opacity .3s;
+  opacity: 0; pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* QRIS preview */
+.qris-preview-wrap {
+  margin-top: 0.75rem;
+  display: none;
+  align-items: center;
+  gap: 12px;
+}
+.qris-preview-wrap.show { display: flex; }
+.qris-preview-img {
+  width: 80px; height: 80px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.qris-preview-info { font-size: 0.78rem; color: var(--text-3); }
+
+/* Mobile toggle */
+.menu-toggle {
+  display: none;
+  background: none; border: none; cursor: pointer;
+  padding: 4px; color: var(--text-1);
+}
+.menu-toggle svg { width: 22px; height: 22px; }
+
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.4);
+  z-index: 199;
+}
+
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.open { display: block; }
+  .main { margin-left: 0; }
+  .menu-toggle { display: flex; }
+  .content { padding: 1.25rem 1rem; }
+}
+
+/* Stat cards */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.1rem;
+}
+.stat-label { font-size: 0.75rem; color: var(--text-3); margin-bottom: 4px; }
+.stat-value { font-family: var(--font-head); font-size: 1.4rem; font-weight: 700; color: var(--text-1); }
+.stat-sub   { font-size: 0.72rem; color: var(--text-3); margin-top: 2px; }
+
+/* Link ke katalog */
+.catalog-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.82rem; color: var(--brand);
+  text-decoration: none; font-weight: 500;
+  padding: 4px 0;
+}
+.catalog-link:hover { text-decoration: underline; }
+.catalog-link svg { width: 14px; height: 14px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN SCREEN ═══ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">🏪</div>
+    <div class="login-title">Dashboard Admin</div>
+    <p class="login-sub">Masuk untuk mengelola toko Anda</p>
+
+    <div class="alert" id="loginAlert"></div>
+
+    <!-- Google -->
+    <button class="btn-social" id="btnGoogle">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Masuk dengan Google
+    </button>
+
+    <div class="divider">atau masuk dengan nomor HP</div>
+
+    <!-- Phone Step 1: input nomor -->
+    <div id="phoneStep1">
+      <div class="form-group">
+        <label class="form-label">Nomor WhatsApp / HP</label>
+        <div class="phone-wrap">
+          <span class="phone-prefix">+62</span>
+          <input type="tel" id="phoneNumber" placeholder="81234567890" inputmode="numeric" />
+        </div>
+      </div>
+      <div id="recaptcha-container" style="margin-bottom:0.75rem"></div>
+      <button class="btn-primary" id="btnSendOTP">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="17" height="17" aria-hidden="true">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.7h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.1a16 16 0 0 0 6 6l1.27-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 17.3v-.38z"/>
+        </svg>
+        Kirim Kode OTP
+      </button>
+    </div>
+
+    <!-- Phone Step 2: input OTP -->
+    <div id="phoneStep2" style="display:none">
+      <p style="font-size:0.82rem;color:var(--text-2);margin-bottom:1rem">
+        Kode OTP dikirim ke <strong id="phoneSentTo"></strong>. Masukkan 6 digit kode:
+      </p>
+      <div class="otp-row" id="otpRow">
+        <input class="otp-input" type="text" maxlength="1" inputmode="numeric" />
+        <input class="otp-input" type="text" maxlength="1" inputmode="numeric" />
+        <input class="otp-input" type="text" maxlength="1" inputmode="numeric" />
+        <input class="otp-input" type="text" maxlength="1" inputmode="numeric" />
+        <input class="otp-input" type="text" maxlength="1" inputmode="numeric" />
+        <input class="otp-input" type="text" maxlength="1" inputmode="numeric" />
+      </div>
+      <button class="btn-primary" id="btnVerifyOTP">Verifikasi &amp; Masuk</button>
+      <div class="resend-row">
+        <span id="resendText">Kirim ulang dalam </span>
+        <span id="resendTimer">60</span>
+        <span id="resendSuffix">s</span>
+        <button class="resend-btn" id="btnResend" disabled style="display:none" onclick="resendOTP()">Kirim ulang</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ DASHBOARD SCREEN ═══ -->
+<div id="dashScreen">
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">🏪</div>
+      <div>
+        <div class="sidebar-store-name" id="sbStoreName">Toko</div>
+        <div class="sidebar-store-id" id="sbStoreId"></div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-panel="overview" onclick="switchPanel('overview', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        Ringkasan
+      </button>
+      <button class="nav-item" data-panel="profile" onclick="switchPanel('profile', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        Profil Toko
+      </button>
+      <button class="nav-item" data-panel="products" onclick="switchPanel('products', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+        Produk
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="btnLogout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Keluar
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="menu-toggle" id="menuToggle" aria-label="Buka menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="topbar-title" id="topbarTitle">Ringkasan</span>
+      </div>
+      <div class="topbar-user">
+        <div class="user-avatar" id="userAvatar">A</div>
+        <span id="userEmail" style="display:none;"></span>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ── PANEL: OVERVIEW ── -->
+      <div class="panel active" id="panel-overview">
+        <div class="panel-title">Ringkasan Toko</div>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Total Produk</div>
+            <div class="stat-value" id="statProduk">—</div>
+            <div class="stat-sub">di katalog</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Status Toko</div>
+            <div class="stat-value" id="statStatus" style="font-size:1rem;margin-top:4px">—</div>
+            <div class="stat-sub">dari Firestore</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">WhatsApp</div>
+            <div class="stat-value" id="statWA" style="font-size:0.9rem;margin-top:4px">—</div>
+            <div class="stat-sub">nomor aktif</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Info
+          </div>
+          <p style="font-size:0.85rem;color:var(--text-2);line-height:1.7;margin-bottom:0.85rem">
+            Gunakan menu <strong>Profil Toko</strong> untuk mengubah nama, nomor WhatsApp, dan gambar QRIS. Gunakan menu <strong>Produk</strong> untuk menambah produk beserta foto.
+          </p>
+          <a class="catalog-link" id="linkKatalog" href="#" target="_blank">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+            Lihat halaman katalog
+          </a>
+        </div>
+      </div>
+
+      <!-- ── PANEL: PROFIL TOKO ── -->
+      <div class="panel" id="panel-profile">
+        <div class="panel-title">Profil Toko</div>
+
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            Informasi Dasar
+          </div>
+          <div class="field-row">
+            <div class="form-group">
+              <label class="form-label" for="pNamaToko">Nama Toko</label>
+              <input class="form-input" type="text" id="pNamaToko" placeholder="Warung Kopi Asik" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="pTagline">Tagline</label>
+              <input class="form-input" type="text" id="pTagline" placeholder="Kopi & Camilan Terbaik" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="pHeroTitle">Judul Hero Banner</label>
+              <input class="form-input" type="text" id="pHeroTitle" placeholder="Menu kami hari ini" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="pWA">Nomor WhatsApp <span style="color:var(--danger)">*</span></label>
+              <input class="form-input" type="tel" id="pWA" placeholder="081234567890" />
+            </div>
+            <div class="form-group field-full">
+              <label class="form-label" for="pHeroDesc">Deskripsi Hero Banner</label>
+              <input class="form-input" type="text" id="pHeroDesc" placeholder="Konfirmasi pesanan langsung lewat WhatsApp." />
+            </div>
+          </div>
+          <button class="btn-save" id="btnSaveProfile">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+            </svg>
+            Simpan Profil
+          </button>
+        </div>
+
+        <!-- Upload QRIS -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3" rx=".5"/>
+            </svg>
+            Gambar QRIS / Metode Pembayaran
+          </div>
+
+          <div class="qris-preview-wrap" id="qrisPreviewWrap">
+            <img id="qrisPreviewImg" class="qris-preview-img" src="" alt="QRIS saat ini" />
+            <div class="qris-preview-info">Gambar QRIS saat ini.<br>Upload baru untuk mengganti.</div>
+          </div>
+
+          <div class="upload-zone" id="qrisZone">
+            <input type="file" id="qrisFile" accept="image/*" />
+            <div class="upload-icon">🔳</div>
+            <div class="upload-text">Klik atau drag foto QRIS ke sini</div>
+            <div class="upload-sub">JPG, PNG, WebP — maks. 2MB</div>
+          </div>
+          <img id="qrisLocalPreview" class="img-preview" alt="Preview QRIS" />
+
+          <div class="upload-progress" id="qrisProgress">
+            <div class="progress-track"><div class="progress-fill" id="qrisFill"></div></div>
+            <div class="progress-label" id="qrisProgressLabel">Mengupload...</div>
+          </div>
+
+          <button class="btn-save" id="btnUploadQris" style="margin-top:1rem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+              <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+            </svg>
+            Upload QRIS
+          </button>
+        </div>
+      </div>
+
+      <!-- ── PANEL: PRODUK ── -->
+      <div class="panel" id="panel-products">
+        <div class="panel-title">Tambah Produk</div>
+
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Detail Produk Baru
+          </div>
+
+          <div class="field-row">
+            <div class="form-group">
+              <label class="form-label" for="prNama">Nama Produk <span style="color:var(--danger)">*</span></label>
+              <input class="form-input" type="text" id="prNama" placeholder="Es Kopi Susu" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prHarga">Harga (Rp) <span style="color:var(--danger)">*</span></label>
+              <input class="form-input" type="number" id="prHarga" placeholder="18000" min="0" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prKategori">Kategori</label>
+              <input class="form-input" type="text" id="prKategori" placeholder="Minuman" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prEmoji">Emoji (jika tidak ada foto)</label>
+              <input class="form-input" type="text" id="prEmoji" placeholder="☕" maxlength="4" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prStok">Stok</label>
+              <input class="form-input" type="number" id="prStok" placeholder="99" min="0" />
+            </div>
+            <div class="form-group field-full">
+              <label class="form-label" for="prDesc">Deskripsi</label>
+              <textarea class="form-textarea" id="prDesc" placeholder="Kopi arabika dengan susu segar..."></textarea>
+            </div>
+          </div>
+
+          <!-- Upload foto produk -->
+          <label class="form-label" style="margin-bottom:6px">Foto Produk</label>
+          <div class="upload-zone" id="prodZone">
+            <input type="file" id="prodFile" accept="image/*" />
+            <div class="upload-icon">📷</div>
+            <div class="upload-text">Klik atau drag foto produk ke sini</div>
+            <div class="upload-sub">JPG, PNG, WebP — maks. 5MB</div>
+          </div>
+          <img id="prodLocalPreview" class="img-preview" alt="Preview produk" />
+
+          <div class="upload-progress" id="prodProgress" style="margin-top:0.75rem">
+            <div class="progress-track"><div class="progress-fill" id="prodFill"></div></div>
+            <div class="progress-label" id="prodProgressLabel">Mengupload foto...</div>
+          </div>
+
+          <div class="alert" id="prodAlert" style="margin-top:1rem"></div>
+
+          <button class="btn-save" id="btnSaveProd" style="margin-top:1rem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+            </svg>
+            Simpan Produk
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /dashScreen -->
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- ═══════════════════════════════════════════
+     FIREBASE CONFIG
+═══════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp }                          from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js';
+import { getAuth, signInWithPopup,
+         GoogleAuthProvider,
+         RecaptchaVerifier, signInWithPhoneNumber,
+         signOut, onAuthStateChanged }            from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc,
+         updateDoc, addDoc, collection,
+         getDocs }                                from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js';
+import { getStorage, ref, uploadBytesResumable,
+         getDownloadURL }                         from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-storage.js';
+
+const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyCzypMmy_vzYPTfaBZjUaSdt921o-y3YNQ",
+    authDomain: "katalog-toko-saya.firebaseapp.com",
+    projectId: "katalog-toko-saya",
+    storageBucket: "katalog-toko-saya.firebasestorage.app",
+    messagingSenderId: "822538166386",
+    appId: "1:822538166386:web:94f1ffd879a929aa17e2eb"
+};
+
+const STORE_ID = new URLSearchParams(location.search).get('store') || 'toko-saya';
+
+/* Nama subkoleksi produk — 'product' atau 'products' sesuai Firestore Anda */
+const PRODUCTS_COL = 'product';
+
+/* ──────────────────────────────── */
+const app     = initializeApp(FIREBASE_CONFIG);
+const auth    = getAuth(app);
+const db      = getFirestore(app);
+const storage = getStorage(app);
+
+let storeData          = null;
+let confirmationResult = null;
+let resendInterval     = null;
+
+/* ══════════════════════════════
+   UTILITAS
+══════════════════════════════ */
+function toast(msg, dur = 3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+function showAlert(msg, type = 'danger') {
+  const el = document.getElementById('loginAlert');
+  el.className = 'alert ' + type;
+  el.textContent = msg;
+}
+
+function clearAlert() {
+  const el = document.getElementById('loginAlert');
+  el.className = 'alert';
+  el.textContent = '';
+}
+
+/* ══════════════════════════════
+   AUTH STATE
+══════════════════════════════ */
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashScreen').style.display  = 'block';
+    const initial = (user.displayName || user.email || user.phoneNumber || 'A').charAt(0).toUpperCase();
+    document.getElementById('userAvatar').textContent = initial;
+    await loadStoreData();
+    await loadOverviewStats();
+  } else {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('dashScreen').style.display  = 'none';
+  }
+});
+
+/* ══════════════════════════════
+   LOGIN — GOOGLE
+══════════════════════════════ */
+document.getElementById('btnGoogle').addEventListener('click', async () => {
+  clearAlert();
+  const btn = document.getElementById('btnGoogle');
+  btn.disabled = true; btn.textContent = 'Menghubungkan...';
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Masuk dengan Google`;
+    if (err.code !== 'auth/popup-closed-by-user') {
+      showAlert('Login Google gagal: ' + err.message);
+    }
+  }
+});
+
+/* ══════════════════════════════
+   LOGIN — PHONE OTP
+══════════════════════════════ */
+let recaptchaVerifier = null;
+
+function initRecaptcha() {
+  if (recaptchaVerifier) return;
+  recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+    size: 'normal',
+    callback: () => {},
+    'expired-callback': () => {
+      showAlert('reCAPTCHA expired, refresh halaman.', 'warn');
+    }
+  });
+  recaptchaVerifier.render();
+}
+
+document.getElementById('btnSendOTP').addEventListener('click', async () => {
+  const rawPhone = document.getElementById('phoneNumber').value.trim().replace(/\D/g, '');
+  if (!rawPhone) { showAlert('Masukkan nomor HP.'); return; }
+
+  const phone = '+62' + (rawPhone.startsWith('0') ? rawPhone.slice(1) : rawPhone);
+  clearAlert();
+  const btn = document.getElementById('btnSendOTP');
+  btn.disabled = true; btn.textContent = 'Mengirim OTP...';
+
+  try {
+    initRecaptcha();
+    confirmationResult = await signInWithPhoneNumber(auth, phone, recaptchaVerifier);
+
+    /* tampilkan step 2 */
+    document.getElementById('phoneStep1').style.display = 'none';
+    document.getElementById('phoneStep2').style.display = 'block';
+    document.getElementById('phoneSentTo').textContent  = phone;
+    document.querySelectorAll('.otp-input')[0].focus();
+    startResendTimer();
+    showAlert('Kode OTP dikirim via SMS ke ' + phone, 'success');
+
+  } catch (err) {
+    btn.disabled = false; btn.textContent = 'Kirim Kode OTP';
+    showAlert('Gagal kirim OTP: ' + err.message);
+    /* reset recaptcha */
+    recaptchaVerifier.clear();
+    recaptchaVerifier = null;
+    document.getElementById('recaptcha-container').innerHTML = '';
+  }
+});
+
+/* Auto-jump OTP inputs */
+document.getElementById('otpRow').addEventListener('input', e => {
+  if (!e.target.classList.contains('otp-input')) return;
+  const inputs = [...document.querySelectorAll('.otp-input')];
+  const idx = inputs.indexOf(e.target);
+  if (e.target.value && idx < 5) inputs[idx + 1].focus();
+});
+
+document.getElementById('otpRow').addEventListener('keydown', e => {
+  if (e.key === 'Backspace' && !e.target.value) {
+    const inputs = [...document.querySelectorAll('.otp-input')];
+    const idx = inputs.indexOf(e.target);
+    if (idx > 0) inputs[idx - 1].focus();
+  }
+});
+
+document.getElementById('btnVerifyOTP').addEventListener('click', async () => {
+  const code = [...document.querySelectorAll('.otp-input')].map(i => i.value).join('');
+  if (code.length < 6) { showAlert('Masukkan 6 digit kode OTP.'); return; }
+
+  const btn = document.getElementById('btnVerifyOTP');
+  btn.disabled = true; btn.textContent = 'Memverifikasi...';
+  try {
+    await confirmationResult.confirm(code);
+  } catch (err) {
+    btn.disabled = false; btn.textContent = 'Verifikasi & Masuk';
+    showAlert(err.code === 'auth/invalid-verification-code'
+      ? 'Kode OTP salah. Coba lagi.' : 'Verifikasi gagal: ' + err.message);
+  }
+});
+
+function startResendTimer() {
+  let secs = 60;
+  const timerEl  = document.getElementById('resendTimer');
+  const textEl   = document.getElementById('resendText');
+  const suffixEl = document.getElementById('resendSuffix');
+  const btnR     = document.getElementById('btnResend');
+
+  timerEl.textContent  = secs;
+  textEl.style.display = 'inline'; suffixEl.style.display = 'inline';
+  btnR.style.display   = 'none';   btnR.disabled = true;
+
+  clearInterval(resendInterval);
+  resendInterval = setInterval(() => {
+    secs--;
+    timerEl.textContent = secs;
+    if (secs <= 0) {
+      clearInterval(resendInterval);
+      textEl.style.display = 'none'; suffixEl.style.display = 'none'; timerEl.textContent = '';
+      btnR.style.display   = 'inline'; btnR.disabled = false;
+    }
+  }, 1000);
+}
+
+window.resendOTP = async function() {
+  /* Reset ke step 1 */
+  document.getElementById('phoneStep1').style.display = 'block';
+  document.getElementById('phoneStep2').style.display = 'none';
+  document.querySelectorAll('.otp-input').forEach(i => i.value = '');
+  recaptchaVerifier && recaptchaVerifier.clear();
+  recaptchaVerifier = null;
+  document.getElementById('recaptcha-container').innerHTML = '';
+  document.getElementById('btnSendOTP').disabled = false;
+  document.getElementById('btnSendOTP').textContent = 'Kirim Kode OTP';
+  clearAlert();
+};
+
+/* ══════════════════════════════
+   LOGOUT
+══════════════════════════════ */
+document.getElementById('btnLogout').addEventListener('click', async () => {
+  await signOut(auth);
+  toast('Berhasil keluar.');
+});
+
+/* ══════════════════════════════
+   LOAD STORE DATA
+══════════════════════════════ */
+async function loadStoreData() {
+  try {
+    const snap = await getDoc(doc(db, 'stores', STORE_ID));
+    if (!snap.exists()) return;
+    storeData = snap.data();
+
+    document.getElementById('sbStoreName').textContent = storeData.nama_toko || storeData.name || 'Toko';
+    document.getElementById('sbStoreId').textContent   = STORE_ID;
+
+    /* Isi form profil */
+    document.getElementById('pNamaToko').value  = storeData.nama_toko   || '';
+    document.getElementById('pTagline').value   = storeData.tagline     || '';
+    document.getElementById('pHeroTitle').value = storeData.hero_title  || '';
+    document.getElementById('pHeroDesc').value  = storeData.hero_desc   || '';
+    document.getElementById('pWA').value        = storeData.whatsapp_owner || '';
+
+    /* QRIS preview */
+    const qrisUrl = storeData.qris_image || '';
+    if (qrisUrl) {
+      document.getElementById('qrisPreviewImg').src = qrisUrl;
+      document.getElementById('qrisPreviewWrap').classList.add('show');
+    }
+
+    /* Link katalog */
+    const catalogHref = `index.html?store=${STORE_ID}`;
+    document.getElementById('linkKatalog').href = catalogHref;
+
+  } catch (err) {
+    console.error('loadStoreData:', err);
+  }
+}
+
+/* ══════════════════════════════
+   OVERVIEW STATS
+══════════════════════════════ */
+async function loadOverviewStats() {
+  try {
+    const snap = await getDocs(collection(db, 'stores', STORE_ID, PRODUCTS_COL));
+    document.getElementById('statProduk').textContent = snap.size;
+    document.getElementById('statStatus').textContent = storeData?.aktif ? '✅ Aktif' : '⏸ Nonaktif';
+    document.getElementById('statWA').textContent     = storeData?.whatsapp_owner || '—';
+  } catch (err) {
+    console.error('loadOverviewStats:', err);
+  }
+}
+
+/* ══════════════════════════════
+   SAVE PROFILE
+══════════════════════════════ */
+document.getElementById('btnSaveProfile').addEventListener('click', async () => {
+  const btn = document.getElementById('btnSaveProfile');
+  const wa  = document.getElementById('pWA').value.trim();
+  if (!wa) { toast('Nomor WhatsApp wajib diisi!'); return; }
+
+  btn.disabled = true; btn.textContent = 'Menyimpan...';
+
+  try {
+    await setDoc(doc(db, 'stores', STORE_ID), {
+      nama_toko:        document.getElementById('pNamaToko').value.trim(),
+      tagline:          document.getElementById('pTagline').value.trim(),
+      hero_title:       document.getElementById('pHeroTitle').value.trim(),
+      hero_desc:        document.getElementById('pHeroDesc').value.trim(),
+      whatsapp_owner:   wa,
+      aktif:            true,
+    }, { merge: true });
+
+    document.getElementById('sbStoreName').textContent = document.getElementById('pNamaToko').value || 'Toko';
+    toast('✅ Profil toko berhasil disimpan!');
+  } catch (err) {
+    toast('❌ Gagal menyimpan: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Simpan Profil';
+  }
+});
+
+/* ══════════════════════════════
+   UPLOAD QRIS
+══════════════════════════════ */
+const qrisFileEl   = document.getElementById('qrisFile');
+const qrisLocalPrv = document.getElementById('qrisLocalPreview');
+
+qrisFileEl.addEventListener('change', () => {
+  const file = qrisFileEl.files[0];
+  if (!file) return;
+  qrisLocalPrv.src = URL.createObjectURL(file);
+  qrisLocalPrv.style.display = 'block';
+});
+
+document.getElementById('btnUploadQris').addEventListener('click', async () => {
+  const file = qrisFileEl.files[0];
+  if (!file) { toast('Pilih file gambar QRIS terlebih dahulu.'); return; }
+  if (file.size > 2 * 1024 * 1024) { toast('Ukuran file maks. 2MB.'); return; }
+
+  const btn      = document.getElementById('btnUploadQris');
+  const progress = document.getElementById('qrisProgress');
+  const fill     = document.getElementById('qrisFill');
+  const label    = document.getElementById('qrisProgressLabel');
+
+  btn.disabled = true; btn.textContent = 'Mengupload...';
+  progress.style.display = 'block';
+
+  const storageRef = ref(storage, `stores/${STORE_ID}/qris_${Date.now()}`);
+  const task       = uploadBytesResumable(storageRef, file);
+
+  task.on('state_changed',
+    (snap) => {
+      const pct = Math.round(snap.bytesTransferred / snap.totalBytes * 100);
+      fill.style.width  = pct + '%';
+      label.textContent = `Mengupload... ${pct}%`;
+    },
+    (err) => {
+      toast('❌ Upload gagal: ' + err.message);
+      btn.disabled = false; btn.textContent = 'Upload QRIS';
+      progress.style.display = 'none';
+    },
+    async () => {
+      const url = await getDownloadURL(task.snapshot.ref);
+      await updateDoc(doc(db, 'stores', STORE_ID), { qris_image: url });
+
+      document.getElementById('qrisPreviewImg').src = url;
+      document.getElementById('qrisPreviewWrap').classList.add('show');
+      fill.style.width = '100%';
+      label.textContent = 'Upload selesai!';
+      toast('✅ Gambar QRIS berhasil diupload!');
+      btn.disabled = false; btn.textContent = 'Upload QRIS';
+      setTimeout(() => { progress.style.display = 'none'; }, 2000);
+    }
+  );
+});
+
+/* ══════════════════════════════
+   UPLOAD FOTO PRODUK + SAVE
+══════════════════════════════ */
+const prodFileEl   = document.getElementById('prodFile');
+const prodLocalPrv = document.getElementById('prodLocalPreview');
+
+prodFileEl.addEventListener('change', () => {
+  const file = prodFileEl.files[0];
+  if (!file) return;
+  prodLocalPrv.src = URL.createObjectURL(file);
+  prodLocalPrv.style.display = 'block';
+});
+
+document.getElementById('btnSaveProd').addEventListener('click', async () => {
+  const nama  = document.getElementById('prNama').value.trim();
+  const harga = parseFloat(document.getElementById('prHarga').value);
+  const btn   = document.getElementById('btnSaveProd');
+  const alert = document.getElementById('prodAlert');
+
+  alert.className = 'alert'; alert.textContent = '';
+
+  if (!nama) {
+    alert.className = 'alert danger'; alert.textContent = 'Nama produk wajib diisi.'; return;
+  }
+  if (isNaN(harga) || harga < 0) {
+    alert.className = 'alert danger'; alert.textContent = 'Harga tidak valid.'; return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Menyimpan...';
+
+  const prodData = {
+    nama_produk: nama,
+    harga:       harga,
+    kategori:    document.getElementById('prKategori').value.trim(),
+    deskripsi:   document.getElementById('prDesc').value.trim(),
+    emoji:       document.getElementById('prEmoji').value.trim() || '🛍️',
+    stok:        parseInt(document.getElementById('prStok').value) || 99,
+    dibuat:      new Date().toISOString(),
+  };
+
+  try {
+    const file = prodFileEl.files[0];
+
+    if (file) {
+      /* Upload foto dulu, baru simpan data */
+      if (file.size > 5 * 1024 * 1024) {
+        alert.className = 'alert danger'; alert.textContent = 'Ukuran foto maks. 5MB.';
+        btn.disabled = false; btn.textContent = 'Simpan Produk'; return;
+      }
+
+      const progress = document.getElementById('prodProgress');
+      const fill     = document.getElementById('prodFill');
+      const lbl      = document.getElementById('prodProgressLabel');
+      progress.style.display = 'block';
+
+      const storageRef = ref(storage, `stores/${STORE_ID}/products/${Date.now()}_${file.name}`);
+      const task       = uploadBytesResumable(storageRef, file);
+
+      task.on('state_changed',
+        (snap) => {
+          const pct = Math.round(snap.bytesTransferred / snap.totalBytes * 100);
+          fill.style.width = pct + '%';
+          lbl.textContent  = `Mengupload foto... ${pct}%`;
+        },
+        (err) => {
+          toast('❌ Upload foto gagal: ' + err.message);
+          btn.disabled = false; btn.textContent = 'Simpan Produk';
+          progress.style.display = 'none';
+        },
+        async () => {
+          prodData.gambar = await getDownloadURL(task.snapshot.ref);
+          await addDoc(collection(db, 'stores', STORE_ID, PRODUCTS_COL), prodData);
+          fill.style.width = '100%'; lbl.textContent = 'Selesai!';
+          setTimeout(() => { progress.style.display = 'none'; }, 1500);
+          resetProdForm();
+          await loadOverviewStats();
+          toast('✅ Produk berhasil ditambahkan!');
+          btn.disabled = false; btn.textContent = 'Simpan Produk';
+        }
+      );
+    } else {
+      /* Tanpa foto */
+      await addDoc(collection(db, 'stores', STORE_ID, PRODUCTS_COL), prodData);
+      resetProdForm();
+      await loadOverviewStats();
+      toast('✅ Produk berhasil ditambahkan!');
+      btn.disabled = false; btn.textContent = 'Simpan Produk';
+    }
+  } catch (err) {
+    toast('❌ Gagal: ' + err.message);
+    btn.disabled = false; btn.textContent = 'Simpan Produk';
+  }
+});
+
+function resetProdForm() {
+  ['prNama','prHarga','prKategori','prDesc','prEmoji','prStok'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  prodFileEl.value = '';
+  prodLocalPrv.src = ''; prodLocalPrv.style.display = 'none';
+}
+
+/* ══════════════════════════════
+   DRAG & DROP
+══════════════════════════════ */
+['qrisZone','prodZone'].forEach(zoneId => {
+  const zone = document.getElementById(zoneId);
+  zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('drag');
+    const input = zone.querySelector('input[type=file]');
+    input.files = e.dataTransfer.files;
+    input.dispatchEvent(new Event('change'));
+  });
+});
+
+/* ══════════════════════════════
+   PANEL SWITCH
+══════════════════════════════ */
+window.switchPanel = function(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  btn.classList.add('active');
+  const titles = { overview: 'Ringkasan', profile: 'Profil Toko', products: 'Tambah Produk' };
+  document.getElementById('topbarTitle').textContent = titles[name] || name;
+  /* tutup sidebar di mobile */
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+};
+
+/* Mobile sidebar toggle */
+document.getElementById('menuToggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+});
+document.getElementById('sidebarOverlay').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+});
+</script>
+
+</body>
+</html>
