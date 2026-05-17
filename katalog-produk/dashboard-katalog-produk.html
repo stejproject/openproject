@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -985,16 +986,6 @@ function clearAlert() {
 }
 
 /* ══════════════════════════════
-   AUTH STATE + REDIRECT RESULT
-══════════════════════════════ */
-
-/* ══════════════════════════════
-   AUTH STATE + REDIRECT RESULT
-══════════════════════════════ */
-
-/* Tunggu redirect result selesai dulu sebelum onAuthStateChanged berjalan.
-   Ini mencegah halaman login muncul sebelum Firebase tahu user sudah login. */
-/* ══════════════════════════════
    AUTH FLOW — redirect-first
 ══════════════════════════════ */
 
@@ -1008,33 +999,45 @@ function showDashboard(user) {
 }
 
 function showLogin() {
-  document.getElementById('redirectLoading').style.display = 'none';
-  document.getElementById('loginForm').style.display       = 'block';
-  document.getElementById('loginScreen').style.display     = 'flex';
-  document.getElementById('dashScreen').style.display      = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('dashScreen').style.display  = 'none';
+  hideAuthLoading();
 }
 
-/* Sembunyikan semua dulu saat load */
+/* Sembunyikan semua — cegah flash sebelum auth selesai */
 document.getElementById('loginScreen').style.display = 'none';
 document.getElementById('dashScreen').style.display  = 'none';
 
-/* Kalau balik dari redirect Google, tampilkan spinner */
-if (sessionStorage.getItem('googleRedirectPending')) {
-  document.getElementById('loginScreen').style.display    = 'flex';
-  document.getElementById('redirectLoading').style.display = 'block';
-  document.getElementById('loginForm').style.display       = 'none';
+/* Spinner fullscreen sementara tunggu Firebase */
+document.body.insertAdjacentHTML('beforeend', `
+  <div id="authLoading" style="
+    position:fixed;inset:0;background:#052e16;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;z-index:9999;">
+    <div style="width:40px;height:40px;border:3px solid rgba(255,255,255,.2);
+      border-top-color:#fff;border-radius:50%;
+      animation:authSpin .7s linear infinite;margin-bottom:1rem;"></div>
+    <p style="color:rgba(255,255,255,.6);font-size:0.85rem;font-family:sans-serif">Memuat...</p>
+  </div>
+  <style>@keyframes authSpin{to{transform:rotate(360deg)}}</style>
+`);
+
+function hideAuthLoading() {
+  const el = document.getElementById('authLoading');
+  if (el) el.remove();
 }
 
-/* Step 1: cek redirect result dulu */
+/* Tunggu getRedirectResult dulu — baru jalankan onAuthStateChanged */
 getRedirectResult(auth)
   .then(result => {
-    sessionStorage.removeItem('googleRedirectPending');
     if (result && result.user) {
-      /* Login via redirect berhasil */
+      /* Baru balik dari redirect Google — langsung masuk dashboard */
+      hideAuthLoading();
       showDashboard(result.user);
     } else {
-      /* Tidak ada redirect result — cek apakah sudah login sebelumnya */
+      /* Tidak ada redirect — cek session yang sudah ada */
       onAuthStateChanged(auth, user => {
+        hideAuthLoading();
         if (user) {
           showDashboard(user);
         } else {
@@ -1044,15 +1047,14 @@ getRedirectResult(auth)
     }
   })
   .catch(err => {
-    sessionStorage.removeItem('googleRedirectPending');
     console.error('getRedirectResult error:', err.code, err.message);
-    /* Tetap cek auth state meski redirect error */
     onAuthStateChanged(auth, user => {
+      hideAuthLoading();
       if (user) {
         showDashboard(user);
       } else {
         showLogin();
-        if (err.code !== 'auth/cancelled-popup-request') {
+        if (err.code && err.code !== 'auth/cancelled-popup-request') {
           showAlert('Login gagal: ' + err.message);
         }
       }
@@ -1068,7 +1070,6 @@ document.getElementById('btnGoogle').addEventListener('click', async () => {
   btn.disabled = true; btn.textContent = 'Mengarahkan ke Google...';
   try {
     const provider = new GoogleAuthProvider();
-    sessionStorage.setItem('googleRedirectPending', '1');
     await signInWithRedirect(auth, provider);
     /* Halaman akan redirect — tidak perlu handle di sini */
   } catch (err) {
