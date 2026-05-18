@@ -1302,34 +1302,24 @@ document.getElementById('dashScreen').style.display     = 'none';
 
 onAuthStateChanged(auth, async user => {
   if (user) {
-    /* Cek apakah user sudah punya toko */
-    const storeIdFromUrl = new URLSearchParams(location.search).get('store');
-
-    if (storeIdFromUrl) {
-      /* Akses toko spesifik via URL */
-      const snap = await getDoc(doc(db, 'stores', storeIdFromUrl));
-      if (snap.exists() && snap.data().owner_uid === user.uid) {
-        showDashboard(user);
-      } else if (snap.exists()) {
-        showAlert('Anda tidak memiliki akses ke toko ini.', 'danger');
-        document.getElementById('loginScreen').style.display = 'flex';
-      } else {
-        showRegister();
-      }
-    } else {
-      /* Cari toko milik user ini */
-      const q = query(collection(db, 'stores'), where('owner_uid', '==', user.uid));
+    /* Selalu cari toko milik user ini berdasarkan owner_uid */
+    try {
+      const q    = query(collection(db, 'stores'), where('owner_uid', '==', user.uid));
       const snap = await getDocs(q);
+
       if (!snap.empty) {
-        /* Punya toko — redirect ke toko pertama */
+        /* Punya toko — pakai toko pertama miliknya */
         const myStore = snap.docs[0];
         const newUrl  = `${location.pathname}?store=${myStore.id}`;
         history.replaceState(null, '', newUrl);
         showDashboard(user, myStore.id);
       } else {
-        /* Belum punya toko — arahkan ke registrasi */
+        /* Tidak punya toko sama sekali → arahkan ke registrasi */
         showRegister();
       }
+    } catch (err) {
+      console.error('Auth check error:', err);
+      showRegister();
     }
   } else {
     document.getElementById('loginScreen').style.display    = 'flex';
