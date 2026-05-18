@@ -482,6 +482,15 @@
             font-size: 0.7rem;
             margin-left: auto;
         }
+        .sync-status {
+            font-size: 0.7rem;
+            color: #888;
+            text-align: center;
+            margin-top: 5px;
+        }
+        .sync-status.syncing { color: #ffcc00; }
+        .sync-status.synced { color: #00ffcc; }
+        .sync-status.error { color: #cf6679; }
     </style>
 <base target="_blank">
 <base target="_blank">
@@ -503,6 +512,7 @@
             <span id="status-dot" class="status-dot offline"></span>
             <span id="status-text">Menghubungkan ke database...</span>
         </p>
+        <p class="sync-status" id="sync-status"></p>
     </div>
 
     <!-- DAFTAR LAYANAN -->
@@ -589,7 +599,7 @@
         <div id="crud-section">
             <!-- MULTI AKUN SWITCHER -->
             <div class="account-section">
-                <h3>👥 Kelola Multi Akun</h3>
+                <h3>👥 Kelola Multi Akun <span id="account-sync-badge" style="font-size:0.65rem; color:#888;"></span></h3>
                 <div class="account-list" id="account-list">
                     <!-- Akun akan dirender di sini -->
                 </div>
@@ -687,7 +697,7 @@
     // ===================== FIREBASE =====================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, getDocs, writeBatch, query, where } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, getDocs, writeBatch, query, where, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDeRPjhtmNPz5TNK1TPP3O5XZd4ORyeGPs",
@@ -708,30 +718,49 @@
     let isOffline = false;
     let currentUser = null;
     let unsubscribeSnapshot = null;
+    let unsubscribeAccounts = null;
     let qrBase64Cache = null;
     let videoUrlCache = null;
     let activeItemId = null;
     let currentAccountId = null;
     let accounts = [];
+    let isSyncing = false;
     const STORAGE_KEY = 'stej_portfolio_offline_v3';
-    const ACCOUNTS_KEY = 'stej_accounts_v1';
+    const ACCOUNTS_KEY = 'stej_accounts_v2'; // v2 untuk perbedaan format
+
+    // ===================== SYNC STATUS =====================
+    function updateSyncStatus(status, message) {
+        const el = document.getElementById('sync-status');
+        el.className = 'sync-status ' + status;
+        el.textContent = message || '';
+    }
 
     // ===================== MULTI AKUN =====================
-    function loadAccounts() {
+    // Load akun: prioritas Firestore jika online, fallback localStorage
+    async function loadAccounts() {
+        if (!isOffline && currentUser) {
+            await syncAccountsFromFirestore();
+        } else {
+            loadAccountsLocal();
+        }
+    }
+
+    // Load dari localStorage (fallback / offline mode)
+    function loadAccountsLocal() {
         const saved = localStorage.getItem(ACCOUNTS_KEY);
         if (saved) {
             try { accounts = JSON.parse(saved); } catch(e) { accounts = []; }
         }
         if (accounts.length === 0) {
-            // Buat akun default
             accounts = [{
                 id: 'default',
                 name: 'Akun Utama',
                 wa: '',
                 photo: 'https://via.placeholder.com/32',
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                isDefault: true
             }];
-            saveAccounts();
+            saveAccountsLocal();
         }
         if (!currentAccountId || !accounts.find(a => a.id === currentAccountId)) {
             currentAccountId = accounts[0].id;
@@ -740,8 +769,97 @@
         updateCurrentAccountBar();
     }
 
-    function saveAccounts() {
+    function saveAccountsLocal() {
         localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+    }
+
+    // Sync akun dari Firestore
+    async function syncAccountsFromFirestore() {
+        if (!currentUser) return;
+        updateSyncStatus('syncing', '⏳ Sinkronisasi akun...');
+        try {
+            const q = query(collection(db, 'accounts'), where('ownerUid', '==', currentUser.uid));
+            const snapshot = await getDocs(q);
+
+            accounts = [];
+            snapshot.forEach(docSnap => {
+                accounts.push({ id: docSnap.id, ...docSnap.data() });
+            });
+
+            // Jika tidak ada akun di Firestore, buat default
+            if (accounts.length === 0) {
+                const defaultAccount = {
+                    name: 'Akun Utama',
+                    wa: '',
+                    photo: 'https://via.placeholder.com/32',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    ownerUid: currentUser.uid,
+                    isDefault: true
+                };
+                const docRef = await addDoc(collection(db, 'accounts'), defaultAccount);
+                accounts.push({ id: docRef.id, ...defaultAccount });
+            }
+
+            // Sync ke localStorage sebagai cache
+            saveAccountsLocal();
+
+            if (!currentAccountId || !accounts.find(a => a.id === currentAccountId)) {
+                currentAccountId = accounts[0].id;
+            }
+
+            renderAccountList();
+            updateCurrentAccountBar();
+            updateSyncStatus('synced', '✅ Akun tersinkron');
+        } catch (err) {
+            console.error('Sync accounts error:', err);
+            updateSyncStatus('error', '❌ Gagal sync akun, menggunakan cache');
+            loadAccountsLocal(); // Fallback
+        }
+    }
+
+    // Real-time listener untuk akun
+    function listenAccountsRealtime() {
+        if (isOffline || !currentUser) return;
+        if (unsubscribeAccounts) unsubscribeAccounts();
+
+        const q = query(collection(db, 'accounts'), where('ownerUid', '==', currentUser.uid));
+        unsubscribeAccounts = onSnapshot(q, snapshot => {
+            accounts = [];
+            snapshot.forEach(docSnap => {
+                accounts.push({ id: docSnap.id, ...docSnap.data() });
+            });
+
+            if (accounts.length === 0) {
+                // Tidak ada akun, buat default
+                const defaultAccount = {
+                    name: 'Akun Utama',
+                    wa: '',
+                    photo: 'https://via.placeholder.com/32',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    ownerUid: currentUser.uid,
+                    isDefault: true
+                };
+                addDoc(collection(db, 'accounts'), defaultAccount);
+                return;
+            }
+
+            saveAccountsLocal();
+
+            if (!currentAccountId || !accounts.find(a => a.id === currentAccountId)) {
+                currentAccountId = accounts[0].id;
+            }
+
+            renderAccountList();
+            updateCurrentAccountBar();
+            renderLayanan();
+            renderAdminTable();
+            updateSyncStatus('synced', '✅ Akun real-time aktif');
+        }, err => {
+            console.error('Accounts realtime error:', err);
+            updateSyncStatus('error', '❌ Koneksi akun terputus');
+        });
     }
 
     window.toggleAddAccount = function() {
@@ -754,7 +872,7 @@
         }
     };
 
-    window.saveNewAccount = function() {
+    window.saveNewAccount = async function() {
         const name = document.getElementById('new-account-name').value.trim();
         const wa = document.getElementById('new-account-wa').value.trim();
         const photo = document.getElementById('new-account-photo').value.trim() || 'https://via.placeholder.com/32';
@@ -762,23 +880,39 @@
         if (!name) { alert('Nama akun wajib diisi!'); return; }
 
         const newAccount = {
-            id: 'acc_' + Date.now(),
             name: name,
             wa: wa,
             photo: photo,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            isDefault: false
         };
 
-        accounts.push(newAccount);
-        saveAccounts();
-        renderAccountList();
-        toggleAddAccount();
-
-        // Auto switch ke akun baru
-        currentAccountId = newAccount.id;
-        updateCurrentAccountBar();
-        renderLayanan();
-        renderAdminTable();
+        if (isOffline) {
+            newAccount.id = 'acc_' + Date.now();
+            accounts.push(newAccount);
+            saveAccountsLocal();
+            renderAccountList();
+            toggleAddAccount();
+            currentAccountId = newAccount.id;
+            updateCurrentAccountBar();
+            renderLayanan();
+            renderAdminTable();
+        } else {
+            if (!currentUser) { alert('Silakan login terlebih dahulu!'); return; }
+            try {
+                updateSyncStatus('syncing', '⏳ Menyimpan akun ke cloud...');
+                newAccount.ownerUid = currentUser.uid;
+                const docRef = await addDoc(collection(db, 'accounts'), newAccount);
+                newAccount.id = docRef.id;
+                // Tidak perlu push manual karena onSnapshot akan handle
+                toggleAddAccount();
+                updateSyncStatus('synced', '✅ Akun berhasil dibuat');
+            } catch (err) {
+                alert('Error: ' + err.message);
+                updateSyncStatus('error', '❌ Gagal menyimpan akun');
+            }
+        }
     };
 
     window.switchAccount = function(accountId) {
@@ -788,7 +922,6 @@
         renderLayanan();
         renderAdminTable();
 
-        // Update detail area jika ada yang aktif
         if (activeItemId) {
             const item = dataLayanan.find(x => x.id === activeItemId);
             if (item && item.accountId !== currentAccountId) {
@@ -798,35 +931,48 @@
         }
     };
 
-    window.deleteAccount = function(accountId, event) {
+    window.deleteAccount = async function(accountId, event) {
         event.stopPropagation();
         if (accounts.length <= 1) { alert('Minimal harus ada 1 akun!'); return; }
         const acc = accounts.find(a => a.id === accountId);
         if (!confirm('Yakin hapus akun "' + (acc ? acc.name : '') + '"? Semua layanan di akun ini juga akan terhapus!')) return;
 
-        // Hapus semua layanan di akun ini
-        dataLayanan = dataLayanan.filter(x => x.accountId !== accountId);
-        if (isOffline) saveOffline();
+        if (isOffline) {
+            dataLayanan = dataLayanan.filter(x => x.accountId !== accountId);
+            saveOffline();
+            accounts = accounts.filter(a => a.id !== accountId);
+            saveAccountsLocal();
+            if (currentAccountId === accountId) currentAccountId = accounts[0].id;
+            renderAccountList();
+            updateCurrentAccountBar();
+            renderLayanan();
+            renderAdminTable();
+            if (activeItemId) {
+                activeItemId = null;
+                document.getElementById('area-detail-produk').style.display = 'none';
+            }
+        } else {
+            if (!currentUser) { alert('Silakan login terlebih dahulu!'); return; }
+            try {
+                updateSyncStatus('syncing', '⏳ Menghapus akun...');
+                // Hapus semua layanan di akun ini
+                const qLayanan = query(collection(db, 'layanan'), where('accountId', '==', accountId));
+                const layananSnap = await getDocs(qLayanan);
+                const batch = writeBatch(db);
+                layananSnap.docs.forEach(d => batch.delete(d.ref));
+                await batch.commit();
 
-        accounts = accounts.filter(a => a.id !== accountId);
-        saveAccounts();
-
-        if (currentAccountId === accountId) {
-            currentAccountId = accounts[0].id;
-        }
-
-        renderAccountList();
-        updateCurrentAccountBar();
-        renderLayanan();
-        renderAdminTable();
-
-        if (activeItemId) {
-            activeItemId = null;
-            document.getElementById('area-detail-produk').style.display = 'none';
+                // Hapus akun
+                await deleteDoc(doc(db, 'accounts', accountId));
+                updateSyncStatus('synced', '✅ Akun dihapus');
+            } catch (err) {
+                alert('Error: ' + err.message);
+                updateSyncStatus('error', '❌ Gagal menghapus akun');
+            }
         }
     };
 
-    window.editCurrentAccount = function() {
+    window.editCurrentAccount = async function() {
         const acc = accounts.find(a => a.id === currentAccountId);
         if (!acc) return;
 
@@ -839,13 +985,29 @@
         const newPhoto = prompt('URL Foto Profil:', acc.photo);
         if (newPhoto === null) return;
 
-        acc.name = newName.trim() || acc.name;
-        acc.wa = newWa.trim();
-        acc.photo = newPhoto.trim() || acc.photo;
+        const updated = {
+            name: newName.trim() || acc.name,
+            wa: newWa.trim(),
+            photo: newPhoto.trim() || acc.photo,
+            updatedAt: new Date().toISOString()
+        };
 
-        saveAccounts();
-        renderAccountList();
-        updateCurrentAccountBar();
+        if (isOffline) {
+            Object.assign(acc, updated);
+            saveAccountsLocal();
+            renderAccountList();
+            updateCurrentAccountBar();
+        } else {
+            if (!currentUser) { alert('Silakan login terlebih dahulu!'); return; }
+            try {
+                updateSyncStatus('syncing', '⏳ Mengupdate akun...');
+                await updateDoc(doc(db, 'accounts', currentAccountId), updated);
+                updateSyncStatus('synced', '✅ Akun diupdate');
+            } catch (err) {
+                alert('Error: ' + err.message);
+                updateSyncStatus('error', '❌ Gagal update akun');
+            }
+        }
     };
 
     function renderAccountList() {
@@ -857,7 +1019,7 @@
         container.innerHTML = accounts.map(acc => `
             <div class="account-item ${acc.id === currentAccountId ? 'active' : ''}" onclick="window.switchAccount('${acc.id}')">
                 <div class="account-item-info">
-                    <img src="${escapeHtml(acc.photo)}" alt="">
+                    <img src="${escapeHtml(acc.photo)}" alt="" onerror="this.src='https://via.placeholder.com/32'">
                     <div>
                         <span>${escapeHtml(acc.name)} ${acc.id === currentAccountId ? '<span class="account-badge">AKTIF</span>' : ''}</span>
                         <small>${acc.wa ? escapeHtml(acc.wa) : 'Tanpa WA'}</small>
@@ -887,7 +1049,10 @@
         const provider = new GoogleAuthProvider();
         signInWithPopup(auth, provider).catch(err => alert('Gagal login: ' + err.message));
     };
-    window.logout = function() { signOut(auth); };
+    window.logout = function() { 
+        signOut(auth); 
+        if (unsubscribeAccounts) { unsubscribeAccounts(); unsubscribeAccounts = null; }
+    };
     window.aktifkanOffline = function() {
         isOffline = true;
         document.getElementById('mode-badge').textContent = 'OFFLINE — localStorage';
@@ -895,7 +1060,10 @@
         document.getElementById('login-section').style.display = 'none';
         document.getElementById('crud-section').style.display = 'block';
         if (unsubscribeSnapshot) unsubscribeSnapshot();
+        if (unsubscribeAccounts) { unsubscribeAccounts(); unsubscribeAccounts = null; }
+        loadAccountsLocal();
         loadData();
+        updateSyncStatus('', '');
     };
 
     onAuthStateChanged(auth, user => {
@@ -907,10 +1075,18 @@
                 <img src="${user.photoURL || 'https://via.placeholder.com/32'}" alt="avatar">
                 <span>${user.displayName || user.email}</span>
             `;
+            loadAccounts();
+            listenAccountsRealtime();
             listenRealtime();
         } else if (!isOffline) {
             document.getElementById('login-section').style.display = 'block';
             document.getElementById('crud-section').style.display = 'none';
+            dataLayanan = [];
+            accounts = [];
+            currentAccountId = null;
+            renderLayanan();
+            updateStatus(false, 'Belum login');
+            updateSyncStatus('', '');
         }
     });
 
@@ -918,7 +1094,6 @@
         if (isOffline) return;
         if (unsubscribeSnapshot) unsubscribeSnapshot();
 
-        const q = query(collection(db, 'layanan'), where('accountId', '==', currentAccountId || 'default'));
         unsubscribeSnapshot = onSnapshot(collection(db, 'layanan'), snapshot => {
             dataLayanan = [];
             snapshot.forEach(docSnap => dataLayanan.push({ id: docSnap.id, ...docSnap.data() }));
@@ -969,7 +1144,6 @@
             return nama.includes(searchQuery) || deskripsi.includes(searchQuery) || harga.includes(searchQuery);
         });
 
-        // Update search count
         const countEl = document.getElementById('search-count');
         if (searchQuery) {
             countEl.textContent = `Ditemukan ${filtered.length} hasil untuk "${escapeHtml(searchQuery)}"`;
@@ -1047,7 +1221,6 @@
         const item = dataLayanan.find(x => x.id === id);
         if (!item) return;
 
-        // Toggle: klik lagi = tutup
         if (activeItemId === id) {
             activeItemId = null;
             document.getElementById('area-detail-produk').style.display = 'none';
@@ -1056,7 +1229,7 @@
         }
 
         activeItemId = id;
-        renderLayanan(); // Update highlight aktif
+        renderLayanan();
 
         const areaDetail = document.getElementById('area-detail-produk');
         const detailVideoBox = document.getElementById('detail-video-box');
@@ -1067,7 +1240,6 @@
         const qrDisplay = document.getElementById('qr-display');
         const qrNama = document.getElementById('qr-nama-layanan');
 
-        // VIDEO
         if (item.videoUrl) {
             detailVideo.src = item.videoUrl;
             detailVideoBox.style.display = 'block';
@@ -1080,7 +1252,6 @@
             detailVideo.src = '';
         }
 
-        // TOMBOL WA - Gunakan WA akun jika ada, jika tidak gunakan WA layanan
         const acc = accounts.find(a => a.id === item.accountId);
         const waLink = item.wa || (acc && acc.wa ? `https://wa.me/${acc.wa.replace(/\D/g, '')}` : '');
         if (waLink) {
@@ -1091,7 +1262,6 @@
             detailWaBtn.onclick = null;
         }
 
-        // QR BESAR
         if (item.qrBase64) {
             qrDisplay.innerHTML = `<img src="${item.qrBase64}" alt="QR ${escapeHtml(item.nama)}">`;
             qrDisplay.className = 'detail-qr-box';
@@ -1103,7 +1273,6 @@
         qrNama.innerHTML = `<strong>${escapeHtml(item.nama)}</strong>${item.harga ? ' — ' + escapeHtml(item.harga) : ''}`;
         areaDetail.style.display = 'flex';
 
-        // Scroll ke area detail
         setTimeout(() => areaDetail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
     };
 
@@ -1114,8 +1283,8 @@
         if (klikTrigger >= 5) {
             document.getElementById('admin-panel').style.display = 'block';
             klikTrigger = 0;
-            if (isOffline) loadData();
-            loadAccounts();
+            if (isOffline) { loadAccountsLocal(); loadData(); }
+            else { loadAccounts(); }
         }
         setTimeout(() => { if(klikTrigger>0) klikTrigger--; }, 2000);
     });
@@ -1222,7 +1391,6 @@
         if (item.videoUrl) { videoUrlCache = item.videoUrl; videoPreview.src = item.videoUrl; videoPreviewBox.style.display = 'block'; videoPreview.load(); }
         else { videoUrlCache = null; videoPreviewBox.style.display = 'none'; videoPreview.src = ''; }
 
-        // Switch ke akun layanan ini
         if (item.accountId) {
             currentAccountId = item.accountId;
             renderAccountList();
@@ -1286,7 +1454,8 @@
             layanan: filtered, 
             accounts: accounts,
             currentAccountId: currentAccountId,
-            exportedAt: new Date().toISOString() 
+            exportedAt: new Date().toISOString(),
+            exportedBy: currentUser ? currentUser.uid : 'offline'
         }, null, 2);
         document.getElementById('backup-area').value = json;
         const blob = new Blob([json], { type: 'application/json' });
@@ -1303,11 +1472,37 @@
             const parsed = JSON.parse(text);
             if (!parsed.layanan || !Array.isArray(parsed.layanan)) throw new Error('Format tidak valid');
 
-            // Import akun jika ada
+            // Import akun
             if (parsed.accounts && Array.isArray(parsed.accounts)) {
-                accounts = parsed.accounts;
-                saveAccounts();
-                renderAccountList();
+                if (!isOffline && currentUser) {
+                    for (const acc of parsed.accounts) {
+                        if (!acc.ownerUid) {
+                            const accountData = {
+                                name: acc.name || 'Akun Import',
+                                wa: acc.wa || '',
+                                photo: acc.photo || 'https://via.placeholder.com/32',
+                                createdAt: acc.createdAt || new Date().toISOString(),
+                                updatedAt: new Date().toISOString(),
+                                ownerUid: currentUser.uid,
+                                isDefault: acc.isDefault || false
+                            };
+                            try {
+                                if (acc.id && acc.id !== 'default') {
+                                    await setDoc(doc(db, 'accounts', acc.id), accountData);
+                                } else {
+                                    await addDoc(collection(db, 'accounts'), accountData);
+                                }
+                            } catch (err) {
+                                console.error('Import account error:', err);
+                            }
+                        }
+                    }
+                    await syncAccountsFromFirestore();
+                } else {
+                    accounts = parsed.accounts;
+                    saveAccountsLocal();
+                    renderAccountList();
+                }
             }
 
             if (isOffline) {
