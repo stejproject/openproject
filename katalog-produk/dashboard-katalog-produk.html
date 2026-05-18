@@ -241,8 +241,40 @@ body {
 .alert.success { background: #f0fdf4; color: var(--brand-dark); display: block; }
 
 /* ═══════════════════════════════
-   DASHBOARD LAYOUT
+   REGISTER SCREEN
 ═══════════════════════════════ */
+#registerScreen {
+  min-height: 100vh;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #052e16 0%, #14532d 60%, #166534 100%);
+}
+
+.register-steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 1.5rem;
+}
+.reg-step {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.75rem; color: var(--text-3); font-weight: 500;
+}
+.reg-step-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--border); color: var(--text-3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700;
+}
+.reg-step.active .reg-step-num { background: var(--brand); color: #fff; }
+.reg-step.active { color: var(--text-1); }
+.reg-step.done .reg-step-num { background: var(--brand-light); color: var(--brand-dark); }
+.reg-step-line { flex: 1; height: 1px; background: var(--border); }
+
+.reg-panel { display: none; }
+.reg-panel.active { display: block; }
 #dashScreen { display: none; min-height: 100vh; }
 
 /* Sidebar */
@@ -585,6 +617,70 @@ body {
 }
 .catalog-link:hover { text-decoration: underline; }
 .catalog-link svg { width: 14px; height: 14px; }
+
+/* ═══════════════════════════════
+   REGISTER SCREEN
+═══════════════════════════════ */
+#registerScreen {
+  display: none;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #052e16 0%, #14532d 60%, #166534 100%);
+}
+
+.register-steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 1.5rem;
+}
+.reg-step {
+  display: flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 50%;
+  font-size: 0.72rem; font-weight: 700;
+  border: 1.5px solid var(--border);
+  color: var(--text-3); background: var(--surface);
+  transition: all var(--transition);
+}
+.reg-step.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+.reg-step.done   { background: var(--brand-light); border-color: var(--brand); color: var(--brand-dark); }
+.reg-step-line   { flex: 1; height: 1px; background: var(--border); }
+
+.reg-panel { display: none; }
+.reg-panel.active { display: block; }
+
+.store-id-preview {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+.store-id-preview code {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: monospace;
+  color: var(--brand-dark);
+  font-size: 0.78rem;
+}
+
+.invite-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--brand-light);
+  color: var(--brand-dark);
+  font-size: 0.72rem; font-weight: 600;
+  padding: 3px 10px; border-radius: 99px;
+  margin-bottom: 0.75rem;
+}
+
+.btn-link {
+  background: none; border: none; cursor: pointer;
+  color: var(--brand); font-size: 0.82rem; font-weight: 600;
+  text-decoration: underline; padding: 0;
+  font-family: var(--font-body);
+}
 </style>
 </head>
 <body>
@@ -660,11 +756,221 @@ body {
       </div>
     </div>
 
+    <div class="divider">belum punya toko?</div>
+    <button class="btn-social" onclick="showScreenRegister()" style="border-style:dashed">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="18" height="18" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Daftarkan Toko Baru
+    </button>
+
     </div><!-- /loginForm -->
   </div>
 </div>
 
-<!-- ═══ DASHBOARD SCREEN ═══ -->
+<!-- ═══ REGISTER SCREEN ═══ -->
+<div id="registerScreen">
+  <div class="login-card" style="max-width:440px">
+    <div class="login-logo">🏪</div>
+    <div class="login-title">Daftarkan Toko Baru</div>
+    <p class="login-sub">Masukkan kode undangan untuk membuat toko Anda</p>
+
+    <div class="alert" id="regAlert"></div>
+
+    <!-- Step indicator -->
+    <div class="register-steps">
+      <div class="reg-step active" id="rs1">1</div>
+      <div class="reg-step-line"></div>
+      <div class="reg-step" id="rs2">2</div>
+      <div class="reg-step-line"></div>
+      <div class="reg-step" id="rs3">3</div>
+    </div>
+
+    <!-- Step 1: Kode Undangan -->
+    <div class="reg-panel active" id="reg-step1">
+      <div class="form-group">
+        <label class="form-label">Kode Undangan <span style="color:var(--danger)">*</span></label>
+        <input class="form-input" type="text" id="regInviteCode"
+          placeholder="Contoh: TOKO-2024-XYZ"
+          style="text-transform:uppercase;letter-spacing:.08em;font-family:monospace;font-size:1rem" />
+        <p style="font-size:0.75rem;color:var(--text-3);margin-top:4px">
+          Minta kode undangan ke pengelola platform.
+        </p>
+      </div>
+      <button class="btn-primary" id="btnCheckInvite">
+        Cek Kode Undangan →
+      </button>
+      <p style="text-align:center;margin-top:0.75rem;font-size:0.82rem;color:var(--text-3)">
+        Sudah punya toko?
+        <button class="btn-link" onclick="showScreenLogin()">Masuk di sini</button>
+      </p>
+    </div>
+
+    <!-- Step 2: Info Toko -->
+    <div class="reg-panel" id="reg-step2">
+      <div class="invite-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        Kode undangan valid ✓
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nama Toko <span style="color:var(--danger)">*</span></label>
+        <input class="form-input" type="text" id="regNamaToko" placeholder="Warung Kopi Asik" />
+        <div class="store-id-preview">
+          ID Toko: <code id="regStoreIdPreview">warung-kopi-asik</code>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tagline</label>
+        <input class="form-input" type="text" id="regTagline" placeholder="Kopi & Camilan Terbaik" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nomor WhatsApp <span style="color:var(--danger)">*</span></label>
+        <div class="phone-wrap">
+          <span class="phone-prefix">+62</span>
+          <input type="tel" id="regWA" placeholder="81234567890" inputmode="numeric" />
+        </div>
+      </div>
+      <button class="btn-primary" id="btnRegStep2">
+        Lanjut: Login dengan Google →
+      </button>
+      <button class="btn-link" style="display:block;margin-top:8px" onclick="goRegStep(1)">← Kembali</button>
+    </div>
+
+    <!-- Step 3: Login Google untuk verifikasi -->
+    <div class="reg-panel" id="reg-step3">
+      <p style="font-size:0.85rem;color:var(--text-2);line-height:1.7;margin-bottom:1rem">
+        Login dengan Google untuk memverifikasi identitas dan mengaktifkan toko
+        <strong id="reg-store-name-preview"></strong>.
+      </p>
+      <button class="btn-social" id="btnRegGoogle">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Daftar &amp; Aktifkan Toko via Google
+      </button>
+      <button class="btn-link" style="display:block;margin-top:8px" onclick="goRegStep(2)">← Kembali</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ REGISTER SCREEN ═══ -->
+<div id="registerScreen">
+  <div class="login-card" style="max-width:420px">
+    <div class="login-logo">🏪</div>
+    <div class="login-title">Daftarkan Toko Anda</div>
+    <p class="login-sub">Lengkapi data berikut untuk mulai berjualan</p>
+
+    <!-- Step indicator -->
+    <div class="register-steps">
+      <div class="reg-step active" id="regStep1Ind">
+        <div class="reg-step-num">1</div>
+        Kode Undangan
+      </div>
+      <div class="reg-step-line"></div>
+      <div class="reg-step" id="regStep2Ind">
+        <div class="reg-step-num">2</div>
+        Data Toko
+      </div>
+      <div class="reg-step-line"></div>
+      <div class="reg-step" id="regStep3Ind">
+        <div class="reg-step-num">3</div>
+        Selesai
+      </div>
+    </div>
+
+    <div class="alert" id="regAlert"></div>
+
+    <!-- Step 1: Kode undangan -->
+    <div class="reg-panel active" id="regPanel1">
+      <div class="form-group">
+        <label class="form-label" for="regInviteCode">
+          Kode Undangan <span style="color:var(--danger)">*</span>
+        </label>
+        <input class="form-input" type="text" id="regInviteCode"
+          placeholder="Contoh: TOKO-2024"
+          style="text-transform:uppercase;letter-spacing:.1em;font-weight:600"
+          autocomplete="off" />
+        <p style="font-size:0.75rem;color:var(--text-3);margin-top:4px">
+          Minta kode undangan dari pengelola platform.
+        </p>
+      </div>
+      <button class="btn-primary" id="btnCheckInvite">
+        Verifikasi Kode
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="16" height="16" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+      <div class="divider">sudah punya toko?</div>
+      <button class="btn-social" id="btnBackToLogin" style="margin-bottom:0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="17" height="17" aria-hidden="true">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+        Masuk ke Dashboard
+      </button>
+    </div>
+
+    <!-- Step 2: Data toko -->
+    <div class="reg-panel" id="regPanel2">
+      <div class="form-group">
+        <label class="form-label" for="regNamaToko">Nama Toko <span style="color:var(--danger)">*</span></label>
+        <input class="form-input" type="text" id="regNamaToko" placeholder="Warung Kopi Asik" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="regStoreId">
+          ID Toko <span style="color:var(--danger)">*</span>
+          <span style="color:var(--text-3);font-weight:400"> (untuk URL katalog)</span>
+        </label>
+        <input class="form-input" type="text" id="regStoreId"
+          placeholder="warung-kopi-asik"
+          style="font-family:monospace"
+          autocomplete="off" />
+        <p style="font-size:0.72rem;color:var(--text-3);margin-top:4px" id="regStoreIdPreview">
+          URL: index.html?store=...
+        </p>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="regWA">Nomor WhatsApp <span style="color:var(--danger)">*</span></label>
+        <input class="form-input" type="tel" id="regWA" placeholder="081234567890" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="regTagline">Tagline</label>
+        <input class="form-input" type="text" id="regTagline" placeholder="Kopi & Camilan Terbaik" />
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-social" id="btnRegBack" style="flex:1;margin-bottom:0">
+          ← Kembali
+        </button>
+        <button class="btn-primary" id="btnRegSubmit" style="flex:2;margin-bottom:0">
+          Buat Toko 🎉
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 3: Selesai -->
+    <div class="reg-panel" id="regPanel3" style="text-align:center;padding:1rem 0">
+      <div style="font-size:3rem;margin-bottom:0.75rem">🎉</div>
+      <h3 style="font-family:var(--font-head);font-size:1.1rem;margin-bottom:0.5rem">Toko berhasil dibuat!</h3>
+      <p style="font-size:0.85rem;color:var(--text-2);margin-bottom:1.25rem;line-height:1.6">
+        Toko <strong id="regDoneNama"></strong> sudah aktif.<br>
+        URL katalog Anda:
+      </p>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);
+                  padding:0.6rem 0.9rem;font-family:monospace;font-size:0.8rem;
+                  color:var(--brand-dark);margin-bottom:1.25rem;word-break:break-all"
+           id="regDoneUrl"></div>
+      <button class="btn-primary" id="btnRegoDash" style="margin-bottom:0">
+        Masuk ke Dashboard →
+      </button>
+    </div>
+  </div>
+</div>
+
 <div id="dashScreen">
 
   <!-- Sidebar overlay (mobile) -->
@@ -934,7 +1240,8 @@ import { getAuth, signInWithPopup,
          signOut, onAuthStateChanged }            from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js';
 import { getFirestore, doc, getDoc, setDoc,
          updateDoc, addDoc, collection,
-         getDocs }                                from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js';
+         getDocs, query, where,
+         serverTimestamp }                        from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js';
 import { getStorage, ref, uploadBytesResumable,
          getDownloadURL }                         from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-storage.js';
 
@@ -989,22 +1296,64 @@ function clearAlert() {
 ══════════════════════════════ */
 
 /* Sembunyikan semua dulu — cegah flash */
-document.getElementById('loginScreen').style.display = 'none';
-document.getElementById('dashScreen').style.display  = 'none';
+document.getElementById('loginScreen').style.display    = 'none';
+document.getElementById('registerScreen').style.display = 'none';
+document.getElementById('dashScreen').style.display     = 'none';
 
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, async user => {
   if (user) {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('dashScreen').style.display  = 'block';
-    const initial = (user.displayName || user.email || user.phoneNumber || 'A').charAt(0).toUpperCase();
-    document.getElementById('userAvatar').textContent = initial;
-    loadStoreData();
-    loadOverviewStats();
+    /* Cek apakah user sudah punya toko */
+    const storeIdFromUrl = new URLSearchParams(location.search).get('store');
+
+    if (storeIdFromUrl) {
+      /* Akses toko spesifik via URL */
+      const snap = await getDoc(doc(db, 'stores', storeIdFromUrl));
+      if (snap.exists() && snap.data().owner_uid === user.uid) {
+        showDashboard(user);
+      } else if (snap.exists()) {
+        showAlert('Anda tidak memiliki akses ke toko ini.', 'danger');
+        document.getElementById('loginScreen').style.display = 'flex';
+      } else {
+        showRegister();
+      }
+    } else {
+      /* Cari toko milik user ini */
+      const q = query(collection(db, 'stores'), where('owner_uid', '==', user.uid));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        /* Punya toko — redirect ke toko pertama */
+        const myStore = snap.docs[0];
+        const newUrl  = `${location.pathname}?store=${myStore.id}`;
+        history.replaceState(null, '', newUrl);
+        showDashboard(user, myStore.id);
+      } else {
+        /* Belum punya toko — arahkan ke registrasi */
+        showRegister();
+      }
+    }
   } else {
-    document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('dashScreen').style.display  = 'none';
+    document.getElementById('loginScreen').style.display    = 'flex';
+    document.getElementById('registerScreen').style.display = 'none';
+    document.getElementById('dashScreen').style.display     = 'none';
   }
 });
+
+function showDashboard(user, overrideStoreId) {
+  const sid = overrideStoreId || new URLSearchParams(location.search).get('store') || STORE_ID;
+  document.getElementById('loginScreen').style.display    = 'none';
+  document.getElementById('registerScreen').style.display = 'none';
+  document.getElementById('dashScreen').style.display     = 'block';
+  const initial = (user.displayName || user.email || user.phoneNumber || 'A').charAt(0).toUpperCase();
+  document.getElementById('userAvatar').textContent = initial;
+  loadStoreData(sid);
+  loadOverviewStats(sid);
+}
+
+function showRegister() {
+  document.getElementById('loginScreen').style.display    = 'none';
+  document.getElementById('registerScreen').style.display = 'flex';
+  document.getElementById('dashScreen').style.display     = 'none';
+}
 
 /* ══════════════════════════════
    LOGIN — GOOGLE
@@ -1149,6 +1498,188 @@ window.resendOTP = async function() {
 document.getElementById('btnLogout').addEventListener('click', async () => {
   await signOut(auth);
   toast('Berhasil keluar.');
+});
+
+/* ══════════════════════════════
+   SCREEN NAVIGATION
+══════════════════════════════ */
+window.showScreenLogin = function() {
+  document.getElementById('loginScreen').style.display    = 'flex';
+  document.getElementById('registerScreen').style.display = 'none';
+  document.getElementById('dashScreen').style.display     = 'none';
+};
+
+window.showScreenRegister = function() {
+  document.getElementById('loginScreen').style.display    = 'none';
+  document.getElementById('registerScreen').style.display = 'flex';
+  document.getElementById('dashScreen').style.display     = 'none';
+  goRegStep(1);
+};
+
+/* ══════════════════════════════
+   REGISTRASI TOKO BARU
+══════════════════════════════ */
+let regData = { inviteCode: '', storeId: '', namaToko: '', tagline: '', wa: '' };
+
+/* Konversi nama toko ke store ID yang aman */
+function toStoreId(name) {
+  return name.toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .substring(0, 30);
+}
+
+function showRegAlert(msg, type = 'danger') {
+  const el = document.getElementById('regAlert');
+  el.className = 'alert ' + type;
+  el.textContent = msg;
+}
+function clearRegAlert() {
+  const el = document.getElementById('regAlert');
+  el.className = 'alert'; el.textContent = '';
+}
+
+window.goRegStep = function(step) {
+  [1,2,3].forEach(i => {
+    document.getElementById('reg-step' + i).classList.toggle('active', i === step);
+    const dot = document.getElementById('rs' + i);
+    dot.classList.remove('active','done');
+    if (i < step) dot.classList.add('done');
+    else if (i === step) dot.classList.add('active');
+  });
+  clearRegAlert();
+};
+
+/* Step 1 — Cek kode undangan */
+document.getElementById('btnCheckInvite').addEventListener('click', async () => {
+  const code = document.getElementById('regInviteCode').value.trim().toUpperCase();
+  if (!code) { showRegAlert('Masukkan kode undangan.'); return; }
+
+  const btn = document.getElementById('btnCheckInvite');
+  btn.disabled = true; btn.textContent = 'Mengecek...';
+
+  try {
+    const snap = await getDoc(doc(db, 'invite_codes', code));
+    if (!snap.exists()) {
+      showRegAlert('Kode undangan tidak ditemukan.');
+      btn.disabled = false; btn.textContent = 'Cek Kode Undangan →';
+      return;
+    }
+    const data = snap.data();
+    if (data.used) {
+      showRegAlert('Kode undangan sudah pernah digunakan.');
+      btn.disabled = false; btn.textContent = 'Cek Kode Undangan →';
+      return;
+    }
+    regData.inviteCode = code;
+    goRegStep(2);
+  } catch (err) {
+    showRegAlert('Gagal mengecek kode: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Cek Kode Undangan →';
+  }
+});
+
+/* Auto-generate store ID dari nama toko */
+document.getElementById('regNamaToko').addEventListener('input', e => {
+  const id = toStoreId(e.target.value);
+  document.getElementById('regStoreIdPreview').textContent = id || '...';
+  regData.storeId   = id;
+  regData.namaToko  = e.target.value.trim();
+});
+
+/* Step 2 — Validasi info toko */
+document.getElementById('btnRegStep2').addEventListener('click', async () => {
+  const nama = document.getElementById('regNamaToko').value.trim();
+  const wa   = document.getElementById('regWA').value.trim().replace(/\D/g,'');
+
+  if (!nama)      { showRegAlert('Nama toko wajib diisi.'); return; }
+  if (nama.length < 3) { showRegAlert('Nama toko minimal 3 karakter.'); return; }
+  if (!wa)        { showRegAlert('Nomor WhatsApp wajib diisi.'); return; }
+
+  const storeId = toStoreId(nama);
+  if (!storeId)  { showRegAlert('Nama toko tidak valid.'); return; }
+
+  const btn = document.getElementById('btnRegStep2');
+  btn.disabled = true; btn.textContent = 'Mengecek...';
+
+  try {
+    /* Cek apakah store ID sudah dipakai */
+    const existing = await getDoc(doc(db, 'stores', storeId));
+    if (existing.exists()) {
+      showRegAlert(`ID toko "${storeId}" sudah digunakan. Coba nama lain.`);
+      btn.disabled = false; btn.textContent = 'Lanjut: Login dengan Google →';
+      return;
+    }
+
+    regData.storeId  = storeId;
+    regData.namaToko = nama;
+    regData.tagline  = document.getElementById('regTagline').value.trim();
+    regData.wa       = '+62' + (wa.startsWith('0') ? wa.slice(1) : wa);
+
+    document.getElementById('reg-store-name-preview').textContent = ` "${nama}"`;
+    goRegStep(3);
+  } catch (err) {
+    showRegAlert('Gagal: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Lanjut: Login dengan Google →';
+  }
+});
+
+/* Step 3 — Login Google + buat toko */
+document.getElementById('btnRegGoogle').addEventListener('click', async () => {
+  const btn = document.getElementById('btnRegGoogle');
+  btn.disabled = true; btn.textContent = 'Menghubungkan Google...';
+
+  try {
+    const provider  = new GoogleAuthProvider();
+    const result    = await signInWithPopup(auth, provider);
+    const user      = result.user;
+
+    /* Buat dokumen toko baru */
+    await setDoc(doc(db, 'stores', regData.storeId), {
+      nama_toko:       regData.namaToko,
+      tagline:         regData.tagline,
+      whatsapp_owner:  regData.wa,
+      hero_title:      'Selamat datang di ' + regData.namaToko,
+      hero_desc:       'Konfirmasi pesanan langsung lewat WhatsApp.',
+      aktif:           true,
+      owner_uid:       user.uid,
+      owner_email:     user.email,
+      dibuat:          new Date().toISOString(),
+    });
+
+    /* Tandai kode undangan sudah dipakai */
+    await updateDoc(doc(db, 'invite_codes', regData.inviteCode), {
+      used:       true,
+      used_by:    user.uid,
+      used_email: user.email,
+      used_at:    new Date().toISOString(),
+      store_id:   regData.storeId,
+    });
+
+    /* Arahkan ke dashboard toko baru */
+    toast('🎉 Toko berhasil dibuat! Selamat datang, ' + (user.displayName || user.email));
+    const newUrl = window.location.pathname + '?store=' + regData.storeId;
+    window.history.replaceState({}, '', newUrl);
+
+    /* Muat ulang STORE_ID dan tampilkan dashboard */
+    document.getElementById('registerScreen').style.display = 'none';
+    document.getElementById('sbStoreName').textContent = regData.namaToko;
+    document.getElementById('sbStoreId').textContent   = regData.storeId;
+    document.getElementById('userAvatar').textContent  =
+      (user.displayName || user.email || 'A').charAt(0).toUpperCase();
+    document.getElementById('dashScreen').style.display = 'block';
+    location.reload(); /* reload agar STORE_ID terupdate dari URL */
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Daftar & Aktifkan Toko via Google`;
+    if (err.code !== 'auth/popup-closed-by-user') {
+      showRegAlert('Gagal: ' + err.message);
+    }
+  }
 });
 
 /* ══════════════════════════════
