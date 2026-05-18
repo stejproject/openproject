@@ -56,6 +56,49 @@
             text-align: center;
         }
 
+        /* SEARCH BAR */
+        .search-box {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        .search-box input {
+            width: 100%;
+            background-color: #252525;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 12px 40px 12px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-box input:focus {
+            border-color: #00ffcc;
+        }
+        .search-box input::placeholder {
+            color: #666;
+        }
+        .search-box .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 1rem;
+        }
+        .search-results-count {
+            font-size: 0.75rem;
+            color: #888;
+            text-align: center;
+            margin-top: 5px;
+        }
+        .highlight-text {
+            background-color: rgba(0, 255, 204, 0.2);
+            color: #00ffcc;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
         /* DAFTAR LAYANAN */
         .layanan-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
         .layanan-item {
@@ -66,13 +109,21 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, transform 0.2s;
             cursor: pointer;
+            animation: slideIn 0.3s ease;
         }
-        .layanan-item:hover { border-color: #00ffcc; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .layanan-item:hover { border-color: #00ffcc; transform: translateX(3px); }
         .layanan-item.aktif {
             border-color: #00ffcc;
             background-color: #2a2a2a;
+        }
+        .layanan-item.hidden {
+            display: none;
         }
         .layanan-row {
             display: flex;
@@ -228,14 +279,14 @@
         .form-group label {
             display: block; font-size: 0.8rem; color: #a0a0a0; margin-bottom: 5px;
         }
-        .form-group input, .form-group textarea {
+        .form-group input, .form-group textarea, .form-group select {
             width: 100%; background-color: #252525; border: 1px solid #444;
             color: #fff; padding: 10px; border-radius: 6px;
             font-family: inherit; font-size: 0.9rem;
             -webkit-user-select: text; -moz-user-select: text;
             -ms-user-select: text; user-select: text;
         }
-        .form-group input:focus, .form-group textarea:focus {
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
             outline: none; border-color: #6200ee;
         }
         .form-group input[type="file"] {
@@ -266,12 +317,13 @@
             font-size: 0.85rem; padding: 10px 5px;
             border-bottom: 1px solid #2a2a2a; vertical-align: top;
         }
-        .admin-table td:first-child { width: 25%; }
-        .admin-table td:nth-child(2) { width: 15%; color: #00ffcc; }
-        .admin-table td:nth-child(3) { width: 15%; font-size: 0.75rem; color: #888; }
-        .admin-table td:nth-child(4) { width: 15%; text-align: center; }
-        .admin-table td:nth-child(5) { width: 15%; text-align: center; }
-        .admin-table td:last-child { width: 15%; text-align: right; }
+        .admin-table td:first-child { width: 20%; }
+        .admin-table td:nth-child(2) { width: 12%; color: #00ffcc; }
+        .admin-table td:nth-child(3) { width: 12%; font-size: 0.75rem; color: #888; }
+        .admin-table td:nth-child(4) { width: 12%; text-align: center; }
+        .admin-table td:nth-child(5) { width: 12%; text-align: center; }
+        .admin-table td:nth-child(6) { width: 15%; text-align: center; font-size: 0.7rem; }
+        .admin-table td:last-child { width: 17%; text-align: right; }
         .badge {
             display: inline-block; background: #6200ee; color: #fff;
             font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; margin-bottom: 15px;
@@ -316,7 +368,122 @@
             object-fit: cover;
             border-radius: 2px;
         }
+
+        /* ================= MULTI AKUN ================= */
+        .account-section {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+        .account-section h3 {
+            color: #00ffcc;
+            font-size: 0.9rem;
+            margin: 0 0 10px 0;
+        }
+        .account-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .account-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: #252525;
+            border: 1px solid #333;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .account-item:hover {
+            border-color: #00ffcc;
+        }
+        .account-item.active {
+            border-color: #00ffcc;
+            background: #2a2a2a;
+        }
+        .account-item-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .account-item-info img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .account-item-info span {
+            font-size: 0.85rem;
+            color: #fff;
+        }
+        .account-item-info small {
+            font-size: 0.7rem;
+            color: #888;
+            display: block;
+        }
+        .account-item-actions {
+            display: flex;
+            gap: 5px;
+        }
+        .account-item-actions button {
+            width: auto;
+            padding: 4px 8px;
+            font-size: 0.7rem;
+        }
+        .add-account-form {
+            display: none;
+            margin-top: 10px;
+            padding: 15px;
+            background: #252525;
+            border-radius: 6px;
+            border: 1px solid #333;
+        }
+        .add-account-form.show {
+            display: block;
+        }
+        .account-badge {
+            display: inline-block;
+            background: #00ffcc;
+            color: #121212;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 5px;
+            font-weight: bold;
+        }
+        .switcher-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #252525;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .switcher-bar img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+        }
+        .switcher-bar span {
+            font-size: 0.8rem;
+            color: #a0a0a0;
+        }
+        .switcher-bar strong {
+            color: #00ffcc;
+        }
+        .switcher-bar button {
+            width: auto;
+            padding: 4px 10px;
+            font-size: 0.7rem;
+            margin-left: auto;
+        }
     </style>
+<base target="_blank">
 <base target="_blank">
 </head>
 <body>
@@ -341,6 +508,14 @@
     <!-- DAFTAR LAYANAN -->
     <div class="card">
         <h2>Daftar Layanan</h2>
+
+        <!-- SEARCH BAR -->
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Cari layanan, deskripsi, atau harga..." autocomplete="off">
+            <span class="search-icon">🔍</span>
+        </div>
+        <p class="search-results-count" id="search-count"></p>
+
         <div id="layanan-container" class="layanan-list">
             <div class="empty-state">Memuat data...</div>
         </div>
@@ -352,12 +527,12 @@
                 <video id="detail-video" autoplay muted loop playsinline></video>
             </div>
             <p id="detail-video-label" class="detail-label" style="display: none;">▶️ Review Produk</p>
-            
+
             <!-- TOMBOL WA -->
             <div id="detail-wa-area" style="display: none; width: 100%; max-width: 300px;">
                 <button class="btn-wa" id="detail-wa-btn" style="width: 100%; padding: 10px;">💬 Chat WhatsApp</button>
             </div>
-            
+
             <!-- QR BESAR -->
             <div class="detail-qr-box" id="qr-display">[ PILIH LAYANAN ]</div>
             <p class="detail-label">⚠️ VALIDASI TRANSAKSI: STEJ PROJECT</p>
@@ -412,6 +587,43 @@
 
         <!-- SECTION: CRUD -->
         <div id="crud-section">
+            <!-- MULTI AKUN SWITCHER -->
+            <div class="account-section">
+                <h3>👥 Kelola Multi Akun</h3>
+                <div class="account-list" id="account-list">
+                    <!-- Akun akan dirender di sini -->
+                </div>
+                <button class="secondary" onclick="window.toggleAddAccount()" style="width:100%;">➕ Tambah Akun</button>
+
+                <div class="add-account-form" id="add-account-form">
+                    <div class="form-group">
+                        <label>Nama Akun / Toko</label>
+                        <input type="text" id="new-account-name" placeholder="Contoh: Toko STEJ">
+                    </div>
+                    <div class="form-group">
+                        <label>Nomor WhatsApp</label>
+                        <input type="text" id="new-account-wa" placeholder="6281234567890">
+                    </div>
+                    <div class="form-group">
+                        <label>Foto Profil (URL)</label>
+                        <input type="text" id="new-account-photo" placeholder="https://...">
+                    </div>
+                    <div class="admin-actions">
+                        <button onclick="window.saveNewAccount()">Simpan Akun</button>
+                        <button class="secondary" onclick="window.toggleAddAccount()">Batal</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CURRENT ACCOUNT INFO -->
+            <div class="switcher-bar" id="current-account-bar" style="display:none;">
+                <img id="current-account-img" src="" alt="">
+                <div>
+                    <span>Aktif: <strong id="current-account-name"></strong></span>
+                </div>
+                <button class="secondary" onclick="window.editCurrentAccount()">✎ Edit</button>
+            </div>
+
             <div class="user-info" id="user-info"></div>
             <button class="secondary" onclick="window.logout()" style="width:auto; margin-bottom:15px;">Logout</button>
 
@@ -453,7 +665,7 @@
             </div>
 
             <table class="admin-table">
-                <thead><tr><th>Layanan</th><th>Harga</th><th>WA</th><th>QR</th><th>Video</th><th>Aksi</th></tr></thead>
+                <thead><tr><th>Layanan</th><th>Harga</th><th>WA</th><th>QR</th><th>Video</th><th>Akun</th><th>Aksi</th></tr></thead>
                 <tbody id="admin-table-body"></tbody>
             </table>
 
@@ -475,7 +687,7 @@
     // ===================== FIREBASE =====================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, getDocs, writeBatch, query, where } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDeRPjhtmNPz5TNK1TPP3O5XZd4ORyeGPs",
@@ -499,7 +711,176 @@
     let qrBase64Cache = null;
     let videoUrlCache = null;
     let activeItemId = null;
+    let currentAccountId = null;
+    let accounts = [];
     const STORAGE_KEY = 'stej_portfolio_offline_v3';
+    const ACCOUNTS_KEY = 'stej_accounts_v1';
+
+    // ===================== MULTI AKUN =====================
+    function loadAccounts() {
+        const saved = localStorage.getItem(ACCOUNTS_KEY);
+        if (saved) {
+            try { accounts = JSON.parse(saved); } catch(e) { accounts = []; }
+        }
+        if (accounts.length === 0) {
+            // Buat akun default
+            accounts = [{
+                id: 'default',
+                name: 'Akun Utama',
+                wa: '',
+                photo: 'https://via.placeholder.com/32',
+                createdAt: new Date().toISOString()
+            }];
+            saveAccounts();
+        }
+        if (!currentAccountId || !accounts.find(a => a.id === currentAccountId)) {
+            currentAccountId = accounts[0].id;
+        }
+        renderAccountList();
+        updateCurrentAccountBar();
+    }
+
+    function saveAccounts() {
+        localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+    }
+
+    window.toggleAddAccount = function() {
+        const form = document.getElementById('add-account-form');
+        form.classList.toggle('show');
+        if (!form.classList.contains('show')) {
+            document.getElementById('new-account-name').value = '';
+            document.getElementById('new-account-wa').value = '';
+            document.getElementById('new-account-photo').value = '';
+        }
+    };
+
+    window.saveNewAccount = function() {
+        const name = document.getElementById('new-account-name').value.trim();
+        const wa = document.getElementById('new-account-wa').value.trim();
+        const photo = document.getElementById('new-account-photo').value.trim() || 'https://via.placeholder.com/32';
+
+        if (!name) { alert('Nama akun wajib diisi!'); return; }
+
+        const newAccount = {
+            id: 'acc_' + Date.now(),
+            name: name,
+            wa: wa,
+            photo: photo,
+            createdAt: new Date().toISOString()
+        };
+
+        accounts.push(newAccount);
+        saveAccounts();
+        renderAccountList();
+        toggleAddAccount();
+
+        // Auto switch ke akun baru
+        currentAccountId = newAccount.id;
+        updateCurrentAccountBar();
+        renderLayanan();
+        renderAdminTable();
+    };
+
+    window.switchAccount = function(accountId) {
+        currentAccountId = accountId;
+        updateCurrentAccountBar();
+        renderAccountList();
+        renderLayanan();
+        renderAdminTable();
+
+        // Update detail area jika ada yang aktif
+        if (activeItemId) {
+            const item = dataLayanan.find(x => x.id === activeItemId);
+            if (item && item.accountId !== currentAccountId) {
+                activeItemId = null;
+                document.getElementById('area-detail-produk').style.display = 'none';
+            }
+        }
+    };
+
+    window.deleteAccount = function(accountId, event) {
+        event.stopPropagation();
+        if (accounts.length <= 1) { alert('Minimal harus ada 1 akun!'); return; }
+        const acc = accounts.find(a => a.id === accountId);
+        if (!confirm('Yakin hapus akun "' + (acc ? acc.name : '') + '"? Semua layanan di akun ini juga akan terhapus!')) return;
+
+        // Hapus semua layanan di akun ini
+        dataLayanan = dataLayanan.filter(x => x.accountId !== accountId);
+        if (isOffline) saveOffline();
+
+        accounts = accounts.filter(a => a.id !== accountId);
+        saveAccounts();
+
+        if (currentAccountId === accountId) {
+            currentAccountId = accounts[0].id;
+        }
+
+        renderAccountList();
+        updateCurrentAccountBar();
+        renderLayanan();
+        renderAdminTable();
+
+        if (activeItemId) {
+            activeItemId = null;
+            document.getElementById('area-detail-produk').style.display = 'none';
+        }
+    };
+
+    window.editCurrentAccount = function() {
+        const acc = accounts.find(a => a.id === currentAccountId);
+        if (!acc) return;
+
+        const newName = prompt('Nama Akun:', acc.name);
+        if (newName === null) return;
+
+        const newWa = prompt('Nomor WhatsApp:', acc.wa);
+        if (newWa === null) return;
+
+        const newPhoto = prompt('URL Foto Profil:', acc.photo);
+        if (newPhoto === null) return;
+
+        acc.name = newName.trim() || acc.name;
+        acc.wa = newWa.trim();
+        acc.photo = newPhoto.trim() || acc.photo;
+
+        saveAccounts();
+        renderAccountList();
+        updateCurrentAccountBar();
+    };
+
+    function renderAccountList() {
+        const container = document.getElementById('account-list');
+        if (accounts.length === 0) {
+            container.innerHTML = '<div class="empty-state">Belum ada akun</div>';
+            return;
+        }
+        container.innerHTML = accounts.map(acc => `
+            <div class="account-item ${acc.id === currentAccountId ? 'active' : ''}" onclick="window.switchAccount('${acc.id}')">
+                <div class="account-item-info">
+                    <img src="${escapeHtml(acc.photo)}" alt="">
+                    <div>
+                        <span>${escapeHtml(acc.name)} ${acc.id === currentAccountId ? '<span class="account-badge">AKTIF</span>' : ''}</span>
+                        <small>${acc.wa ? escapeHtml(acc.wa) : 'Tanpa WA'}</small>
+                    </div>
+                </div>
+                <div class="account-item-actions">
+                    ${accounts.length > 1 ? `<button class="danger" onclick="window.deleteAccount('${acc.id}', event)">🗑</button>` : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function updateCurrentAccountBar() {
+        const acc = accounts.find(a => a.id === currentAccountId);
+        const bar = document.getElementById('current-account-bar');
+        if (acc) {
+            bar.style.display = 'flex';
+            document.getElementById('current-account-img').src = acc.photo;
+            document.getElementById('current-account-name').textContent = acc.name;
+        } else {
+            bar.style.display = 'none';
+        }
+    }
 
     // ===================== AUTH =====================
     window.loginGoogle = function() {
@@ -536,6 +917,8 @@
     function listenRealtime() {
         if (isOffline) return;
         if (unsubscribeSnapshot) unsubscribeSnapshot();
+
+        const q = query(collection(db, 'layanan'), where('accountId', '==', currentAccountId || 'default'));
         unsubscribeSnapshot = onSnapshot(collection(db, 'layanan'), snapshot => {
             dataLayanan = [];
             snapshot.forEach(docSnap => dataLayanan.push({ id: docSnap.id, ...docSnap.data() }));
@@ -568,6 +951,68 @@
         if (isOffline) localStorage.setItem(STORAGE_KEY, JSON.stringify(dataLayanan));
     }
 
+    // ===================== SEARCH =====================
+    const searchInput = document.getElementById('search-input');
+    searchInput.addEventListener('input', function(e) {
+        const query = e.target.value.trim().toLowerCase();
+        filterAndRenderLayanan(query);
+    });
+
+    function filterAndRenderLayanan(searchQuery) {
+        const container = document.getElementById('layanan-container');
+        const filtered = dataLayanan.filter(item => {
+            if (item.accountId && item.accountId !== currentAccountId) return false;
+            if (!searchQuery) return true;
+            const nama = (item.nama || '').toLowerCase();
+            const deskripsi = (item.deskripsi || '').toLowerCase();
+            const harga = (item.harga || '').toLowerCase();
+            return nama.includes(searchQuery) || deskripsi.includes(searchQuery) || harga.includes(searchQuery);
+        });
+
+        // Update search count
+        const countEl = document.getElementById('search-count');
+        if (searchQuery) {
+            countEl.textContent = `Ditemukan ${filtered.length} hasil untuk "${escapeHtml(searchQuery)}"`;
+        } else {
+            countEl.textContent = `${filtered.length} layanan tersedia`;
+        }
+
+        if (filtered.length === 0) {
+            container.innerHTML = `<div class="empty-state">${searchQuery ? 'Tidak ada hasil pencarian.' : 'Belum ada layanan. Buka panel admin untuk menambah.'}</div>`;
+            return;
+        }
+
+        container.innerHTML = filtered.map(item => {
+            const isAktif = item.id === activeItemId;
+            let namaHtml = escapeHtml(item.nama);
+            let deskripsiHtml = escapeHtml(item.deskripsi || '');
+            let hargaHtml = escapeHtml(item.harga);
+
+            if (searchQuery) {
+                const regex = new RegExp(`(${escapeRegex(searchQuery)})`, 'gi');
+                namaHtml = namaHtml.replace(regex, '<span class="highlight-text">$1</span>');
+                deskripsiHtml = deskripsiHtml.replace(regex, '<span class="highlight-text">$1</span>');
+                hargaHtml = hargaHtml.replace(regex, '<span class="highlight-text">$1</span>');
+            }
+
+            return `
+            <div class="layanan-item ${isAktif ? 'aktif' : ''}" onclick="window.klikLayanan('${item.id || ''}')" id="item-${item.id}">
+                <div class="layanan-row">
+                    <div class="layanan-info">
+                        <h3>${namaHtml}</h3>
+                        <p>${deskripsiHtml}</p>
+                    </div>
+                    <div class="layanan-harga">${hargaHtml}</div>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    function escapeRegex(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
     // ===================== UPLOAD HANDLERS =====================
     const inputQr = document.getElementById('input-qr');
     const qrPreviewBox = document.getElementById('qr-preview-box');
@@ -593,25 +1038,8 @@
 
     // ===================== RENDER LAYANAN =====================
     window.renderLayanan = function() {
-        const container = document.getElementById('layanan-container');
-        if (dataLayanan.length === 0) {
-            container.innerHTML = '<div class="empty-state">Belum ada layanan. Buka panel admin untuk menambah.</div>';
-            return;
-        }
-        container.innerHTML = dataLayanan.map(item => {
-            const isAktif = item.id === activeItemId;
-            return `
-            <div class="layanan-item ${isAktif ? 'aktif' : ''}" onclick="window.klikLayanan('${item.id || ''}')" id="item-${item.id}">
-                <div class="layanan-row">
-                    <div class="layanan-info">
-                        <h3>${escapeHtml(item.nama)}</h3>
-                        <p>${escapeHtml(item.deskripsi || '')}</p>
-                    </div>
-                    <div class="layanan-harga">${escapeHtml(item.harga)}</div>
-                </div>
-            </div>
-            `;
-        }).join('');
+        const query = searchInput.value.trim().toLowerCase();
+        filterAndRenderLayanan(query);
     };
 
     // ===================== KLIK LAYANAN: TAMPILKAN DETAIL =====================
@@ -652,10 +1080,12 @@
             detailVideo.src = '';
         }
 
-        // TOMBOL WA
-        if (item.wa) {
+        // TOMBOL WA - Gunakan WA akun jika ada, jika tidak gunakan WA layanan
+        const acc = accounts.find(a => a.id === item.accountId);
+        const waLink = item.wa || (acc && acc.wa ? `https://wa.me/${acc.wa.replace(/\D/g, '')}` : '');
+        if (waLink) {
             detailWaArea.style.display = 'block';
-            detailWaBtn.onclick = () => window.open(item.wa, '_blank');
+            detailWaBtn.onclick = () => window.open(waLink, '_blank');
         } else {
             detailWaArea.style.display = 'none';
             detailWaBtn.onclick = null;
@@ -685,6 +1115,7 @@
             document.getElementById('admin-panel').style.display = 'block';
             klikTrigger = 0;
             if (isOffline) loadData();
+            loadAccounts();
         }
         setTimeout(() => { if(klikTrigger>0) klikTrigger--; }, 2000);
     });
@@ -696,23 +1127,29 @@
 
     window.renderAdminTable = function() {
         const tbody = document.getElementById('admin-table-body');
-        if (dataLayanan.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Belum ada data</td></tr>';
+        const filtered = dataLayanan.filter(item => !item.accountId || item.accountId === currentAccountId);
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Belum ada data</td></tr>';
             return;
         }
-        tbody.innerHTML = dataLayanan.map(item => `
+        tbody.innerHTML = filtered.map(item => {
+            const acc = accounts.find(a => a.id === item.accountId);
+            return `
             <tr>
                 <td><strong>${escapeHtml(item.nama)}</strong><br><small style="color:#888">${escapeHtml(item.deskripsi||'')}</small></td>
                 <td>${escapeHtml(item.harga)}</td>
                 <td>${item.wa ? '<span style="color:#00ffcc">✓</span>' : '<span style="color:#666">—</span>'}</td>
                 <td>${item.qrBase64 ? '<div class="tiny-qr"><img src="' + item.qrBase64 + '" alt="qr"></div>' : '<span style="color:#666">—</span>'}</td>
                 <td>${item.videoUrl ? '<span style="color:#00ffcc">✓</span>' : '<span style="color:#666">—</span>'}</td>
+                <td>${acc ? escapeHtml(acc.name) : '<span style="color:#666">—</span>'}</td>
                 <td>
                     <button class="success" onclick="window.editLayanan('${item.id || ''}')">✎</button>
                     <button class="danger" onclick="window.hapusLayanan('${item.id || ''}')">🗑</button>
                 </td>
             </tr>
-        `).join('');
+        `;
+        }).join('');
     };
 
     // ===================== CRUD =====================
@@ -725,7 +1162,11 @@
 
         if (!nama || !harga) { alert('Nama dan harga wajib diisi!'); return; }
 
-        const payload = { nama, deskripsi, harga, wa, videoUrl, updatedAt: new Date().toISOString() };
+        const payload = { 
+            nama, deskripsi, harga, wa, videoUrl, 
+            accountId: currentAccountId || 'default',
+            updatedAt: new Date().toISOString() 
+        };
         if (qrBase64Cache) payload.qrBase64 = qrBase64Cache;
 
         try {
@@ -735,6 +1176,7 @@
                     if (idx >= 0) {
                         if (!qrBase64Cache && dataLayanan[idx].qrBase64) payload.qrBase64 = dataLayanan[idx].qrBase64;
                         if (!videoUrl && dataLayanan[idx].videoUrl) payload.videoUrl = dataLayanan[idx].videoUrl;
+                        if (!payload.accountId) payload.accountId = dataLayanan[idx].accountId;
                         dataLayanan[idx] = { ...dataLayanan[idx], ...payload };
                     }
                 } else {
@@ -780,6 +1222,13 @@
         if (item.videoUrl) { videoUrlCache = item.videoUrl; videoPreview.src = item.videoUrl; videoPreviewBox.style.display = 'block'; videoPreview.load(); }
         else { videoUrlCache = null; videoPreviewBox.style.display = 'none'; videoPreview.src = ''; }
 
+        // Switch ke akun layanan ini
+        if (item.accountId) {
+            currentAccountId = item.accountId;
+            renderAccountList();
+            updateCurrentAccountBar();
+        }
+
         editId = id;
         document.getElementById('btn-simpan').textContent = '💾 Update Layanan';
     };
@@ -797,8 +1246,18 @@
     window.hapusSemua = async function() {
         if (!confirm('Yakin hapus SEMUA data? Ini tidak bisa dibatalkan!')) return;
         try {
-            if (isOffline) { dataLayanan = []; saveOffline(); renderLayanan(); renderAdminTable(); }
-            else { const snapshot = await getDocs(collection(db, 'layanan')); const batch = writeBatch(db); snapshot.docs.forEach(d => batch.delete(d.ref)); await batch.commit(); }
+            if (isOffline) { 
+                dataLayanan = dataLayanan.filter(x => x.accountId !== currentAccountId); 
+                saveOffline(); renderLayanan(); renderAdminTable(); 
+            }
+            else { 
+                const snapshot = await getDocs(collection(db, 'layanan')); 
+                const batch = writeBatch(db); 
+                snapshot.docs.forEach(d => {
+                    if (d.data().accountId === currentAccountId) batch.delete(d.ref);
+                }); 
+                await batch.commit(); 
+            }
             activeItemId = null;
             document.getElementById('area-detail-produk').style.display = 'none';
             document.getElementById('backup-area').value = '';
@@ -822,7 +1281,13 @@
 
     // ===================== EXPORT / IMPORT =====================
     window.exportData = function() {
-        const json = JSON.stringify({ layanan: dataLayanan, exportedAt: new Date().toISOString() }, null, 2);
+        const filtered = dataLayanan.filter(x => !x.accountId || x.accountId === currentAccountId);
+        const json = JSON.stringify({ 
+            layanan: filtered, 
+            accounts: accounts,
+            currentAccountId: currentAccountId,
+            exportedAt: new Date().toISOString() 
+        }, null, 2);
         document.getElementById('backup-area').value = json;
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -837,6 +1302,14 @@
         try {
             const parsed = JSON.parse(text);
             if (!parsed.layanan || !Array.isArray(parsed.layanan)) throw new Error('Format tidak valid');
+
+            // Import akun jika ada
+            if (parsed.accounts && Array.isArray(parsed.accounts)) {
+                accounts = parsed.accounts;
+                saveAccounts();
+                renderAccountList();
+            }
+
             if (isOffline) {
                 dataLayanan = parsed.layanan.map((x, i) => ({ ...x, id: x.id || 'local_imp_' + i + '_' + Date.now() }));
                 saveOffline(); renderLayanan(); renderAdminTable();
@@ -878,6 +1351,7 @@
     document.addEventListener('contextmenu', e => e.preventDefault());
 
     // ===================== INIT =====================
+    loadAccounts();
     listenRealtime();
 </script>
 </body>
