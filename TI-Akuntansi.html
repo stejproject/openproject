@@ -627,7 +627,7 @@
 
             <!-- CURRENT ACCOUNT INFO -->
             <div class="switcher-bar" id="current-account-bar" style="display:none;">
-                <img id="current-account-img" src="" alt="">
+                <img id="current-account-img" src="" alt="" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+'" >
                 <div>
                     <span>Aktif: <strong id="current-account-name"></strong></span>
                 </div>
@@ -657,7 +657,7 @@
                 <label>Upload Kode QR (QRIS)</label>
                 <input type="file" id="input-qr" accept="image/*">
                 <div class="qr-preview-box" id="qr-preview-box">
-                    <img id="qr-preview-img" alt="Preview QR">
+                    <img id="qr-preview-img" alt="Preview QR" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+'" >
                 </div>
             </div>
             <div class="form-group">
@@ -756,7 +756,7 @@
                 id: 'default',
                 name: 'Akun Utama',
                 wa: '',
-                photo: 'https://via.placeholder.com/32',
+                photo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+',
                 createdAt: new Date().toISOString(),
                 isDefault: true
             }];
@@ -791,7 +791,7 @@
                 const defaultAccount = {
                     name: 'Akun Utama',
                     wa: '',
-                    photo: 'https://via.placeholder.com/32',
+                    photo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+',
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                     ownerUid: currentUser.uid,
@@ -835,7 +835,7 @@
                 const defaultAccount = {
                     name: 'Akun Utama',
                     wa: '',
-                    photo: 'https://via.placeholder.com/32',
+                    photo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+',
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                     ownerUid: currentUser.uid,
@@ -875,7 +875,7 @@
     window.saveNewAccount = async function() {
         const name = document.getElementById('new-account-name').value.trim();
         const wa = document.getElementById('new-account-wa').value.trim();
-        const photo = document.getElementById('new-account-photo').value.trim() || 'https://via.placeholder.com/32';
+        const photo = document.getElementById('new-account-photo').value.trim() || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+';
 
         if (!name) { alert('Nama akun wajib diisi!'); return; }
 
@@ -1019,7 +1019,7 @@
         container.innerHTML = accounts.map(acc => `
             <div class="account-item ${acc.id === currentAccountId ? 'active' : ''}" onclick="window.switchAccount('${acc.id}')">
                 <div class="account-item-info">
-                    <img src="${escapeHtml(acc.photo)}" alt="" onerror="this.src='https://via.placeholder.com/32'">
+                    <img src="${escapeHtml(acc.photo)}" alt="" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+'">
                     <div>
                         <span>${escapeHtml(acc.name)} ${acc.id === currentAccountId ? '<span class="account-badge">AKTIF</span>' : ''}</span>
                         <small>${acc.wa ? escapeHtml(acc.wa) : 'Tanpa WA'}</small>
@@ -1072,7 +1072,7 @@
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('crud-section').style.display = 'block';
             document.getElementById('user-info').innerHTML = `
-                <img src="${user.photoURL || 'https://via.placeholder.com/32'}" alt="avatar">
+                <img src="${user.photoURL || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+'}" alt="avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+'" >
                 <span>${user.displayName || user.email}</span>
             `;
             loadAccounts();
@@ -1263,7 +1263,7 @@
         }
 
         if (item.qrBase64) {
-            qrDisplay.innerHTML = `<img src="${item.qrBase64}" alt="QR ${escapeHtml(item.nama)}">`;
+            qrDisplay.innerHTML = `<img src="${item.qrBase64}" alt="QR ${escapeHtml(item.nama)}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+'" >`;
             qrDisplay.className = 'detail-qr-box';
         } else {
             qrDisplay.textContent = '[ QRIS TIDAK TERSEDIA ]';
@@ -1309,7 +1309,7 @@
                 <td><strong>${escapeHtml(item.nama)}</strong><br><small style="color:#888">${escapeHtml(item.deskripsi||'')}</small></td>
                 <td>${escapeHtml(item.harga)}</td>
                 <td>${item.wa ? '<span style="color:#00ffcc">✓</span>' : '<span style="color:#666">—</span>'}</td>
-                <td>${item.qrBase64 ? '<div class="tiny-qr"><img src="' + item.qrBase64 + '" alt="qr"></div>' : '<span style="color:#666">—</span>'}</td>
+                <td>${item.qrBase64 ? '<div class="tiny-qr"><img src="' + item.qrBase64 + '" alt="qr" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+'" ></div>' : '<span style="color:#666">—</span>'}</td>
                 <td>${item.videoUrl ? '<span style="color:#00ffcc">✓</span>' : '<span style="color:#666">—</span>'}</td>
                 <td>${acc ? escapeHtml(acc.name) : '<span style="color:#666">—</span>'}</td>
                 <td>
@@ -1480,7 +1480,7 @@
                             const accountData = {
                                 name: acc.name || 'Akun Import',
                                 wa: acc.wa || '',
-                                photo: acc.photo || 'https://via.placeholder.com/32',
+                                photo: acc.photo || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+',
                                 createdAt: acc.createdAt || new Date().toISOString(),
                                 updatedAt: new Date().toISOString(),
                                 ownerUid: currentUser.uid,
