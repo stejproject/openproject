@@ -496,6 +496,14 @@
 <base target="_blank">
 </head>
 <body>
+<script>
+    // Image fallback for broken images
+    window.imgFallback = function(img) {
+        img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='%23333'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23fff' text-anchor='middle' dy='.3em'%3E%3F%3C/text%3E%3C/svg%3E";
+        img.onerror = null;
+    };
+</script>
+
 
 <!-- TRIGGER ADMIN: Klik pojok kanan bawah 5x -->
 <div id="admin-trigger" title="Admin Panel"></div>
@@ -627,7 +635,7 @@
 
             <!-- CURRENT ACCOUNT INFO -->
             <div class="switcher-bar" id="current-account-bar" style="display:none;">
-                <img id="current-account-img" src="" alt="" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+'" >
+                <img id="current-account-img" src="" alt="" onerror="window.imgFallback(this)" >
                 <div>
                     <span>Aktif: <strong id="current-account-name"></strong></span>
                 </div>
@@ -657,7 +665,7 @@
                 <label>Upload Kode QR (QRIS)</label>
                 <input type="file" id="input-qr" accept="image/*">
                 <div class="qr-preview-box" id="qr-preview-box">
-                    <img id="qr-preview-img" alt="Preview QR" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+'" >
+                    <img id="qr-preview-img" alt="Preview QR" onerror="window.imgFallback(this)" >
                 </div>
             </div>
             <div class="form-group">
@@ -694,6 +702,8 @@
 </div>
 
 <script type="module">
+    const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='%23333'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23fff' text-anchor='middle' dy='.3em'%3E%3F%3C/text%3E%3C/svg%3E";
+
     // ===================== FIREBASE =====================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
@@ -713,7 +723,7 @@
     const db = getFirestore(app);
 
     // ===================== STATE =====================
-    let dataLayanan = [];
+        let dataLayanan = [];
     let editId = null;
     let isOffline = false;
     let currentUser = null;
@@ -756,7 +766,7 @@
                 id: 'default',
                 name: 'Akun Utama',
                 wa: '',
-                photo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+',
+                photo: PLACEHOLDER_IMG,
                 createdAt: new Date().toISOString(),
                 isDefault: true
             }];
@@ -791,7 +801,7 @@
                 const defaultAccount = {
                     name: 'Akun Utama',
                     wa: '',
-                    photo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+',
+                    photo: PLACEHOLDER_IMG,
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                     ownerUid: currentUser.uid,
@@ -835,7 +845,7 @@
                 const defaultAccount = {
                     name: 'Akun Utama',
                     wa: '',
-                    photo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+',
+                    photo: PLACEHOLDER_IMG,
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                     ownerUid: currentUser.uid,
@@ -875,7 +885,7 @@
     window.saveNewAccount = async function() {
         const name = document.getElementById('new-account-name').value.trim();
         const wa = document.getElementById('new-account-wa').value.trim();
-        const photo = document.getElementById('new-account-photo').value.trim() || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+';
+        const photo = document.getElementById('new-account-photo').value.trim() || PLACEHOLDER_IMG;
 
         if (!name) { alert('Nama akun wajib diisi!'); return; }
 
@@ -1019,7 +1029,7 @@
         container.innerHTML = accounts.map(acc => `
             <div class="account-item ${acc.id === currentAccountId ? 'active' : ''}" onclick="window.switchAccount('${acc.id}')">
                 <div class="account-item-info">
-                    <img src="${escapeHtml(acc.photo)}" alt="" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+'">
+                    <img src="${escapeHtml(acc.photo)}" alt="" onerror="window.imgFallback(this)">
                     <div>
                         <span>${escapeHtml(acc.name)} ${acc.id === currentAccountId ? '<span class="account-badge">AKTIF</span>' : ''}</span>
                         <small>${acc.wa ? escapeHtml(acc.wa) : 'Tanpa WA'}</small>
@@ -1072,7 +1082,7 @@
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('crud-section').style.display = 'block';
             document.getElementById('user-info').innerHTML = `
-                <img src="${user.photoURL || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+'}" alt="avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+'" >
+                <img src="${user.photoURL || PLACEHOLDER_IMG}" alt="avatar" onerror="window.imgFallback(this)" >
                 <span>${user.displayName || user.email}</span>
             `;
             loadAccounts();
@@ -1263,7 +1273,7 @@
         }
 
         if (item.qrBase64) {
-            qrDisplay.innerHTML = `<img src="${item.qrBase64}" alt="QR ${escapeHtml(item.nama)}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+'" >`;
+            qrDisplay.innerHTML = `<img src="${item.qrBase64}" alt="QR ${escapeHtml(item.nama)}" onerror="window.imgFallback(this)" >`;
             qrDisplay.className = 'detail-qr-box';
         } else {
             qrDisplay.textContent = '[ QRIS TIDAK TERSEDIA ]';
@@ -1309,7 +1319,7 @@
                 <td><strong>${escapeHtml(item.nama)}</strong><br><small style="color:#888">${escapeHtml(item.deskripsi||'')}</small></td>
                 <td>${escapeHtml(item.harga)}</td>
                 <td>${item.wa ? '<span style="color:#00ffcc">✓</span>' : '<span style="color:#666">—</span>'}</td>
-                <td>${item.qrBase64 ? '<div class="tiny-qr"><img src="' + item.qrBase64 + '" alt="qr" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+'" ></div>' : '<span style="color:#666">—</span>'}</td>
+                <td>${item.qrBase64 ? '<div class="tiny-qr"><img src="' + item.qrBase64 + '" alt="qr" onerror="window.imgFallback(this)" ></div>' : '<span style="color:#666">—</span>'}</td>
                 <td>${item.videoUrl ? '<span style="color:#00ffcc">✓</span>' : '<span style="color:#666">—</span>'}</td>
                 <td>${acc ? escapeHtml(acc.name) : '<span style="color:#666">—</span>'}</td>
                 <td>
@@ -1480,7 +1490,7 @@
                             const accountData = {
                                 name: acc.name || 'Akun Import',
                                 wa: acc.wa || '',
-                                photo: acc.photo || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPj88L3RleHQ+PC9zdmc+',
+                                photo: acc.photo || PLACEHOLDER_IMG,
                                 createdAt: acc.createdAt || new Date().toISOString(),
                                 updatedAt: new Date().toISOString(),
                                 ownerUid: currentUser.uid,
