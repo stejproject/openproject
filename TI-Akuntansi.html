@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="https://stejproject.github.io/favicon-128.ico">
     <title>Portofolio TI — STEJ Protection</title>
     <style>
         /* ================= THEME STEJ DARK MODE ================= */
@@ -56,49 +57,6 @@
             text-align: center;
         }
 
-        /* SEARCH BAR */
-        .search-box {
-            position: relative;
-            margin-bottom: 15px;
-        }
-        .search-box input {
-            width: 100%;
-            background-color: #252525;
-            border: 1px solid #333;
-            color: #fff;
-            padding: 12px 40px 12px 15px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .search-box input:focus {
-            border-color: #00ffcc;
-        }
-        .search-box input::placeholder {
-            color: #666;
-        }
-        .search-box .search-icon {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #666;
-            font-size: 1rem;
-        }
-        .search-results-count {
-            font-size: 0.75rem;
-            color: #888;
-            text-align: center;
-            margin-top: 5px;
-        }
-        .highlight-text {
-            background-color: rgba(0, 255, 204, 0.2);
-            color: #00ffcc;
-            padding: 0 2px;
-            border-radius: 2px;
-        }
-
         /* DAFTAR LAYANAN */
         .layanan-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
         .layanan-item {
@@ -109,22 +67,10 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            transition: border-color 0.2s, transform 0.2s;
+            transition: border-color 0.2s;
             cursor: pointer;
-            animation: slideIn 0.3s ease;
         }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .layanan-item:hover { border-color: #00ffcc; transform: translateX(3px); }
-        .layanan-item.aktif {
-            border-color: #00ffcc;
-            background-color: #2a2a2a;
-        }
-        .layanan-item.hidden {
-            display: none;
-        }
+        .layanan-item:hover { border-color: #00ffcc; }
         .layanan-row {
             display: flex;
             justify-content: space-between;
@@ -135,6 +81,27 @@
         .layanan-harga {
             color: #00ffcc; font-weight: bold; font-size: 0.9rem;
             white-space: nowrap; margin-left: 10px;
+        }
+        .layanan-video {
+            width: 100%;
+            max-width: 200px;
+            align-self: center;
+            border-radius: 6px;
+            overflow: hidden;
+            display: none;
+            background: #000;
+        }
+        .layanan-video.show { display: block; }
+        .layanan-video video {
+            width: 100%;
+            display: block;
+            border-radius: 6px;
+        }
+        .video-label {
+            font-size: 0.7rem;
+            color: #00ffcc;
+            text-align: center;
+            margin-top: 4px;
         }
         .layanan-actions {
             display: flex;
@@ -155,67 +122,39 @@
         }
         .btn-wa:hover { opacity: 0.85; }
 
-        /* AREA DETAIL SETELAH KLIK */
-        .detail-area {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #333;
-            animation: fadeIn 0.3s ease;
+        /* QRIS */
+        .qr-section {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 20px; text-align: center;
         }
-        .detail-area.show { display: flex; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
+        .qr-placeholder {
+            width: 200px; height: 200px; background-color: #ffffff;
+            border-radius: 6px; display: flex; align-items: center;
+            justify-content: center; color: #000000; font-size: 0.85rem;
+            font-weight: bold; border: 4px solid #ffffff; overflow: hidden;
         }
+        .qr-placeholder img { width: 100%; height: 100%; object-fit: cover; }
+        .warning-text { color: #ffcc00; font-size: 0.75rem; font-weight: bold; margin: 0; letter-spacing: 0.5px; }
+
+        /* AREA DETAIL (VIDEO + QR BESAR) */
         .detail-video-box {
             width: 100%;
             max-width: 300px;
             border-radius: 8px;
             overflow: hidden;
             background: #000;
+            display: none;
         }
+        .detail-video-box.show { display: block; }
         .detail-video-box video {
             width: 100%;
             display: block;
         }
-        .detail-qr-box {
-            width: 200px;
-            height: 200px;
-            background-color: #ffffff;
-            border-radius: 6px;
-            border: 4px solid #ffffff;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .detail-qr-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .detail-qr-box.kosong {
-            color: #000;
-            font-size: 0.8rem;
-            font-weight: bold;
-            text-align: center;
-            padding: 10px;
-        }
         .detail-label {
-            font-size: 0.7rem;
-            color: #ffcc00;
+            font-size: 0.75rem;
+            color: #00ffcc;
             text-align: center;
-            margin: 0;
-        }
-        .detail-nama {
-            color: #a0a0a0;
-            font-size: 0.8rem;
-            margin: 0;
-            text-align: center;
+            margin-top: 8px;
         }
 
         /* BUTTONS */
@@ -248,238 +187,50 @@
         .footer-text { font-size: 0.75rem; color: #e0e0e0; line-height: 1.4; margin: 0; }
         .license-7 { color: #ffcc00; font-family: monospace; margin-top: 12px; font-size: 0.7rem; line-height: 1.4; }
 
-        /* ================= LANDING PAGE ================= */
-        .landing-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-            text-align: center;
+        /* ================= ADMIN PANEL ================= */
+        #admin-trigger {
+            position: fixed; bottom: 5px; right: 5px;
+            width: 20px; height: 20px; background: transparent;
+            border: none; cursor: default; z-index: 9999;
         }
-        .landing-logo {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #6200ee, #00ffcc);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            margin-bottom: 20px;
-        }
-        .landing-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin: 0 0 10px 0;
-        }
-        .landing-subtitle {
-            color: #a0a0a0;
-            font-size: 0.9rem;
-            margin: 0 0 30px 0;
-            max-width: 300px;
-            line-height: 1.5;
-        }
-        .landing-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            width: 100%;
-            max-width: 300px;
-        }
-        .landing-divider {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #666;
-            font-size: 0.8rem;
-            margin: 10px 0;
-        }
-        .landing-divider::before,
-        .landing-divider::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: #333;
-        }
-        .register-form {
-            display: none;
-            flex-direction: column;
-            gap: 15px;
-            width: 100%;
-            max-width: 300px;
-            animation: fadeIn 0.3s ease;
-        }
-        .register-form.show {
-            display: flex;
-        }
-        .form-group { margin-bottom: 0; }
-        .form-group label {
-            display: block;
-            font-size: 0.8rem;
-            color: #a0a0a0;
-            margin-bottom: 5px;
-            text-align: left;
-        }
-        .form-group input {
-            width: 100%;
-            background-color: #252525;
-            border: 1px solid #444;
-            color: #fff;
-            padding: 12px;
-            border-radius: 6px;
-            font-family: inherit;
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .form-group input:focus {
-            border-color: #00ffcc;
-        }
-        .form-group input::placeholder {
-            color: #666;
-        }
-        .back-link {
-            color: #888;
-            font-size: 0.8rem;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .back-link:hover {
-            color: #00ffcc;
-        }
-
-        /* ================= ADMIN PANEL / DASHBOARD ================= */
         #admin-panel {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
             background-color: rgba(18, 18, 18, 0.98);
-            z-index: 10000;
-            overflow-y: auto;
-            padding: 20px;
+            z-index: 10000; overflow-y: auto; padding: 20px;
         }
         .admin-container {
-            max-width: 500px;
-            margin: 0 auto;
-            background-color: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 25px;
+            max-width: 500px; margin: 0 auto;
+            background-color: #1a1a1a; border: 1px solid #333;
+            border-radius: 12px; padding: 25px;
         }
         .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px;
         }
-        .admin-header h2 {
-            color: #00ffcc;
-            margin: 0;
-            font-size: 1.2rem;
-        }
+        .admin-header h2 { color: #00ffcc; margin: 0; font-size: 1.2rem; }
         .admin-close {
-            background: #333;
-            border: none;
-            color: #fff;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            font-size: 1.2rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: #333; border: none; color: #fff; width: 32px; height: 32px;
+            border-radius: 50%; font-size: 1.2rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
         }
-        .badge {
-            display: inline-block;
-            background: #6200ee;
-            color: #fff;
-            font-size: 0.7rem;
-            padding: 2px 8px;
-            border-radius: 4px;
-            margin-bottom: 15px;
+        .form-group { margin-bottom: 15px; }
+        .form-group label {
+            display: block; font-size: 0.8rem; color: #a0a0a0; margin-bottom: 5px;
         }
-        .badge.offline { background: #cf6679; }
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #252525;
-            border-radius: 6px;
+        .form-group input, .form-group textarea {
+            width: 100%; background-color: #252525; border: 1px solid #444;
+            color: #fff; padding: 10px; border-radius: 6px;
+            font-family: inherit; font-size: 0.9rem;
+            -webkit-user-select: text; -moz-user-select: text;
+            -ms-user-select: text; user-select: text;
         }
-        .user-info img {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none; border-color: #6200ee;
         }
-        .user-info span { font-size: 0.85rem; }
-        .admin-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-        .admin-table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-        .admin-table th {
-            text-align: left;
-            font-size: 0.75rem;
-            color: #a0a0a0;
-            border-bottom: 1px solid #333;
-            padding: 8px 5px;
-        }
-        .admin-table td {
-            font-size: 0.85rem;
-            padding: 10px 5px;
-            border-bottom: 1px solid #2a2a2a;
-            vertical-align: top;
-        }
-        .admin-table td:first-child { width: 20%; }
-        .admin-table td:nth-child(2) { width: 12%; color: #00ffcc; }
-        .admin-table td:nth-child(3) { width: 12%; font-size: 0.75rem; color: #888; }
-        .admin-table td:nth-child(4) { width: 12%; text-align: center; }
-        .admin-table td:nth-child(5) { width: 12%; text-align: center; }
-        .admin-table td:nth-child(6) { width: 15%; text-align: center; font-size: 0.7rem; }
-        .admin-table td:last-child { width: 17%; text-align: right; }
-        .empty-state {
-            text-align: center;
-            color: #666;
-            font-size: 0.85rem;
-            padding: 20px;
-        }
-        .backup-section {
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid #333;
-        }
-        .backup-section h3 {
-            font-size: 0.9rem;
-            color: #a0a0a0;
-            margin: 0 0 10px 0;
-        }
-        .backup-area {
-            width: 100%;
-            min-height: 80px;
-            background-color: #252525;
-            border: 1px solid #444;
-            color: #00ffcc;
-            padding: 10px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 0.75rem;
-            word-break: break-all;
+        .form-group input[type="file"] {
+            padding: 8px;
+            font-size: 0.8rem;
         }
         .qr-preview-box, .video-preview-box {
             margin-top: 10px;
@@ -495,255 +246,127 @@
             display: block;
             border-radius: 4px;
         }
+        .admin-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .admin-table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        .admin-table th {
+            text-align: left; font-size: 0.75rem; color: #a0a0a0;
+            border-bottom: 1px solid #333; padding: 8px 5px;
+        }
+        .admin-table td {
+            font-size: 0.85rem; padding: 10px 5px;
+            border-bottom: 1px solid #2a2a2a; vertical-align: top;
+        }
+        .admin-table td:first-child { width: 30%; }
+        .admin-table td:nth-child(2) { width: 18%; color: #00ffcc; }
+        .admin-table td:nth-child(3) { width: 18%; font-size: 0.75rem; color: #888; }
+        .admin-table td:nth-child(4) { width: 18%; text-align: center; }
+        .admin-table td:last-child { width: 16%; text-align: right; }
+        .badge {
+            display: inline-block; background: #6200ee; color: #fff;
+            font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; margin-bottom: 15px;
+        }
+        .badge.offline { background: #cf6679; }
+        .empty-state { text-align: center; color: #666; font-size: 0.85rem; padding: 20px; }
+        .backup-section {
+            margin-top: 25px; padding-top: 20px; border-top: 1px solid #333;
+        }
+        .backup-section h3 { font-size: 0.9rem; color: #a0a0a0; margin: 0 0 10px 0; }
+        .backup-area {
+            width: 100%; min-height: 80px; background-color: #252525;
+            border: 1px solid #444; color: #00ffcc; padding: 10px;
+            border-radius: 6px; font-family: monospace; font-size: 0.75rem;
+            -webkit-user-select: text; -moz-user-select: text;
+            -ms-user-select: text; user-select: text; word-break: break-all;
+        }
+        .user-info {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 15px; padding: 10px; background: #252525;
+            border-radius: 6px;
+        }
+        .user-info img {
+            width: 32px; height: 32px; border-radius: 50%;
+        }
+        .user-info span { font-size: 0.85rem; }
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            display: inline-block; margin-right: 5px;
+        }
+        .status-dot.online { background: #00ffcc; }
+        .status-dot.offline { background: #cf6679; }
+        #login-section, #crud-section { display: none; }
         .tiny-qr {
-            width: 40px;
-            height: 40px;
+            width: 40px; height: 40px;
             background: #fff;
             border-radius: 4px;
             padding: 2px;
         }
         .tiny-qr img {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             object-fit: cover;
             border-radius: 2px;
         }
-
-        /* ================= MULTI AKUN ================= */
-        .account-section {
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #333;
-        }
-        .account-section h3 {
-            color: #00ffcc;
-            font-size: 0.9rem;
-            margin: 0 0 10px 0;
-        }
-        .account-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-        .account-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 12px;
-            background: #252525;
-            border: 1px solid #333;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .account-item:hover { border-color: #00ffcc; }
-        .account-item.active {
-            border-color: #00ffcc;
-            background: #2a2a2a;
-        }
-        .account-item-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .account-item-info img {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        .account-item-info span {
-            font-size: 0.85rem;
-            color: #fff;
-        }
-        .account-item-info small {
-            font-size: 0.7rem;
-            color: #888;
-            display: block;
-        }
-        .account-item-actions {
-            display: flex;
-            gap: 5px;
-        }
-        .account-item-actions button {
-            width: auto;
-            padding: 4px 8px;
-            font-size: 0.7rem;
-        }
-        .add-account-form {
-            display: none;
-            margin-top: 10px;
-            padding: 15px;
-            background: #252525;
-            border-radius: 6px;
-            border: 1px solid #333;
-        }
-        .add-account-form.show { display: block; }
-        .account-badge {
-            display: inline-block;
-            background: #00ffcc;
-            color: #121212;
-            font-size: 0.65rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-left: 5px;
-            font-weight: bold;
-        }
-        .switcher-bar {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #252525;
-            border-radius: 8px;
-            border: 1px solid #333;
-        }
-        .switcher-bar img {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-        }
-        .switcher-bar span {
-            font-size: 0.8rem;
-            color: #a0a0a0;
-        }
-        .switcher-bar strong {
-            color: #00ffcc;
-        }
-        .switcher-bar button {
-            width: auto;
-            padding: 4px 10px;
-            font-size: 0.7rem;
-            margin-left: auto;
-        }
-        .sync-status {
-            font-size: 0.7rem;
-            color: #888;
-            text-align: center;
-            margin-top: 5px;
-        }
-        .sync-status.syncing { color: #ffcc00; }
-        .sync-status.synced { color: #00ffcc; }
-        .sync-status.error { color: #cf6679; }
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 5px;
-        }
-        .status-dot.online { background: #00ffcc; }
-        .status-dot.offline { background: #cf6679; }
-
-        /* HIDDEN STATES */
-        .hidden { display: none !important; }
     </style>
 <base target="_blank">
 </head>
 <body>
 
-<script>
-    window.imgFallback = function(img) {
-        img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='%23333'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23fff' text-anchor='middle' dy='.3em'%3E%3F%3C/text%3E%3C/svg%3E";
-        img.onerror = null;
-    };
-</script>
+<!-- TRIGGER ADMIN: Klik pojok kanan bawah 5x -->
+<div id="admin-trigger" title="Admin Panel"></div>
 
-<!-- ================= LANDING PAGE ================= -->
-<div id="landing-page" class="landing-container">
-    <div class="landing-logo">🛡️</div>
-    <h1 class="landing-title">STEJ Protection</h1>
-    <p class="landing-subtitle">Sistem Etalase Statis Beban Nol Abad ke-21. Kelola layanan dan portofolio TI Anda.</p>
+<div class="container">
+    <header>
+        <h1>Arsitektur TI Papan Pindai</h1>
+        <p class="sub-title">Sistem Etalase Statis Beban Nol Abad ke-21</p>
+    </header>
 
-    <div class="landing-buttons" id="landing-buttons">
-        <button class="google" onclick="window.loginGoogle()">Login dengan Google</button>
-        <div class="landing-divider">atau</div>
-        <button class="secondary" onclick="window.showRegister()" style="width:100%;">📋 Register Akun Lokal</button>
-        <div class="landing-divider">atau</div>
-        <button class="secondary" onclick="window.enterAsGuest()" style="width:100%;">👤 Masuk sebagai Tamu</button>
+    <!-- STATUS KONEKSI -->
+    <div class="card" style="padding:15px;">
+        <p style="margin:0; font-size:0.8rem; text-align:center;">
+            <span id="status-dot" class="status-dot offline"></span>
+            <span id="status-text">Menghubungkan ke database...</span>
+        </p>
     </div>
 
-    <div class="register-form" id="register-form">
-        <div class="form-group">
-            <label>Nama Lengkap / Nama Toko</label>
-            <input type="text" id="reg-name" placeholder="Contoh: Toko STEJ">
+    <!-- DAFTAR LAYANAN (Realtime dari Firestore) -->
+    <div class="card">
+        <h2>Daftar Layanan</h2>
+        <div id="layanan-container" class="layanan-list">
+            <div class="empty-state">Memuat data...</div>
         </div>
-        <div class="form-group">
-            <label>Email (opsional)</label>
-            <input type="email" id="reg-email" placeholder="email@contoh.com">
+
+        <!-- AREA DETAIL: VIDEO REVIEW + QRIS BESAR -->
+        <div id="area-detail-produk" style="display: none; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #2d2d2d;">
+            <!-- VIDEO REVIEW -->
+            <div class="detail-video-box" id="detail-video-box">
+                <video id="detail-video" autoplay muted loop playsinline></video>
+            </div>
+            <p id="detail-video-label" class="detail-label" style="display:none;">▶️ Review Produk</p>
+            
+            <!-- QRIS BESAR -->
+            <div class="qr-placeholder" id="qr-display">[ PILIH LAYANAN ]</div>
+            <p class="warning-text">⚠️ VALIDASI TRANSAKSI: STEJ PROJECT</p>
+            <p id="qr-nama-layanan" style="color: #a0a0a0; font-size: 0.8rem; margin: 0; text-align: center;">Ketuk layanan untuk menampilkan detail</p>
         </div>
-        <div class="form-group">
-            <label>Password</label>
-            <input type="password" id="reg-password" placeholder="Minimal 6 karakter">
-        </div>
-        <div class="form-group">
-            <label>Nomor WhatsApp</label>
-            <input type="text" id="reg-wa" placeholder="6281234567890">
-        </div>
-        <button onclick="window.registerAccount()">🚀 Buat Akun & Dashboard</button>
-        <p class="back-link" onclick="window.showLanding()">← Kembali ke halaman login</p>
     </div>
-</div>
 
-<!-- ================= MAIN APP ================= -->
-<div id="main-app" class="hidden">
-    <div class="container">
-        <header>
-            <h1>Arsitektur TI Papan Pindai</h1>
-            <p class="sub-title">Sistem Etalase Statis Beban Nol Abad ke-21</p>
-        </header>
-
-        <div class="card" style="padding:15px;">
-            <p style="margin:0; font-size:0.8rem; text-align:center;">
-                <span id="status-dot" class="status-dot offline"></span>
-                <span id="status-text">Menghubungkan ke database...</span>
+    <!-- PUSAT BANTUAN — TIMER WA -->
+    <div class="card">
+        <h2>Pusat Bantuan</h2>
+        <div class="qr-section">
+            <p class="sub-title" style="color: #a0a0a0; font-size: 0.8rem; line-height: 1.4; margin: 0 0 15px 0;">
+                Butuh bantuan atau ada pertanyaan? Hubungi tim kami via WhatsApp.
             </p>
-            <p class="sync-status" id="sync-status"></p>
+            <button id="pemicu-bantuan">HUBUNGI BANTUAN VIA WA</button>
+            <div id="area-bantuan-wa" style="display: none; flex-direction: column; align-items: center; gap: 10px; margin-top: 15px;">
+                <p class="warning-text">⚠️ MENGHUBUNGKAN KE TIM BANTUAN</p>
+                <p style="color: #a0a0a0; font-size: 0.7rem; margin: 0;">Menghubungkan dalam <span id="timer-bantuan">3</span> detik...</p>
+            </div>
         </div>
+    </div>
 
-        <div class="card">
-            <h2>Daftar Layanan</h2>
-            <div class="search-box">
-                <input type="text" id="search-input" placeholder="Cari layanan, deskripsi, atau harga..." autocomplete="off">
-                <span class="search-icon">🔍</span>
-            </div>
-            <p class="search-results-count" id="search-count"></p>
-            <div id="layanan-container" class="layanan-list">
-                <div class="empty-state">Memuat data...</div>
-            </div>
-            <div id="area-detail-produk" style="display: none; flex-direction: column; align-items: center; gap: 12px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #2d2d2d;">
-                <div class="detail-video-box" id="detail-video-box" style="display: none;">
-                    <video id="detail-video" autoplay muted loop playsinline></video>
-                </div>
-                <p id="detail-video-label" class="detail-label" style="display: none;">▶️ Review Produk</p>
-                <div id="detail-wa-area" style="display: none; width: 100%; max-width: 300px;">
-                    <button class="btn-wa" id="detail-wa-btn" style="width: 100%; padding: 10px;">💬 Chat WhatsApp</button>
-                </div>
-                <div class="detail-qr-box" id="qr-display">[ PILIH LAYANAN ]</div>
-                <p class="detail-label">⚠️ VALIDASI TRANSAKSI: STEJ PROJECT</p>
-                <p id="qr-nama-layanan" class="detail-nama">Ketuk layanan untuk melihat detail</p>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>Pusat Bantuan</h2>
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 15px; text-align: center;">
-                <p style="color: #a0a0a0; font-size: 0.8rem; line-height: 1.4; margin: 0;">
-                    Butuh bantuan atau ada pertanyaan? Hubungi tim kami via WhatsApp.
-                </p>
-                <button id="pemicu-bantuan">HUBUNGI BANTUAN VIA WA</button>
-                <div id="area-bantuan-wa" style="display: none; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px;">
-                    <p style="color: #ffcc00; font-size: 0.75rem; font-weight: bold; margin: 0;">⚠️ MENGHUBUNGKAN KE TIM BANTUAN</p>
-                    <p style="color: #a0a0a0; font-size: 0.7rem; margin: 0;">Menghubungkan dalam <span id="timer-bantuan">3</span> detik...</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="footer-wave">
-            <p class="footer-text">© 2026 Hak Cipta Dilindungi <a href="https://stejproject.github.io/" class="license-7">STEJ-LICENSE 7 | STEJ-LICENSE</a></p>
-        </div>
+    <!-- FOOTER -->
+    <div class="footer-wave">
+        <p class="footer-text">© 2026 Hak Cipta Dilindungi <a href="https://stejproject.github.io/" class="license-7">STEJ-LICENSE 7 | STEJ-LICENSE</a></p>
     </div>
 </div>
 
@@ -751,48 +374,31 @@
 <div id="admin-panel">
     <div class="admin-container">
         <div class="admin-header">
-            <h2>⚙️ Dashboard Admin STEJ</h2>
+            <h2>⚙️ Panel Admin STEJ</h2>
             <button class="admin-close" onclick="window.tutupAdmin()">×</button>
         </div>
+
         <span class="badge" id="mode-badge">CLOUD — Firebase Firestore</span>
-        <div class="user-info" id="user-info"></div>
-        <div class="admin-actions" style="margin-bottom:15px;">
-            <button class="secondary" onclick="window.logout()">Logout</button>
-            <button class="secondary" onclick="window.toggleOfflineMode()">Toggle Offline</button>
+
+        <!-- SECTION: LOGIN GOOGLE -->
+        <div id="login-section">
+            <p style="font-size:0.85rem; color:#a0a0a0; margin-bottom:15px;">
+                Login dengan Google untuk mengelola data. Data tersimpan di cloud dan bisa diakses dari perangkat mana saja.
+            </p>
+            <button class="google" onclick="window.loginGoogle()">Login dengan Google</button>
+            <p style="font-size:0.75rem; color:#666; margin-top:10px; text-align:center;">
+                Atau gunakan mode offline dengan localStorage (data tidak sinkron antar perangkat).
+            </p>
+            <button class="secondary" onclick="window.aktifkanOffline()" style="width:100%; margin-top:5px;">
+                Gunakan Mode Offline
+            </button>
         </div>
 
-        <div class="account-section">
-            <h3>👥 Kelola Multi Akun</h3>
-            <div class="account-list" id="account-list"></div>
-            <button class="secondary" onclick="window.toggleAddAccount()" style="width:100%;">➕ Tambah Akun</button>
-            <div class="add-account-form" id="add-account-form">
-                <div class="form-group">
-                    <label>Nama Akun / Toko</label>
-                    <input type="text" id="new-account-name" placeholder="Contoh: Toko STEJ">
-                </div>
-                <div class="form-group">
-                    <label>Nomor WhatsApp</label>
-                    <input type="text" id="new-account-wa" placeholder="6281234567890">
-                </div>
-                <div class="form-group">
-                    <label>Foto Profil (URL)</label>
-                    <input type="text" id="new-account-photo" placeholder="https://...">
-                </div>
-                <div class="admin-actions">
-                    <button onclick="window.saveNewAccount()">Simpan Akun</button>
-                    <button class="secondary" onclick="window.toggleAddAccount()">Batal</button>
-                </div>
-            </div>
-        </div>
+        <!-- SECTION: CRUD (Setelah Login) -->
+        <div id="crud-section">
+            <div class="user-info" id="user-info"></div>
+            <button class="secondary" onclick="window.logout()" style="width:auto; margin-bottom:15px;">Logout</button>
 
-        <div class="switcher-bar" id="current-account-bar" style="display:none;">
-            <img id="current-account-img" src="" alt="" onerror="window.imgFallback(this)">
-            <div><span>Aktif: <strong id="current-account-name"></strong></span></div>
-            <button class="secondary" onclick="window.editCurrentAccount()">✎ Edit</button>
-        </div>
-
-        <div style="margin-top:20px; padding-top:20px; border-top:1px solid #333;">
-            <h3 style="color:#00ffcc; font-size:0.9rem; margin:0 0 15px 0;">📦 Tambah / Edit Layanan</h3>
             <div class="form-group">
                 <label>Nama Layanan</label>
                 <input type="text" id="input-nama" placeholder="Contoh: Landing Page Proteksi">
@@ -806,53 +412,62 @@
                 <input type="text" id="input-harga" placeholder="Contoh: 150.000">
             </div>
             <div class="form-group">
-                <label>Link WhatsApp</label>
+                <label>Link WhatsApp (bisa berbeda per layanan)</label>
                 <input type="text" id="input-wa" placeholder="https://wa.me/628...?text=Halo...">
             </div>
             <div class="form-group">
-                <label>Upload Kode QR (QRIS)</label>
+                <label>Upload Kode QR (QRIS / Saweria / Dll)</label>
                 <input type="file" id="input-qr" accept="image/*">
                 <div class="qr-preview-box" id="qr-preview-box">
-                    <img id="qr-preview-img" alt="Preview QR" onerror="window.imgFallback(this)">
+                    <img id="qr-preview-img" alt="Preview QR">
                 </div>
             </div>
             <div class="form-group">
-                <label>Link Video Review</label>
-                <input type="text" id="input-video-url" placeholder="https://cdn.contoh.com/video.mp4">
-                <p style="font-size:0.7rem; color:#666; margin-top:4px;">Link langsung ke file MP4/WebM. Maksimal 10MB.</p>
+                <label>Link Video Review (MP4, WebM, atau URL eksternal)</label>
+                <input type="text" id="input-video-url" placeholder="https://cdn.contoh.com/video.mp4 atau https://youtube.com/embed/...">
+                <p style="font-size:0.7rem; color:#666; margin-top:4px;">
+                    Bisa langsung link file video, atau link embed YouTube. Maksimal 10MB untuk performa.
+                </p>
                 <div class="video-preview-box" id="video-preview-box">
                     <video id="video-preview" controls muted></video>
                 </div>
             </div>
+
             <div class="admin-actions">
                 <button onclick="window.simpanLayanan()" id="btn-simpan">➕ Tambah Layanan</button>
                 <button class="secondary" onclick="window.resetForm()">Clear</button>
             </div>
-        </div>
 
-        <table class="admin-table">
-            <thead><tr><th>Layanan</th><th>Harga</th><th>WA</th><th>QR</th><th>Video</th><th>Akun</th><th>Aksi</th></tr></thead>
-            <tbody id="admin-table-body"></tbody>
-        </table>
+            <table class="admin-table">
+                <thead><tr><th>Layanan</th><th>Harga</th><th>WA</th><th>QR</th><th>Video</th><th>Aksi</th></tr></thead>
+                <tbody id="admin-table-body"></tbody>
+            </table>
 
-        <div class="backup-section">
-            <h3>📦 Backup & Restore</h3>
-            <textarea class="backup-area" id="backup-area" placeholder='Klik Export untuk melihat JSON...'></textarea>
-            <div class="admin-actions" style="margin-top:10px;">
-                <button class="secondary" onclick="window.exportData()">📋 Export JSON</button>
-                <button class="success" onclick="window.importData()">📥 Import JSON</button>
-                <button class="danger" onclick="window.hapusSemua()">🗑 Hapus Semua</button>
+            <div class="backup-section">
+                <h3>📦 Backup & Restore (File JSON)</h3>
+                <p style="font-size:0.75rem; color:#888; margin:0 0 8px 0;">
+                    Export: Download data sebagai file .json untuk cadangan offline.<br>
+                    Import: Upload file .json untuk mengembalikan/bulk insert data.
+                </p>
+                <textarea class="backup-area" id="backup-area" placeholder='Klik Export untuk melihat JSON...'></textarea>
+                <div class="admin-actions" style="margin-top:10px;">
+                    <button class="secondary" onclick="window.exportData()">📋 Export JSON</button>
+                    <button class="success" onclick="window.importData()">📥 Import JSON</button>
+                    <button class="danger" onclick="window.hapusSemua()">🗑 Hapus Semua</button>
+                </div>
+                <input type="file" id="file-import" accept=".json" style="display:none;" onchange="window.handleFileImport(this)">
             </div>
-            <input type="file" id="file-import" accept=".json" style="display:none;" onchange="window.handleFileImport(this)">
         </div>
     </div>
 </div>
 
 <script type="module">
+    // ===================== FIREBASE MODULAR SDK v12.13.0 =====================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, getDocs, writeBatch, query, where, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
+    // Your web app's Firebase configuration
     const firebaseConfig = {
         apiKey: "AIzaSyDeRPjhtmNPz5TNK1TPP3O5XZd4ORyeGPs",
         authDomain: "auth-stej-product.firebaseapp.com",
@@ -862,540 +477,326 @@
         appId: "1:846128318640:web:1c983100c63f7e50db9375"
     };
 
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='%23333'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23fff' text-anchor='middle' dy='.3em'%3E%3F%3C/text%3E%3C/svg%3E";
-
+    // ===================== STATE =====================
     let dataLayanan = [];
     let editId = null;
     let isOffline = false;
     let currentUser = null;
     let unsubscribeSnapshot = null;
-    let unsubscribeAccounts = null;
     let qrBase64Cache = null;
     let videoUrlCache = null;
-    let activeItemId = null;
-    let currentAccountId = null;
-    let accounts = [];
-    const STORAGE_KEY = 'stej_portfolio_offline_v4';
-    const ACCOUNTS_KEY = 'stej_accounts_v2';
+    const STORAGE_KEY = 'stej_portfolio_offline_v2';
 
-    function showLanding() {
-        document.getElementById('landing-page').classList.remove('hidden');
-        document.getElementById('main-app').classList.add('hidden');
-        document.getElementById('register-form').classList.remove('show');
-        document.getElementById('landing-buttons').style.display = 'flex';
-    }
-    window.showLanding = showLanding;
-
-    function showMainApp() {
-        document.getElementById('landing-page').classList.add('hidden');
-        document.getElementById('main-app').classList.remove('hidden');
-    }
-
-    window.showRegister = function() {
-        document.getElementById('landing-buttons').style.display = 'none';
-        document.getElementById('register-form').classList.add('show');
-    };
-
-    window.loginGoogle = async function() {
-        try {
-            const provider = new GoogleAuthProvider();
-            await signInWithPopup(auth, provider);
-        } catch(err) {
+    // ===================== AUTHENTICATION =====================
+    window.loginGoogle = function() {
+        const provider = new GoogleAuthProvider();
+        signInWithPopup(auth, provider).catch(err => {
             alert('Gagal login: ' + err.message);
-        }
-    };
-
-    window.registerAccount = async function() {
-        const name = document.getElementById('reg-name').value.trim();
-        const email = document.getElementById('reg-email').value.trim();
-        const password = document.getElementById('reg-password').value;
-        const wa = document.getElementById('reg-wa').value.trim();
-
-        if (!name || !password) { alert('Nama dan password wajib diisi!'); return; }
-        if (password.length < 6) { alert('Password minimal 6 karakter!'); return; }
-
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email || name + '@stej.local', password);
-            const user = userCredential.user;
-            await updateProfile(user, { displayName: name, photoURL: PLACEHOLDER_IMG });
-
-            const userData = {
-                uid: user.uid, name: name, email: email || '', wa: wa,
-                photoURL: PLACEHOLDER_IMG, createdAt: new Date().toISOString(), isLocal: !email
-            };
-            await setDoc(doc(db, 'users', user.uid), userData);
-
-            const defaultAccount = {
-                name: name + ' (Utama)', wa: wa, photo: PLACEHOLDER_IMG,
-                createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-                ownerUid: user.uid, isDefault: true
-            };
-            await addDoc(collection(db, 'accounts'), defaultAccount);
-            alert('Akun berhasil dibuat!');
-            showMainApp();
-        } catch(err) {
-            console.error('Register error:', err);
-            alert('Gagal register: ' + err.message);
-        }
-    };
-
-    window.enterAsGuest = function() {
-        isOffline = true;
-        currentUser = { uid: 'guest_' + Date.now(), displayName: 'Tamu', photoURL: PLACEHOLDER_IMG, isGuest: true };
-        accounts = [{ id: 'default', name: 'Akun Tamu', wa: '', photo: PLACEHOLDER_IMG, createdAt: new Date().toISOString(), isDefault: true }];
-        currentAccountId = 'default';
-        saveAccountsLocal();
-        showMainApp();
-        loadData();
-        renderLayanan();
-        renderAdminTable();
-        updateStatus(false, 'Mode Tamu — Data lokal');
-        updateSyncStatus('offline', '📴 Mode Tamu');
-        document.getElementById('user-info').innerHTML = `<img src="${PLACEHOLDER_IMG}" alt="avatar" onerror="window.imgFallback(this)"><span>Tamu (Offline)</span>`;
-        document.getElementById('mode-badge').textContent = 'OFFLINE — localStorage';
-        document.getElementById('mode-badge').classList.add('offline');
+        });
     };
 
     window.logout = function() {
-        if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
-        if (unsubscribeAccounts) { unsubscribeAccounts(); unsubscribeAccounts = null; }
-        if (currentUser && currentUser.isGuest) {
-            dataLayanan = []; accounts = []; currentAccountId = null; currentUser = null; isOffline = false;
-            localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(ACCOUNTS_KEY);
-            showLanding(); return;
-        }
         signOut(auth);
     };
 
-    window.toggleOfflineMode = function() {
-        if (isOffline) {
-            isOffline = false;
-            if (currentUser && !currentUser.isGuest) {
-                listenRealtime(); listenAccountsRealtime(); updateSyncStatus('synced', '✅ Mode Online');
-            }
-        } else {
-            isOffline = true;
-            if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
-            if (unsubscribeAccounts) { unsubscribeAccounts(); unsubscribeAccounts = null; }
-            saveOffline(); updateSyncStatus('offline', '📴 Mode Offline');
-        }
-        document.getElementById('mode-badge').textContent = isOffline ? 'OFFLINE — localStorage' : 'CLOUD — Firebase Firestore';
-        document.getElementById('mode-badge').classList.toggle('offline', isOffline);
+    window.aktifkanOffline = function() {
+        isOffline = true;
+        document.getElementById('mode-badge').textContent = 'OFFLINE — localStorage';
+        document.getElementById('mode-badge').classList.add('offline');
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('crud-section').style.display = 'block';
+        if (unsubscribeSnapshot) unsubscribeSnapshot();
+        loadData();
     };
 
     onAuthStateChanged(auth, user => {
         currentUser = user;
         if (user) {
-            showMainApp();
-            document.getElementById('user-info').innerHTML = `<img src="${user.photoURL || PLACEHOLDER_IMG}" alt="avatar" onerror="window.imgFallback(this)"><span>${user.displayName || user.email}</span>`;
-            loadAccounts(); listenAccountsRealtime(); listenRealtime();
-        } else {
-            showLanding();
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('crud-section').style.display = 'block';
+            document.getElementById('user-info').innerHTML = `
+                <img src="${user.photoURL || 'https://via.placeholder.com/32'}" alt="avatar">
+                <span>${user.displayName || user.email}</span>
+            `;
+            listenRealtime();
+        } else if (!isOffline) {
+            document.getElementById('login-section').style.display = 'block';
+            document.getElementById('crud-section').style.display = 'none';
         }
     });
 
-    function updateSyncStatus(status, message) {
-        const el = document.getElementById('sync-status');
-        if (el) { el.className = 'sync-status ' + status; el.textContent = message || ''; }
-    }
-
-    function loadAccountsLocal() {
-        const saved = localStorage.getItem(ACCOUNTS_KEY);
-        if (saved) { try { accounts = JSON.parse(saved); } catch(e) { accounts = []; } }
-        if (accounts.length === 0) {
-            accounts = [{ id: 'default', name: 'Akun Utama', wa: '', photo: PLACEHOLDER_IMG, createdAt: new Date().toISOString(), isDefault: true }];
-            saveAccountsLocal();
-        }
-        if (!currentAccountId || !accounts.find(a => a.id === currentAccountId)) currentAccountId = accounts[0].id;
-        renderAccountList(); updateCurrentAccountBar();
-    }
-
-    function saveAccountsLocal() {
-        localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
-    }
-
-    async function syncAccountsFromFirestore() {
-        if (!currentUser || currentUser.isGuest) return;
-        updateSyncStatus('syncing', '⏳ Sinkronisasi akun...');
-        try {
-            const q = query(collection(db, 'accounts'), where('ownerUid', '==', currentUser.uid));
-            const snapshot = await getDocs(q);
-            accounts = [];
-            snapshot.forEach(docSnap => accounts.push({ id: docSnap.id, ...docSnap.data() }));
-            if (accounts.length === 0) {
-                const defaultAccount = {
-                    name: (currentUser.displayName || 'Akun') + ' (Utama)', wa: '',
-                    photo: currentUser.photoURL || PLACEHOLDER_IMG,
-                    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-                    ownerUid: currentUser.uid, isDefault: true
-                };
-                const docRef = await addDoc(collection(db, 'accounts'), defaultAccount);
-                accounts.push({ id: docRef.id, ...defaultAccount });
-            }
-            saveAccountsLocal();
-            if (!currentAccountId || !accounts.find(a => a.id === currentAccountId)) currentAccountId = accounts[0].id;
-            renderAccountList(); updateCurrentAccountBar();
-            updateSyncStatus('synced', '✅ Akun tersinkron');
-        } catch (err) {
-            console.error('Sync accounts error:', err.code, err.message);
-            updateSyncStatus('error', '❌ ' + err.message);
-            loadAccountsLocal();
-        }
-    }
-
-    function listenAccountsRealtime() {
-        if (isOffline || !currentUser || currentUser.isGuest) return;
-        if (unsubscribeAccounts) unsubscribeAccounts();
-        const q = query(collection(db, 'accounts'), where('ownerUid', '==', currentUser.uid));
-        unsubscribeAccounts = onSnapshot(q, snapshot => {
-            accounts = [];
-            snapshot.forEach(docSnap => accounts.push({ id: docSnap.id, ...docSnap.data() }));
-            if (accounts.length === 0) {
-                const defaultAccount = {
-                    name: (currentUser.displayName || 'Akun') + ' (Utama)', wa: '',
-                    photo: currentUser.photoURL || PLACEHOLDER_IMG,
-                    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-                    ownerUid: currentUser.uid, isDefault: true
-                };
-                addDoc(collection(db, 'accounts'), defaultAccount); return;
-            }
-            saveAccountsLocal();
-            if (!currentAccountId || !accounts.find(a => a.id === currentAccountId)) currentAccountId = accounts[0].id;
-            renderAccountList(); updateCurrentAccountBar(); renderLayanan(); renderAdminTable();
-            updateSyncStatus('synced', '✅ Akun real-time aktif');
-        }, err => {
-            console.error('Accounts realtime error:', err.code, err.message);
-            updateSyncStatus('error', '❌ ' + err.message);
-        });
-    }
-
-    window.toggleAddAccount = function() {
-        const form = document.getElementById('add-account-form');
-        form.classList.toggle('show');
-        if (!form.classList.contains('show')) {
-            document.getElementById('new-account-name').value = '';
-            document.getElementById('new-account-wa').value = '';
-            document.getElementById('new-account-photo').value = '';
-        }
-    };
-
-    window.saveNewAccount = async function() {
-        const name = document.getElementById('new-account-name').value.trim();
-        const wa = document.getElementById('new-account-wa').value.trim();
-        const photo = document.getElementById('new-account-photo').value.trim() || PLACEHOLDER_IMG;
-        if (!name) { alert('Nama akun wajib diisi!'); return; }
-        const newAccount = { name, wa, photo, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), isDefault: false };
-        if (isOffline || (currentUser && currentUser.isGuest)) {
-            newAccount.id = 'acc_' + Date.now();
-            accounts.push(newAccount); saveAccountsLocal(); renderAccountList(); toggleAddAccount();
-            currentAccountId = newAccount.id; updateCurrentAccountBar(); renderLayanan(); renderAdminTable();
-        } else {
-            if (!currentUser) { alert('Silakan login terlebih dahulu!'); return; }
-            try {
-                updateSyncStatus('syncing', '⏳ Menyimpan akun ke cloud...');
-                newAccount.ownerUid = currentUser.uid; newAccount.ownerEmail = currentUser.email || '';
-                const docRef = await addDoc(collection(db, 'accounts'), newAccount);
-                newAccount.id = docRef.id; toggleAddAccount(); updateSyncStatus('synced', '✅ Akun berhasil dibuat');
-            } catch (err) {
-                console.error('Save account error:', err.code, err.message);
-                alert('Error: ' + err.message); updateSyncStatus('error', '❌ ' + err.message);
-            }
-        }
-    };
-
-    window.switchAccount = function(accountId) {
-        currentAccountId = accountId; updateCurrentAccountBar(); renderAccountList(); renderLayanan(); renderAdminTable();
-        if (activeItemId) {
-            const item = dataLayanan.find(x => x.id === activeItemId);
-            if (item && item.accountId !== currentAccountId) { activeItemId = null; document.getElementById('area-detail-produk').style.display = 'none'; }
-        }
-    };
-
-    window.deleteAccount = async function(accountId, event) {
-        event.stopPropagation();
-        if (accounts.length <= 1) { alert('Minimal harus ada 1 akun!'); return; }
-        const acc = accounts.find(a => a.id === accountId);
-        if (!confirm('Yakin hapus akun "' + (acc ? acc.name : '') + '"? Semua layanan di akun ini juga akan terhapus!')) return;
-        if (isOffline || (currentUser && currentUser.isGuest)) {
-            dataLayanan = dataLayanan.filter(x => x.accountId !== accountId); saveOffline();
-            accounts = accounts.filter(a => a.id !== accountId); saveAccountsLocal();
-            if (currentAccountId === accountId) currentAccountId = accounts[0].id;
-            renderAccountList(); updateCurrentAccountBar(); renderLayanan(); renderAdminTable();
-            if (activeItemId) { activeItemId = null; document.getElementById('area-detail-produk').style.display = 'none'; }
-        } else {
-            if (!currentUser) { alert('Silakan login terlebih dahulu!'); return; }
-            try {
-                updateSyncStatus('syncing', '⏳ Menghapus akun...');
-                const qLayanan = query(collection(db, 'layanan'), where('accountId', '==', accountId));
-                const layananSnap = await getDocs(qLayanan);
-                const batch = writeBatch(db); layananSnap.docs.forEach(d => batch.delete(d.ref)); await batch.commit();
-                await deleteDoc(doc(db, 'accounts', accountId));
-                updateSyncStatus('synced', '✅ Akun dihapus');
-            } catch (err) {
-                console.error('Delete account error:', err.code, err.message);
-                alert('Error: ' + err.message); updateSyncStatus('error', '❌ ' + err.message);
-            }
-        }
-    };
-
-    window.editCurrentAccount = async function() {
-        const acc = accounts.find(a => a.id === currentAccountId);
-        if (!acc) return;
-        const newName = prompt('Nama Akun:', acc.name); if (newName === null) return;
-        const newWa = prompt('Nomor WhatsApp:', acc.wa); if (newWa === null) return;
-        const newPhoto = prompt('URL Foto Profil:', acc.photo); if (newPhoto === null) return;
-        const updated = { name: newName.trim() || acc.name, wa: newWa.trim(), photo: newPhoto.trim() || acc.photo, updatedAt: new Date().toISOString() };
-        if (isOffline || (currentUser && currentUser.isGuest)) {
-            Object.assign(acc, updated); saveAccountsLocal(); renderAccountList(); updateCurrentAccountBar();
-        } else {
-            if (!currentUser) { alert('Silakan login terlebih dahulu!'); return; }
-            try {
-                updateSyncStatus('syncing', '⏳ Mengupdate akun...');
-                await updateDoc(doc(db, 'accounts', currentAccountId), updated);
-                updateSyncStatus('synced', '✅ Akun diupdate');
-            } catch (err) {
-                console.error('Update account error:', err.code, err.message);
-                alert('Error: ' + err.message); updateSyncStatus('error', '❌ ' + err.message);
-            }
-        }
-    };
-
-    function renderAccountList() {
-        const container = document.getElementById('account-list');
-        if (accounts.length === 0) { container.innerHTML = '<div class="empty-state">Belum ada akun</div>'; return; }
-        container.innerHTML = accounts.map(acc => `
-            <div class="account-item ${acc.id === currentAccountId ? 'active' : ''}" onclick="window.switchAccount('${acc.id}')">
-                <div class="account-item-info">
-                    <img src="${escapeHtml(acc.photo)}" alt="" onerror="window.imgFallback(this)">
-                    <div>
-                        <span>${escapeHtml(acc.name)} ${acc.id === currentAccountId ? '<span class="account-badge">AKTIF</span>' : ''}</span>
-                        <small>${acc.wa ? escapeHtml(acc.wa) : 'Tanpa WA'}</small>
-                    </div>
-                </div>
-                <div class="account-item-actions">
-                    ${accounts.length > 1 ? `<button class="danger" onclick="window.deleteAccount('${acc.id}', event)">🗑</button>` : ''}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function updateCurrentAccountBar() {
-        const acc = accounts.find(a => a.id === currentAccountId);
-        const bar = document.getElementById('current-account-bar');
-        if (acc) { bar.style.display = 'flex'; document.getElementById('current-account-img').src = acc.photo; document.getElementById('current-account-name').textContent = acc.name; }
-        else { bar.style.display = 'none'; }
-    }
-
+    // ===================== REALTIME LISTENER =====================
     function listenRealtime() {
-        if (isOffline || !currentUser || currentUser.isGuest) return;
+        if (isOffline) return;
         if (unsubscribeSnapshot) unsubscribeSnapshot();
+
         unsubscribeSnapshot = onSnapshot(collection(db, 'layanan'), snapshot => {
             dataLayanan = [];
-            snapshot.forEach(docSnap => dataLayanan.push({ id: docSnap.id, ...docSnap.data() }));
-            renderLayanan(); renderAdminTable(); updateStatus(true, 'Terhubung ke Firestore');
+            snapshot.forEach(docSnap => {
+                dataLayanan.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            renderLayanan();
+            renderAdminTable();
+            updateStatus(true, 'Terhubung ke Firestore');
         }, err => {
-            console.error('Layanan realtime error:', err.code, err.message);
-            updateStatus(false, 'Gagal konek: ' + err.message);
+            console.error(err);
+            updateStatus(false, 'Gagal konek Firestore, beralih offline...');
+            setTimeout(() => aktifkanOffline(), 2000);
         });
     }
 
     function updateStatus(online, text) {
         const dot = document.getElementById('status-dot');
         const txt = document.getElementById('status-text');
-        if (dot && txt) { dot.className = 'status-dot ' + (online ? 'online' : 'offline'); txt.textContent = text; }
+        dot.className = 'status-dot ' + (online ? 'online' : 'offline');
+        txt.textContent = text;
     }
 
+    // ===================== OFFLINE MODE (localStorage) =====================
     function loadData() {
+        if (!isOffline) return;
         const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) { try { dataLayanan = JSON.parse(saved); } catch(e) { dataLayanan = []; } }
-        renderLayanan(); renderAdminTable();
-    }
-    function saveOffline() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataLayanan));
-    }
-
-    const searchInput = document.getElementById('search-input');
-    if (searchInput) {
-        searchInput.addEventListener('input', function(e) {
-            const query = e.target.value.trim().toLowerCase();
-            filterAndRenderLayanan(query);
-        });
-    }
-
-    function filterAndRenderLayanan(searchQuery) {
-        const container = document.getElementById('layanan-container');
-        if (!container) return;
-        const filtered = dataLayanan.filter(item => {
-            if (item.accountId && item.accountId !== currentAccountId) return false;
-            if (!searchQuery) return true;
-            const nama = (item.nama || '').toLowerCase();
-            const deskripsi = (item.deskripsi || '').toLowerCase();
-            const harga = (item.harga || '').toLowerCase();
-            return nama.includes(searchQuery) || deskripsi.includes(searchQuery) || harga.includes(searchQuery);
-        });
-        const countEl = document.getElementById('search-count');
-        if (countEl) { countEl.textContent = searchQuery ? `Ditemukan ${filtered.length} hasil` : `${filtered.length} layanan tersedia`; }
-        if (filtered.length === 0) {
-            container.innerHTML = `<div class="empty-state">${searchQuery ? 'Tidak ada hasil pencarian.' : 'Belum ada layanan. Buka Dashboard untuk menambah.'}</div>`;
-            return;
+        if (saved) {
+            try { dataLayanan = JSON.parse(saved); } catch(e) { dataLayanan = []; }
         }
-        container.innerHTML = filtered.map(item => {
-            const isAktif = item.id === activeItemId;
-            let namaHtml = escapeHtml(item.nama);
-            let deskripsiHtml = escapeHtml(item.deskripsi || '');
-            let hargaHtml = escapeHtml(item.harga);
-            if (searchQuery) {
-                const regex = new RegExp(`(${escapeRegex(searchQuery)})`, 'gi');
-                namaHtml = namaHtml.replace(regex, '<span class="highlight-text">$1</span>');
-                deskripsiHtml = deskripsiHtml.replace(regex, '<span class="highlight-text">$1</span>');
-                hargaHtml = hargaHtml.replace(regex, '<span class="highlight-text">$1</span>');
-            }
-            return `<div class="layanan-item ${isAktif ? 'aktif' : ''}" onclick="window.klikLayanan('${item.id || ''}')" id="item-${item.id}">
-                <div class="layanan-row">
-                    <div class="layanan-info"><h3>${namaHtml}</h3><p>${deskripsiHtml}</p></div>
-                    <div class="layanan-harga">${hargaHtml}</div>
-                </div>
-            </div>`;
-        }).join('');
+        renderLayanan();
+        renderAdminTable();
+        updateStatus(false, 'Mode Offline — Data di browser');
     }
 
-    function escapeRegex(string) {
-        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    function saveOffline() {
+        if (isOffline) localStorage.setItem(STORAGE_KEY, JSON.stringify(dataLayanan));
     }
 
+    // ===================== QR & VIDEO UPLOAD HANDLER =====================
     const inputQr = document.getElementById('input-qr');
     const qrPreviewBox = document.getElementById('qr-preview-box');
     const qrPreviewImg = document.getElementById('qr-preview-img');
-    if (inputQr) {
-        inputQr.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) { qrBase64Cache = null; qrPreviewBox.style.display = 'none'; return; }
-            if (file.size > 500 * 1024) { alert('Gambar terlalu besar. Maksimal 500KB.'); inputQr.value = ''; qrBase64Cache = null; qrPreviewBox.style.display = 'none'; return; }
-            const reader = new FileReader();
-            reader.onload = function(evt) { qrBase64Cache = evt.target.result; qrPreviewImg.src = qrBase64Cache; qrPreviewBox.style.display = 'block'; };
-            reader.readAsDataURL(file);
-        });
-    }
 
+    inputQr.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) {
+            qrBase64Cache = null;
+            qrPreviewBox.style.display = 'none';
+            return;
+        }
+        if (file.size > 500 * 1024) {
+            alert('Gambar terlalu besar. Maksimal 500KB.');
+            inputQr.value = '';
+            qrBase64Cache = null;
+            qrPreviewBox.style.display = 'none';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            qrBase64Cache = evt.target.result;
+            qrPreviewImg.src = qrBase64Cache;
+            qrPreviewBox.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Video URL input handler
     const inputVideoUrl = document.getElementById('input-video-url');
     const videoPreviewBox = document.getElementById('video-preview-box');
     const videoPreview = document.getElementById('video-preview');
-    if (inputVideoUrl) {
-        inputVideoUrl.addEventListener('input', function(e) {
-            const url = e.target.value.trim();
-            videoUrlCache = url || null;
-            if (url) { videoPreview.src = url; videoPreviewBox.style.display = 'block'; videoPreview.load(); }
-            else { videoPreviewBox.style.display = 'none'; videoPreview.src = ''; }
-        });
-    }
 
+    inputVideoUrl.addEventListener('input', function(e) {
+        const url = e.target.value.trim();
+        videoUrlCache = url || null;
+        if (url) {
+            videoPreview.src = url;
+            videoPreviewBox.style.display = 'block';
+            videoPreview.load();
+        } else {
+            videoPreviewBox.style.display = 'none';
+            videoPreview.src = '';
+        }
+    });
+
+    // ===================== RENDER CUSTOMER VIEW =====================
     window.renderLayanan = function() {
-        const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
-        filterAndRenderLayanan(query);
+        const container = document.getElementById('layanan-container');
+        if (dataLayanan.length === 0) {
+            container.innerHTML = '<div class="empty-state">Belum ada layanan. Buka panel admin untuk menambah.</div>';
+            return;
+        }
+        container.innerHTML = dataLayanan.map(item => {
+            const hasQr = item.qrBase64 ? true : false;
+            const hasWa = item.wa ? true : false;
+            const hasVideo = item.videoUrl ? true : false;
+            return `
+            <div class="layanan-item" onclick="window.klikLayanan('${item.id || ''}')">
+                <div class="layanan-row">
+                    <div class="layanan-info">
+                        <h3>${escapeHtml(item.nama)}</h3>
+                        <p>${escapeHtml(item.deskripsi || '')}</p>
+                    </div>
+                    <div class="layanan-harga">${escapeHtml(item.harga)}</div>
+                </div>
+                ${hasWa ? `
+                <div class="layanan-actions">
+                    <button class="btn-wa" onclick="window.bukaWA(event, '${escapeHtml(item.wa)}')">💬 Chat WhatsApp</button>
+                </div>
+                ` : ''}
+                ${hasVideo ? `
+                <div class="layanan-video show">
+                    <video src="${item.videoUrl}" autoplay muted loop playsinline preload="metadata"></video>
+                </div>
+                <div class="video-label">▶️ Review Produk</div>
+                ` : ''}
+            </div>
+            `;
+        }).join('');
     };
 
+    // ===================== CHAT WA PER LAYANAN =====================
+    window.bukaWA = function(e, url) {
+        e.stopPropagation();
+        if (url) window.open(url, '_blank');
+    };
+
+    // ===================== KLIK LAYANAN: TAMPILKAN VIDEO + QR BESAR =====================
     window.klikLayanan = function(id) {
         const item = dataLayanan.find(x => x.id === id);
         if (!item) return;
-        if (activeItemId === id) {
-            activeItemId = null; document.getElementById('area-detail-produk').style.display = 'none'; renderLayanan(); return;
-        }
-        activeItemId = id; renderLayanan();
+
         const areaDetail = document.getElementById('area-detail-produk');
         const detailVideoBox = document.getElementById('detail-video-box');
         const detailVideo = document.getElementById('detail-video');
         const detailVideoLabel = document.getElementById('detail-video-label');
-        const detailWaArea = document.getElementById('detail-wa-area');
-        const detailWaBtn = document.getElementById('detail-wa-btn');
         const qrDisplay = document.getElementById('qr-display');
         const qrNama = document.getElementById('qr-nama-layanan');
+
+        // Tampilkan video review jika ada
         if (item.videoUrl) {
-            detailVideo.src = item.videoUrl; detailVideoBox.style.display = 'block'; detailVideoLabel.style.display = 'block';
-            detailVideo.load(); detailVideo.play().catch(() => {});
-        } else { detailVideoBox.style.display = 'none'; detailVideoLabel.style.display = 'none'; detailVideo.src = ''; }
-        const acc = accounts.find(a => a.id === item.accountId);
-        const waLink = item.wa || (acc && acc.wa ? `https://wa.me/${acc.wa.replace(/\D/g, '')}` : '');
-        if (waLink) { detailWaArea.style.display = 'block'; detailWaBtn.onclick = () => window.open(waLink, '_blank'); }
-        else { detailWaArea.style.display = 'none'; detailWaBtn.onclick = null; }
-        if (item.qrBase64) { qrDisplay.innerHTML = `<img src="${item.qrBase64}" alt="QR ${escapeHtml(item.nama)}">`; qrDisplay.className = 'detail-qr-box'; }
-        else { qrDisplay.textContent = '[ QRIS TIDAK TERSEDIA ]'; qrDisplay.className = 'detail-qr-box kosong'; }
+            detailVideo.src = item.videoUrl;
+            detailVideoBox.classList.add('show');
+            detailVideoLabel.style.display = 'block';
+            detailVideo.load();
+            detailVideo.play().catch(() => {});
+        } else {
+            detailVideoBox.classList.remove('show');
+            detailVideoLabel.style.display = 'none';
+            detailVideo.src = '';
+        }
+
+        // Tampilkan QR besar jika ada
+        if (item.qrBase64) {
+            qrDisplay.innerHTML = `<img src="${item.qrBase64}" alt="QR ${escapeHtml(item.nama)}" style="width:100%;height:100%;object-fit:cover;">`;
+        } else {
+            qrDisplay.textContent = '[ QRIS TIDAK TERSEDIA ]';
+        }
+
         qrNama.innerHTML = `<strong>${escapeHtml(item.nama)}</strong>${item.harga ? ' — ' + escapeHtml(item.harga) : ''}`;
         areaDetail.style.display = 'flex';
-        setTimeout(() => areaDetail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
     };
 
+    // ===================== ADMIN PANEL LOGIC =====================
     let klikTrigger = 0;
-    document.getElementById('admin-trigger')?.addEventListener('click', () => {
+    document.getElementById('admin-trigger').addEventListener('click', () => {
         klikTrigger++;
         if (klikTrigger >= 5) {
-            document.getElementById('admin-panel').style.display = 'block'; klikTrigger = 0;
-            if (isOffline || (currentUser && currentUser.isGuest)) { loadAccountsLocal(); loadData(); }
-            else { loadAccounts(); }
+            document.getElementById('admin-panel').style.display = 'block';
+            klikTrigger = 0;
+            if (isOffline) loadData();
         }
         setTimeout(() => { if(klikTrigger>0) klikTrigger--; }, 2000);
     });
 
     window.tutupAdmin = function() {
-        document.getElementById('admin-panel').style.display = 'none'; resetForm();
+        document.getElementById('admin-panel').style.display = 'none';
+        resetForm();
     };
 
     window.renderAdminTable = function() {
         const tbody = document.getElementById('admin-table-body');
-        if (!tbody) return;
-        const filtered = dataLayanan.filter(item => !item.accountId || item.accountId === currentAccountId);
-        if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Belum ada data</td></tr>'; return; }
-        tbody.innerHTML = filtered.map(item => {
-            const acc = accounts.find(a => a.id === item.accountId);
-            return `<tr>
+        if (dataLayanan.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Belum ada data</td></tr>';
+            return;
+        }
+        tbody.innerHTML = dataLayanan.map(item => `
+            <tr>
                 <td><strong>${escapeHtml(item.nama)}</strong><br><small style="color:#888">${escapeHtml(item.deskripsi||'')}</small></td>
                 <td>${escapeHtml(item.harga)}</td>
                 <td>${item.wa ? '<span style="color:#00ffcc">✓</span>' : '<span style="color:#666">—</span>'}</td>
-                <td>${item.qrBase64 ? '<div class="tiny-qr"><img src="' + item.qrBase64 + '" alt="qr" onerror="window.imgFallback(this)"></div>' : '<span style="color:#666">—</span>'}</td>
-                <td>${item.videoUrl ? '<span style="color:#00ffcc">✓</span>' : '<span style="color:#666">—</span>'}</td>
-                <td>${acc ? escapeHtml(acc.name) : '<span style="color:#666">—</span>'}</td>
+                <td>
+                    ${item.qrBase64 
+                        ? '<div class="tiny-qr"><img src="' + item.qrBase64 + '" alt="qr"></div>' 
+                        : '<span style="color:#666">—</span>'}
+                </td>
+                <td>
+                    ${item.videoUrl 
+                        ? '<span style="color:#00ffcc">✓</span>' 
+                        : '<span style="color:#666">—</span>'}
+                </td>
                 <td>
                     <button class="success" onclick="window.editLayanan('${item.id || ''}')">✎</button>
                     <button class="danger" onclick="window.hapusLayanan('${item.id || ''}')">🗑</button>
                 </td>
-            </tr>`;
-        }).join('');
+            </tr>
+        `).join('');
     };
 
+    // ===================== CRUD OPERATIONS =====================
     window.simpanLayanan = async function() {
         const nama = document.getElementById('input-nama').value.trim();
         const deskripsi = document.getElementById('input-deskripsi').value.trim();
         const harga = document.getElementById('input-harga').value.trim();
         const wa = document.getElementById('input-wa').value.trim();
         const videoUrl = document.getElementById('input-video-url').value.trim();
+
         if (!nama || !harga) { alert('Nama dan harga wajib diisi!'); return; }
-        const payload = { nama, deskripsi, harga, wa, videoUrl, accountId: currentAccountId || 'default', updatedAt: new Date().toISOString() };
+
+        const payload = { 
+            nama, deskripsi, harga, wa, videoUrl,
+            updatedAt: new Date().toISOString() 
+        };
+
         if (qrBase64Cache) payload.qrBase64 = qrBase64Cache;
+
         try {
-            if (isOffline || (currentUser && currentUser.isGuest)) {
+            if (isOffline) {
                 if (editId) {
                     const idx = dataLayanan.findIndex(x => x.id === editId);
                     if (idx >= 0) {
                         if (!qrBase64Cache && dataLayanan[idx].qrBase64) payload.qrBase64 = dataLayanan[idx].qrBase64;
                         if (!videoUrl && dataLayanan[idx].videoUrl) payload.videoUrl = dataLayanan[idx].videoUrl;
-                        if (!payload.accountId) payload.accountId = dataLayanan[idx].accountId;
                         dataLayanan[idx] = { ...dataLayanan[idx], ...payload };
                     }
-                } else { payload.id = 'local_' + Date.now(); dataLayanan.push(payload); }
-                saveOffline(); renderLayanan(); renderAdminTable(); resetForm();
+                } else {
+                    payload.id = 'local_' + Date.now();
+                    dataLayanan.push(payload);
+                }
+                saveOffline();
+                renderLayanan(); renderAdminTable(); resetForm();
             } else {
                 if (!currentUser) { alert('Silakan login terlebih dahulu!'); return; }
                 if (editId) {
-                    if (!qrBase64Cache) { const existing = dataLayanan.find(x => x.id === editId); if (existing && existing.qrBase64) payload.qrBase64 = existing.qrBase64; }
-                    if (!videoUrl) { const existing = dataLayanan.find(x => x.id === editId); if (existing && existing.videoUrl) payload.videoUrl = existing.videoUrl; }
+                    if (!qrBase64Cache) {
+                        const existing = dataLayanan.find(x => x.id === editId);
+                        if (existing && existing.qrBase64) payload.qrBase64 = existing.qrBase64;
+                    }
+                    if (!videoUrl) {
+                        const existing = dataLayanan.find(x => x.id === editId);
+                        if (existing && existing.videoUrl) payload.videoUrl = existing.videoUrl;
+                    }
                     await updateDoc(doc(db, 'layanan', editId), payload);
-                } else { payload.createdAt = new Date().toISOString(); payload.createdBy = currentUser.uid; await addDoc(collection(db, 'layanan'), payload); }
+                } else {
+                    payload.createdAt = new Date().toISOString();
+                    payload.createdBy = currentUser.uid;
+                    await addDoc(collection(db, 'layanan'), payload);
+                }
                 resetForm();
             }
-        } catch(err) { console.error('Save layanan error:', err); alert('Error: ' + err.message); }
+        } catch(err) {
+            alert('Error: ' + err.message);
+        }
     };
 
     window.editLayanan = function(id) {
@@ -1406,34 +807,62 @@
         document.getElementById('input-harga').value = item.harga;
         document.getElementById('input-wa').value = item.wa || '';
         document.getElementById('input-video-url').value = item.videoUrl || '';
-        if (item.qrBase64) { qrBase64Cache = item.qrBase64; qrPreviewImg.src = item.qrBase64; qrPreviewBox.style.display = 'block'; }
-        else { qrBase64Cache = null; qrPreviewBox.style.display = 'none'; document.getElementById('input-qr').value = ''; }
-        if (item.videoUrl) { videoUrlCache = item.videoUrl; videoPreview.src = item.videoUrl; videoPreviewBox.style.display = 'block'; videoPreview.load(); }
-        else { videoUrlCache = null; videoPreviewBox.style.display = 'none'; videoPreview.src = ''; }
-        if (item.accountId) { currentAccountId = item.accountId; renderAccountList(); updateCurrentAccountBar(); }
-        editId = id; document.getElementById('btn-simpan').textContent = '💾 Update Layanan';
+
+        // Preview QR
+        if (item.qrBase64) {
+            qrBase64Cache = item.qrBase64;
+            qrPreviewImg.src = item.qrBase64;
+            qrPreviewBox.style.display = 'block';
+        } else {
+            qrBase64Cache = null;
+            qrPreviewBox.style.display = 'none';
+            document.getElementById('input-qr').value = '';
+        }
+
+        // Preview Video
+        if (item.videoUrl) {
+            videoUrlCache = item.videoUrl;
+            videoPreview.src = item.videoUrl;
+            videoPreviewBox.style.display = 'block';
+            videoPreview.load();
+        } else {
+            videoUrlCache = null;
+            videoPreviewBox.style.display = 'none';
+            videoPreview.src = '';
+        }
+
+        editId = id;
+        document.getElementById('btn-simpan').textContent = '💾 Update Layanan';
     };
 
     window.hapusLayanan = async function(id) {
         const item = dataLayanan.find(x => x.id === id);
         if (!confirm('Yakin hapus "' + (item ? item.nama : '') + '"?')) return;
         try {
-            if (isOffline || (currentUser && currentUser.isGuest)) { dataLayanan = dataLayanan.filter(x => x.id !== id); saveOffline(); renderLayanan(); renderAdminTable(); }
-            else { await deleteDoc(doc(db, 'layanan', id)); }
-            if (activeItemId === id) { activeItemId = null; document.getElementById('area-detail-produk').style.display = 'none'; }
-        } catch(err) { console.error('Delete layanan error:', err); alert('Error: ' + err.message); }
+            if (isOffline) {
+                dataLayanan = dataLayanan.filter(x => x.id !== id);
+                saveOffline();
+                renderLayanan(); renderAdminTable();
+            } else {
+                await deleteDoc(doc(db, 'layanan', id));
+            }
+        } catch(err) { alert('Error: ' + err.message); }
     };
 
     window.hapusSemua = async function() {
         if (!confirm('Yakin hapus SEMUA data? Ini tidak bisa dibatalkan!')) return;
         try {
-            if (isOffline || (currentUser && currentUser.isGuest)) { dataLayanan = dataLayanan.filter(x => x.accountId !== currentAccountId); saveOffline(); renderLayanan(); renderAdminTable(); }
-            else {
+            if (isOffline) {
+                dataLayanan = []; saveOffline();
+                renderLayanan(); renderAdminTable();
+            } else {
                 const snapshot = await getDocs(collection(db, 'layanan'));
-                const batch = writeBatch(db); snapshot.docs.forEach(d => { if (d.data().accountId === currentAccountId) batch.delete(d.ref); }); await batch.commit();
+                const batch = writeBatch(db);
+                snapshot.docs.forEach(d => batch.delete(d.ref));
+                await batch.commit();
             }
-            activeItemId = null; document.getElementById('area-detail-produk').style.display = 'none'; document.getElementById('backup-area').value = '';
-        } catch(err) { console.error('Hapus semua error:', err); alert('Error: ' + err.message); }
+            document.getElementById('backup-area').value = '';
+        } catch(err) { alert('Error: ' + err.message); }
     };
 
     function resetForm() {
@@ -1443,80 +872,95 @@
         document.getElementById('input-wa').value = '';
         document.getElementById('input-qr').value = '';
         document.getElementById('input-video-url').value = '';
-        qrBase64Cache = null; videoUrlCache = null;
-        qrPreviewBox.style.display = 'none'; qrPreviewImg.src = '';
-        videoPreviewBox.style.display = 'none'; videoPreview.src = '';
-        editId = null; document.getElementById('btn-simpan').textContent = '➕ Tambah Layanan';
+        qrBase64Cache = null;
+        videoUrlCache = null;
+        qrPreviewBox.style.display = 'none';
+        qrPreviewImg.src = '';
+        videoPreviewBox.style.display = 'none';
+        videoPreview.src = '';
+        editId = null;
+        document.getElementById('btn-simpan').textContent = '➕ Tambah Layanan';
     }
     window.resetForm = resetForm;
 
+    // ===================== EXPORT / IMPORT JSON =====================
     window.exportData = function() {
-        const filtered = dataLayanan.filter(x => !x.accountId || x.accountId === currentAccountId);
-        const json = JSON.stringify({ layanan: filtered, accounts: accounts, currentAccountId: currentAccountId, exportedAt: new Date().toISOString(), exportedBy: currentUser ? currentUser.uid : 'offline' }, null, 2);
+        const json = JSON.stringify({ layanan: dataLayanan, exportedAt: new Date().toISOString() }, null, 2);
         document.getElementById('backup-area').value = json;
+
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = 'stej_backup_' + new Date().toISOString().slice(0,10) + '.json';
-        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'stej_backup_' + new Date().toISOString().slice(0,10) + '.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     };
 
-    window.importData = function() { document.getElementById('file-import').click(); };
+    window.importData = function() {
+        document.getElementById('file-import').click();
+    };
 
     window.handleFileImport = async function(input) {
-        const file = input.files[0]; if (!file) return;
+        const file = input.files[0];
+        if (!file) return;
         const text = await file.text();
         try {
             const parsed = JSON.parse(text);
             if (!parsed.layanan || !Array.isArray(parsed.layanan)) throw new Error('Format tidak valid');
-            if (parsed.accounts && Array.isArray(parsed.accounts)) {
-                if (!isOffline && currentUser && !currentUser.isGuest) {
-                    for (const acc of parsed.accounts) {
-                        if (!acc.ownerUid) {
-                            const accountData = { name: acc.name || 'Akun Import', wa: acc.wa || '', photo: acc.photo || PLACEHOLDER_IMG, createdAt: acc.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString(), ownerUid: currentUser.uid, isDefault: acc.isDefault || false };
-                            try { if (acc.id && acc.id !== 'default') { await setDoc(doc(db, 'accounts', acc.id), accountData); } else { await addDoc(collection(db, 'accounts'), accountData); } }
-                            catch (err) { console.error('Import account error:', err); }
-                        }
-                    }
-                    await syncAccountsFromFirestore();
-                } else { accounts = parsed.accounts; saveAccountsLocal(); renderAccountList(); }
-            }
-            if (isOffline || (currentUser && currentUser.isGuest)) {
+
+            if (isOffline) {
                 dataLayanan = parsed.layanan.map((x, i) => ({ ...x, id: x.id || 'local_imp_' + i + '_' + Date.now() }));
-                saveOffline(); renderLayanan(); renderAdminTable();
+                saveOffline();
+                renderLayanan(); renderAdminTable();
                 alert('Import berhasil! ' + dataLayanan.length + ' layanan dimuat.');
             } else {
                 if (!currentUser) { alert('Login terlebih dahulu!'); return; }
                 let count = 0;
-                for (const item of parsed.layanan) { const { id, ...rest } = item; await addDoc(collection(db, 'layanan'), { ...rest, createdAt: new Date().toISOString(), createdBy: currentUser.uid }); count++; }
+                for (const item of parsed.layanan) {
+                    const { id, ...rest } = item;
+                    await addDoc(collection(db, 'layanan'), {
+                        ...rest,
+                        createdAt: new Date().toISOString(),
+                        createdBy: currentUser.uid
+                    });
+                    count++;
+                }
                 alert('Import berhasil! ' + count + ' layanan ditambahkan ke cloud.');
             }
-        } catch(e) { alert('Gagal import: ' + e.message); }
+        } catch(e) {
+            alert('Gagal import: ' + e.message);
+        }
         input.value = '';
     };
 
     function escapeHtml(text) {
         if (!text) return '';
-        const div = document.createElement('div'); div.textContent = text; return div.innerHTML;
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
+    // ===================== BANTUAN WA =====================
     const linkBantuanWA = "https://wa.me/6281234567890";
-    document.getElementById('pemicu-bantuan')?.addEventListener('click', function() {
+
+    document.getElementById('pemicu-bantuan').addEventListener('click', function() {
         this.style.display = 'none';
         document.getElementById('area-bantuan-wa').style.display = 'flex';
         let waktuHitung = 3;
         const timer = setInterval(() => {
-            waktuHitung--; document.getElementById('timer-bantuan').textContent = waktuHitung;
+            waktuHitung--;
+            document.getElementById('timer-bantuan').textContent = waktuHitung;
             if (waktuHitung <= 0) { clearInterval(timer); window.location.href = linkBantuanWA; }
         }, 1000);
     });
 
     document.addEventListener('contextmenu', e => e.preventDefault());
 
-    // INIT
-    loadAccountsLocal(); loadData(); renderLayanan(); updateStatus(false, 'Pilih login method');
+    // ===================== INIT =====================
+    listenRealtime();
 </script>
-
-<div id="admin-trigger" title="Admin Panel" style="position:fixed; bottom:5px; right:5px; width:20px; height:20px; background:transparent; border:none; cursor:default; z-index:9999;"></div>
-
 </body>
 </html>
