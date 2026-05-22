@@ -705,15 +705,15 @@
 
         <!-- AREA DETAIL SETELAH KLIK -->
         <div id="area-detail-produk" style="display: none; flex-direction: column; align-items: center; gap: 12px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #2d2d2d;">
+            <!-- VIDEO REVIEW -->
             <div class="detail-video-box" id="detail-video-box" style="display: none;">
                 <video id="detail-video" autoplay muted loop playsinline></video>
             </div>
             <p id="detail-video-label" class="detail-label" style="display: none;">▶️ Review Produk</p>
-            <div id="detail-wa-area" style="display: none; width: 100%; max-width: 300px;">
-                <button class="btn-wa" id="detail-wa-btn" style="width: 100%; padding: 10px;">💬 Chat WhatsApp</button>
-            </div>
+
+            <!-- QRIS LAYANAN -->
             <div class="detail-qr-box" id="qr-display">[ PILIH LAYANAN ]</div>
-            <p class="detail-label">⚠️ VALIDASI TRANSAKSI: STEJ PROJECT</p>
+            <p class="detail-label">⚠️ SCAN QRIS UNTUK PEMBAYARAN</p>
             <p id="qr-nama-layanan" class="detail-nama">Ketuk layanan untuk melihat detail</p>
 
             <!-- STATUS PEMBAYARAN USER -->
@@ -721,158 +721,115 @@
                 <span class="status-badge" id="user-status-text"></span>
             </div>
 
-            <!-- TOMBOL KONFIRMASI BAYAR -->
-            <button id="btn-konfirmasi-bayar" onclick="bukaFormKonfirmasi()" style="margin-top:10px; background:#00ffcc; color:#121212;">
-                ✅ Saya Sudah Bayar
-            </button>
+            <!-- AREA PEMBAYARAN (GANTI POSISI DARI BAWAH) -->
+            <div id="area-pembayaran-produk" style="width:100%; margin-top:10px;">
+                <p class="status-loading" id="status-loading-bank-produk" style="font-size:0.7rem;">Memeriksa bank...</p>
+                <div id="notifikasi-pembayaran-produk" style="display:none; background:#2a2a2a; border-left:3px solid #ffcc00; padding:8px 10px; border-radius:6px; margin-bottom:8px; font-size:0.75rem; color:#ffcc00;"></div>
 
-            <!-- FORM KONFIRMASI PEMBAYARAN -->
-            <div class="konfirmasi-box" id="konfirmasi-box">
-                <h3>Konfirmasi Pembayaran</h3>
-                <div class="form-group">
-                    <label>Nama Pengirim (Rekening/E-Wallet)</label>
-                    <input type="text" id="konf-nama" placeholder="Contoh: Budi Santoso / OVO 0812...">
+                <!-- Opsi Bank -->
+                <div class="bank-option" id="opsi-produk-bca" style="padding:10px 12px; margin:6px 0;">
+                    <input type="radio" name="metode-produk" id="radio-produk-bca" value="bca" style="accent-color:#00ffcc; width:14px; height:14px;">
+                    <div class="bank-label">
+                        <span class="bank-name" style="font-size:0.85rem;">Bank BCA</span>
+                        <span class="bank-info" id="info-produk-bca" style="font-size:0.65rem;"></span>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Nominal Transfer (Rp)</label>
-                    <input type="text" id="konf-nominal" placeholder="90.000" oninput="formatRupiah(this)">
+                <div class="bank-option" id="opsi-produk-mandiri" style="padding:10px 12px; margin:6px 0;">
+                    <input type="radio" name="metode-produk" id="radio-produk-mandiri" value="mandiri" style="accent-color:#00ffcc; width:14px; height:14px;">
+                    <div class="bank-label">
+                        <span class="bank-name" style="font-size:0.85rem;">Bank Mandiri</span>
+                        <span class="bank-info" id="info-produk-mandiri" style="font-size:0.65rem;"></span>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Metode Pembayaran</label>
-                    <select id="konf-metode">
-                        <option value="">-- Pilih --</option>
-                        <option value="BCA">Bank BCA</option>
-                        <option value="Mandiri">Bank Mandiri</option>
-                        <option value="BRI">Bank BRI</option>
-                        <option value="BNI">Bank BNI</option>
-                        <option value="CIMB">CIMB Niaga</option>
-                        <option value="QRIS">QRIS</option>
-                        <option value="Dana">Dana</option>
-                        <option value="OVO">OVO</option>
-                        <option value="GoPay">GoPay</option>
-                        <option value="Lainnya">Lainnya</option>
-                    </select>
+                <div class="bank-option" id="opsi-produk-bri" style="padding:10px 12px; margin:6px 0;">
+                    <input type="radio" name="metode-produk" id="radio-produk-bri" value="bri" style="accent-color:#00ffcc; width:14px; height:14px;">
+                    <div class="bank-label">
+                        <span class="bank-name" style="font-size:0.85rem;">Bank BRI</span>
+                        <span class="bank-info" id="info-produk-bri" style="font-size:0.65rem;"></span>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Upload Bukti Transfer (Screenshot)</label>
-                    <input type="file" id="konf-bukti" accept="image/*" onchange="previewBukti(this)">
-                    <img id="bukti-preview" class="bukti-preview" alt="Preview bukti">
+                <div class="bank-option" id="opsi-produk-bni" style="padding:10px 12px; margin:6px 0;">
+                    <input type="radio" name="metode-produk" id="radio-produk-bni" value="bni" style="accent-color:#00ffcc; width:14px; height:14px;">
+                    <div class="bank-label">
+                        <span class="bank-name" style="font-size:0.85rem;">Bank BNI</span>
+                        <span class="bank-info" id="info-produk-bni" style="font-size:0.65rem;"></span>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Catatan (opsional)</label>
-                    <textarea id="konf-catatan" rows="2" placeholder="Waktu transfer, dll..."></textarea>
+                <div class="bank-option" id="opsi-produk-cimb" style="padding:10px 12px; margin:6px 0;">
+                    <input type="radio" name="metode-produk" id="radio-produk-cimb" value="cimb" style="accent-color:#00ffcc; width:14px; height:14px;">
+                    <div class="bank-label">
+                        <span class="bank-name" style="font-size:0.85rem;">CIMB Niaga</span>
+                        <span class="bank-info" id="info-produk-cimb" style="font-size:0.65rem;"></span>
+                    </div>
                 </div>
-                <div class="btn-group">
-                    <button onclick="kirimKonfirmasi()">📤 Kirim Konfirmasi</button>
-                    <button class="secondary" onclick="tutupFormKonfirmasi()">Batal</button>
+
+                <!-- QRIS Fallback -->
+                <div class="darurat-box" id="opsi-produk-qris" style="padding:12px; margin-top:8px;">
+                    <h3 style="font-size:0.85rem; margin:0 0 6px 0;">📱 QRIS</h3>
+                    <p style="font-size:0.7rem; margin:0 0 8px 0;">Bank sedang tidak tersedia. Gunakan QRIS.</p>
+                    <input type="radio" name="metode-produk" id="radio-produk-qris" value="qris" style="accent-color:#00ffcc;">
+                    <label for="radio-produk-qris" style="font-size:0.75rem; margin-left:4px;">Bayar via QRIS</label>
+                </div>
+
+                <!-- Kertas Fallback -->
+                <div class="darurat-box" id="opsi-produk-kertas" style="padding:12px; margin-top:8px;">
+                    <h3 style="font-size:0.85rem; margin:0 0 6px 0;">📝 Manual</h3>
+                    <p style="font-size:0.7rem; margin:0 0 8px 0;">Semua sistem tidak tersedia. Isi formulir manual.</p>
+                    <input type="radio" name="metode-produk" id="radio-produk-kertas" value="kertas" style="accent-color:#00ffcc;">
+                    <label for="radio-produk-kertas" style="font-size:0.75rem; margin-left:4px;">Transaksi Manual</label>
+                </div>
+
+                <!-- TOMBOL KONFIRMASI BAYAR -->
+                <button id="btn-konfirmasi-bayar" onclick="bukaFormKonfirmasi()" style="margin-top:12px; background:#00ffcc; color:#121212; font-size:0.85rem; padding:10px;">
+                    ✅ Saya Sudah Bayar
+                </button>
+
+                <!-- FORM KONFIRMASI PEMBAYARAN -->
+                <div class="konfirmasi-box" id="konfirmasi-box">
+                    <h3 style="font-size:0.95rem;">Konfirmasi Pembayaran</h3>
+                    <div class="form-group">
+                        <label style="font-size:0.7rem;">Nama Pengirim (Rekening/E-Wallet)</label>
+                        <input type="text" id="konf-nama" placeholder="Contoh: Budi Santoso" style="padding:8px; font-size:0.8rem;">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size:0.7rem;">Nominal Transfer (Rp)</label>
+                        <input type="text" id="konf-nominal" placeholder="90.000" oninput="formatRupiah(this)" style="padding:8px; font-size:0.8rem;">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size:0.7rem;">Metode Pembayaran</label>
+                        <select id="konf-metode" style="padding:8px; font-size:0.8rem;">
+                            <option value="">-- Pilih --</option>
+                            <option value="BCA">Bank BCA</option>
+                            <option value="Mandiri">Bank Mandiri</option>
+                            <option value="BRI">Bank BRI</option>
+                            <option value="BNI">Bank BNI</option>
+                            <option value="CIMB">CIMB Niaga</option>
+                            <option value="QRIS">QRIS</option>
+                            <option value="Dana">Dana</option>
+                            <option value="OVO">OVO</option>
+                            <option value="GoPay">GoPay</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size:0.7rem;">Upload Bukti Transfer</label>
+                        <input type="file" id="konf-bukti" accept="image/*" onchange="previewBukti(this)" style="font-size:0.75rem; padding:6px;">
+                        <img id="bukti-preview" class="bukti-preview" alt="Preview bukti" style="max-height:150px;">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size:0.7rem;">Catatan (opsional)</label>
+                        <textarea id="konf-catatan" rows="2" placeholder="Waktu transfer..." style="padding:8px; font-size:0.8rem;"></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button onclick="kirimKonfirmasi()" style="font-size:0.8rem; padding:8px;">📤 Kirim</button>
+                        <button class="secondary" onclick="tutupFormKonfirmasi()" style="font-size:0.8rem; padding:8px;">Batal</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ================= PEMBAYARAN / CHECKOUT ================= -->
-    <div class="card" id="card-pembayaran">
-        <h2>💳 Pembayaran</h2>
-        <p class="status-loading" id="status-loading-bank">Memeriksa ketersediaan bank...</p>
-        <div id="notifikasi-pembayaran"></div>
 
-        <div class="bank-option" id="opsi-bca">
-            <input type="radio" name="metode" id="radio-bca" value="bca">
-            <div class="bank-label">
-                <span class="bank-name">Bank BCA</span>
-                <span class="bank-info" id="info-bca"></span>
-            </div>
-        </div>
-        <div class="bank-option" id="opsi-mandiri">
-            <input type="radio" name="metode" id="radio-mandiri" value="mandiri">
-            <div class="bank-label">
-                <span class="bank-name">Bank Mandiri</span>
-                <span class="bank-info" id="info-mandiri"></span>
-            </div>
-        </div>
-        <div class="bank-option" id="opsi-bri">
-            <input type="radio" name="metode" id="radio-bri" value="bri">
-            <div class="bank-label">
-                <span class="bank-name">Bank BRI</span>
-                <span class="bank-info" id="info-bri"></span>
-            </div>
-        </div>
-        <div class="bank-option" id="opsi-bni">
-            <input type="radio" name="metode" id="radio-bni" value="bni">
-            <div class="bank-label">
-                <span class="bank-name">Bank BNI</span>
-                <span class="bank-info" id="info-bni"></span>
-            </div>
-        </div>
-        <div class="bank-option" id="opsi-cimb">
-            <input type="radio" name="metode" id="radio-cimb" value="cimb">
-            <div class="bank-label">
-                <span class="bank-name">CIMB Niaga</span>
-                <span class="bank-info" id="info-cimb"></span>
-            </div>
-        </div>
-
-        <div class="darurat-box" id="opsi-qris">
-            <h3>📱 QRIS (Scan QR)</h3>
-            <p>Semua bank sedang tidak tersedia. Gunakan QRIS dengan aplikasi e-wallet.</p>
-            <div style="text-align:center; margin: 10px 0;">
-                <div id="qris-placeholder" style="width:160px; height:160px; background:#fff; margin:0 auto; display:flex; align-items:center; justify-content:center; color:#000; font-size:0.7rem; border-radius:4px;">
-                    [QRIS CODE]
-                </div>
-            </div>
-            <input type="radio" name="metode" id="radio-qris" value="qris" style="accent-color:#00ffcc;">
-            <label for="radio-qris" style="font-size:0.8rem; margin-left:5px;">Bayar via QRIS</label>
-        </div>
-
-        <div class="darurat-box" id="opsi-kertas">
-            <h3>📝 Transaksi via Kertas</h3>
-            <p>Semua sistem online tidak tersedia. Isi formulir manual & cetak struk.</p>
-            <input type="radio" name="metode" id="radio-kertas" value="kertas" style="accent-color:#00ffcc;">
-            <label for="radio-kertas" style="font-size:0.8rem; margin-left:5px;">Gunakan Transaksi Manual</label>
-        </div>
-
-        <div class="kertas-section" id="kertas-form">
-            <h3 style="color:#00ffcc; font-size:0.95rem; margin: 20px 0 12px 0;">📋 Formulir Transaksi Manual</h3>
-            <div class="form-group">
-                <label>Nama Pembeli</label>
-                <input type="text" id="kertas-nama" placeholder="Nama lengkap">
-            </div>
-            <div class="form-group">
-                <label>Layanan / Produk</label>
-                <select id="kertas-layanan">
-                    <option value="">-- Pilih Layanan --</option>
-                    <option value="Landing Page Proteksi">Landing Page Proteksi</option>
-                    <option value="Website Portofolio">Website Portofolio</option>
-                    <option value="Sistem Etalase Digital">Sistem Etalase Digital</option>
-                    <option value="Custom Web App">Custom Web App</option>
-                    <option value="Lainnya">Lainnya</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Harga (Rp)</label>
-                <input type="text" id="kertas-harga" placeholder="150.000" oninput="formatRupiah(this)">
-            </div>
-            <div class="form-group">
-                <label>Catatan Tambahan</label>
-                <textarea id="kertas-catatan" rows="2" placeholder="Spesifikasi tambahan..."></textarea>
-            </div>
-            <div class="btn-group no-print">
-                <button class="success" onclick="generateStruk()">🖨️ Preview Struk</button>
-                <button class="secondary" onclick="resetKertas()">🔄 Reset</button>
-            </div>
-            <div id="struk-container" style="display:none;">
-                <div class="struk-preview" id="struk-preview"></div>
-                <div class="btn-group no-print" style="margin-top:8px;">
-                    <button onclick="window.print()">🖨️ Print / Save PDF</button>
-                    <button class="secondary" onclick="copyStrukText()">📋 Copy Teks</button>
-                </div>
-            </div>
-        </div>
-
-        <button class="no-print" id="btn-konfirmasi" onclick="konfirmasiPembayaran()" disabled style="margin-top:15px;">
-            Konfirmasi Pembayaran
-        </button>
-    </div>
 
     <!-- FOOTER -->
     <div class="footer-wave">
@@ -1387,8 +1344,6 @@
         const detailVideoBox = document.getElementById('detail-video-box');
         const detailVideo = document.getElementById('detail-video');
         const detailVideoLabel = document.getElementById('detail-video-label');
-        const detailWaArea = document.getElementById('detail-wa-area');
-        const detailWaBtn = document.getElementById('detail-wa-btn');
         const qrDisplay = document.getElementById('qr-display');
         const qrNama = document.getElementById('qr-nama-layanan');
 
@@ -1404,16 +1359,6 @@
             detailVideo.src = '';
         }
 
-        const acc = accounts.find(a => a.id === item.accountId);
-        const waLink = item.wa || (acc && acc.wa ? `https://wa.me/${acc.wa.replace(/\D/g, '')}` : '');
-        if (waLink) {
-            detailWaArea.style.display = 'block';
-            detailWaBtn.onclick = () => window.open(waLink, '_blank');
-        } else {
-            detailWaArea.style.display = 'none';
-            detailWaBtn.onclick = null;
-        }
-
         if (item.qrBase64) {
             qrDisplay.innerHTML = `<img src="${item.qrBase64}" alt="QR ${escapeHtml(item.nama)}">`;
             qrDisplay.className = 'detail-qr-box';
@@ -1425,11 +1370,90 @@
         qrNama.innerHTML = `<strong>${escapeHtml(item.nama)}</strong>${item.harga ? ' — ' + escapeHtml(item.harga) : ''}`;
         areaDetail.style.display = 'flex';
 
+        // Reset dan jalankan cek bank untuk area pembayaran produk
+        resetAreaPembayaranProduk();
+        jalankanCekBankProduk();
+
         // Cek status pembayaran untuk layanan ini
         updateUserPaymentStatus(id);
 
         setTimeout(() => areaDetail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
     };
+
+    function resetAreaPembayaranProduk() {
+        document.getElementById('status-loading-bank-produk').style.display = 'block';
+        document.getElementById('notifikasi-pembayaran-produk').style.display = 'none';
+        ["bca","mandiri","bri","bni","cimb"].forEach(bank => {
+            const opsi = document.getElementById(`opsi-produk-${bank}`);
+            const radio = document.getElementById(`radio-produk-${bank}`);
+            const info = document.getElementById(`info-produk-${bank}`);
+            if (opsi) { opsi.style.display = 'flex'; opsi.style.opacity = '1'; }
+            if (radio) { radio.disabled = false; radio.checked = false; }
+            if (info) info.innerText = '';
+        });
+        document.getElementById('opsi-produk-qris').style.display = 'none';
+        document.getElementById('opsi-produk-kertas').style.display = 'none';
+        document.getElementById('btn-konfirmasi-bayar').style.display = 'block';
+        document.getElementById('konfirmasi-box').style.display = 'none';
+    }
+
+    function jalankanCekBankProduk() {
+        const loadingEl = document.getElementById('status-loading-bank-produk');
+        loadingEl.style.display = 'block';
+
+        fetch(`${URL_RAILWAY}/cek-bank`)
+          .then(res => res.ok ? res.json() : Promise.reject(res.status))
+          .then(statusBank => {
+              loadingEl.style.display = 'none';
+              let bankPilihanTerbaik = null;
+              let adaBankAktif = false;
+
+              URUTAN_PRIORITAS.forEach(bank => {
+                  const opsi = document.getElementById(`opsi-produk-${bank}`);
+                  const radio = document.getElementById(`radio-produk-${bank}`);
+                  const info = document.getElementById(`info-produk-${bank}`);
+
+                  if (statusBank[bank] === "aktif") {
+                      if (opsi) { opsi.style.display = 'flex'; opsi.style.opacity = '1'; }
+                      if (radio) { radio.disabled = false; }
+                      if (info) info.innerText = '✓ Online';
+                      if (!bankPilihanTerbaik) bankPilihanTerbaik = bank;
+                      adaBankAktif = true;
+                  } else {
+                      if (opsi) { opsi.style.display = 'none'; }
+                      if (radio) { radio.disabled = true; radio.checked = false; }
+                  }
+              });
+
+              if (bankPilihanTerbaik) {
+                  const r = document.getElementById(`radio-produk-${bankPilihanTerbaik}`);
+                  if (r) r.checked = true;
+              } else {
+                  // Semua bank mati → tampilkan QRIS
+                  document.getElementById('opsi-produk-qris').style.display = 'block';
+                  document.getElementById('radio-produk-qris').checked = true;
+                  tampilkanPesanProduk('⚠️ Semua bank sedang maintenance. Gunakan QRIS.');
+              }
+          })
+          .catch(err => {
+              console.error("[SISTEM] Gagal konek ke Railway:", err);
+              loadingEl.style.display = 'none';
+              // Railway error → tampilkan semua bank sebagai opsi default
+              URUTAN_PRIORITAS.forEach(bank => {
+                  const opsi = document.getElementById(`opsi-produk-${bank}`);
+                  const radio = document.getElementById(`radio-produk-${bank}`);
+                  if (opsi) { opsi.style.display = 'flex'; opsi.style.opacity = '1'; }
+                  if (radio) { radio.disabled = false; }
+              });
+              const r = document.getElementById('radio-produk-bca');
+              if (r) r.checked = true;
+          });
+    }
+
+    function tampilkanPesanProduk(teks) {
+        const el = document.getElementById('notifikasi-pembayaran-produk');
+        if (el) { el.innerText = teks; el.style.display = 'block'; }
+    }
 
     function updateUserPaymentStatus(layananId) {
         const statusBox = document.getElementById('user-payment-status');
@@ -1464,6 +1488,20 @@
 
     window.bukaFormKonfirmasi = function() {
         if (!activeItemId) { alert('Pilih layanan dulu!'); return; }
+
+        // Auto-isi metode pembayaran yang dipilih
+        const metodeTerpilih = document.querySelector('input[name="metode-produk"]:checked');
+        if (metodeTerpilih) {
+            const select = document.getElementById('konf-metode');
+            const val = metodeTerpilih.value.toUpperCase();
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value.toUpperCase() === val) {
+                    select.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+
         document.getElementById('konfirmasi-box').style.display = 'block';
         document.getElementById('konfirmasi-box').scrollIntoView({ behavior: 'smooth' });
     };
@@ -1860,91 +1898,22 @@
 
 <!-- ===================== PEMBAYARAN / RAILWAY INTEGRATION ===================== -->
 <script>
-    const URL_RAILWAY = "https://your-railway-app.up.railway.app";
+    const URL_RAILWAY = "https://contoh-transaksi-stej-production.up.railway.app";
     const URUTAN_PRIORITAS = ["bca", "mandiri", "bri", "bni", "cimb"];
-    let jumlahPercobaanCekUlang = 0;
-    const MAKSIMAL_PERCOBAAN = 1;
 
-    function jalankanFungsiCekBank() {
-        fetch(`${URL_RAILWAY}/cek-bank`)
-          .then(res => res.ok ? res.json() : Promise.reject(res.status))
-          .then(statusBank => {
-              document.getElementById("status-loading-bank").style.display = "none";
-              let bankPilihanTerbaik = null;
-              URUTAN_PRIORITAS.forEach(bank => {
-                  const opsi = document.getElementById(`opsi-${bank}`);
-                  const radio = document.getElementById(`radio-${bank}`);
-                  const info = document.getElementById(`info-${bank}`);
-                  if (statusBank[bank] === "aktif") {
-                      if (opsi) { opsi.style.display = "flex"; opsi.style.opacity = "1"; }
-                      if (radio) { radio.disabled = false; }
-                      if (info) info.innerText = "✓ Online";
-                      if (!bankPilihanTerbaik) bankPilihanTerbaik = bank;
-                  } else {
-                      if (opsi) { opsi.style.opacity = "0.3"; if (radio) radio.disabled = true; }
-                      const statusText = statusBank[bank] || "down";
-                      if (info) info.innerText = `✗ ${statusText}`;
-                  }
-              });
-              if (bankPilihanTerbaik) {
-                  const r = document.getElementById(`radio-${bankPilihanTerbaik}`);
-                  if (r) r.checked = true;
-                  jumlahPercobaanCekUlang = 0;
-                  updateTombolKonfirmasi(true);
-                  if (bankPilihanTerbaik !== URUTAN_PRIORITAS[0]) {
-                      tampilkanPesanBayar(`⚡ Dialihkan otomatis ke Bank ${bankPilihanTerbaik.toUpperCase()}.`);
-                  }
-              } else if (jumlahPercobaanCekUlang < MAKSIMAL_PERCOBAAN) {
-                  jumlahPercobaanCekUlang++;
-                  tampilkanPesanBayar("⏳ Semua bank tidak merespons. Mencoba ulang dalam 5 detik...");
-                  setTimeout(jalankanFungsiCekBank, 5000);
-              } else {
-                  aktifkanQRIS();
-              }
-          })
-          .catch(err => {
-              console.error("[SISTEM] Gagal konek ke Railway:", err);
-              document.getElementById("status-loading-bank").style.display = "none";
-              aktifkanQRIS();
-          });
+    // Fungsi helper untuk format rupiah
+    function formatRupiah(input) {
+        let value = input.value.replace(/[^0-9]/g, '');
+        if (value) { input.value = "Rp " + parseInt(value).toLocaleString('id-ID'); }
     }
 
-    function tampilkanPesanBayar(teks) {
-        const el = document.getElementById("notifikasi-pembayaran");
-        if (el) { el.innerText = teks; el.style.display = "block"; }
+    function escapeHtmlBayar(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
-    function aktifkanQRIS() {
-        tampilkanPesanBayar("⚠️ Semua jaringan bank sedang maintenance. Silakan gunakan QRIS.");
-        const qrisBox = document.getElementById("opsi-qris");
-        if (qrisBox) {
-            qrisBox.style.display = "block";
-            document.getElementById("radio-qris").checked = true;
-        }
-        updateTombolKonfirmasi(true);
-    }
-
-    function aktifkanKertas() {
-        tampilkanPesanBayar("⚠️ Sistem online & QRIS tidak tersedia. Transaksi dialihkan ke mode Kertas/Manual.");
-        const kertasBox = document.getElementById("opsi-kertas");
-        if (kertasBox) kertasBox.style.display = "block";
-        document.getElementById("radio-kertas").checked = true;
-        document.getElementById("kertas-form").style.display = "block";
-        updateTombolKonfirmasi(false);
-    }
-
-    document.querySelectorAll('input[name="metode"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            if (this.value === 'kertas') {
-                document.getElementById("kertas-form").style.display = "block";
-                updateTombolKonfirmasi(false);
-            } else {
-                document.getElementById("kertas-form").style.display = "none";
-                updateTombolKonfirmasi(true);
-            }
-        });
-    });
-
+    // Kertas / struk manual (fallback jika semua sistem mati)
     function generateStruk() {
         const nama = document.getElementById("kertas-nama").value.trim();
         const layanan = document.getElementById("kertas-layanan").value;
@@ -1969,7 +1938,7 @@
             <div class="struk-footer">
                 <p>Status: MENUNGGU PEMBAYARAN</p>
                 <div class="struk-stamp">MANUAL / OFFLINE</div>
-                <p style="margin-top:8px;">Serahkan struk ini ke admin<br>+ Konfirmasi via WA setelah transfer</p>
+                <p style="margin-top:8px;">Serahkan struk ini ke admin</p>
             </div>
         `;
         document.getElementById("struk-preview").innerHTML = strukHTML;
@@ -1989,39 +1958,6 @@
         const text = document.getElementById("struk-preview").innerText;
         navigator.clipboard.writeText(text).then(() => alert("Teks struk disalin!"));
     }
-
-    function formatRupiah(input) {
-        let value = input.value.replace(/[^0-9]/g, '');
-        if (value) { input.value = "Rp " + parseInt(value).toLocaleString('id-ID'); }
-    }
-
-    function escapeHtmlBayar(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    function updateTombolKonfirmasi(enabled) {
-        const btn = document.getElementById("btn-konfirmasi");
-        if (btn) btn.disabled = !enabled;
-    }
-
-    function konfirmasiPembayaran() {
-        const metode = document.querySelector('input[name="metode"]:checked');
-        if (!metode) { alert("Pilih metode pembayaran dulu!"); return; }
-        alert(`Metode dipilih: ${metode.value.toUpperCase()}\nSilakan lanjutkan pembayaran.`);
-    }
-
-    let kPress = 0;
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'k' || e.key === 'K') {
-            kPress++;
-            if (kPress >= 3) { aktifkanKertas(); kPress = 0; }
-            setTimeout(() => kPress = 0, 2000);
-        }
-    });
-
-    window.addEventListener("load", jalankanFungsiCekBank);
 </script>
 </body>
 </html>
