@@ -1295,7 +1295,7 @@
     }
 
     function escapeRegex(string) {
-        return string.replace(/[.*+?^${}()|[\]\]/g, '\$&');
+        return string.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');
     }
 
     // ===================== UPLOAD HANDLERS =====================
@@ -1401,7 +1401,7 @@
         const loadingEl = document.getElementById('status-loading-bank-produk');
         loadingEl.style.display = 'block';
 
-        fetch(`${URL_FIREBASE}/cek_bank`)
+        fetch(`${URL_RAILWAY}/cek-bank`)
           .then(res => res.ok ? res.json() : Promise.reject(res.status))
           .then(statusBank => {
               loadingEl.style.display = 'none';
@@ -1898,7 +1898,7 @@
 
 <!-- ===================== PEMBAYARAN / RAILWAY INTEGRATION ===================== -->
 <script>
-    const URL_FIREBASE = "https://us-central1-auth-stej-product.cloudfunctions.net"  // URL Firebase Functions;
+    const URL_RAILWAY = "https://contoh-transaksi-stej-production.up.railway.app";
     const URUTAN_PRIORITAS = ["bca", "mandiri", "bri", "bni", "cimb"];
 
     // Fungsi helper untuk format rupiah
