@@ -1516,23 +1516,44 @@
                 if (notifEl) notifEl.style.display = 'none';
 
             } else if (payment.status === 'ditolak') {
-                statusText.textContent = '❌ DITOLAK — Silakan coba lagi';
+                // Ditolak: user bisa kirim bukti lagi
+                statusText.textContent = '❌ DITOLAK — Silakan kirim bukti lagi';
                 statusText.className = 'status-badge status-ditolak';
-                btnKonfirmasi.style.display = 'block'; // Bisa coba lagi
+                btnKonfirmasi.style.display = 'block';
+                konfirmasiBox.style.display = 'none'; // Tutup form, user buka manual
+
+                // Pastikan opsi bank tampil
+                const bankIds = ["bca","mandiri","bri","bni","cimb"];
+                bankIds.forEach(bank => {
+                    const opsi = document.getElementById(`opsi-produk-${bank}`);
+                    if (opsi) opsi.style.display = 'flex';
+                });
+                const qrisEl = document.getElementById('opsi-produk-qris');
+                const kertasEl = document.getElementById('opsi-produk-kertas');
+                if (qrisEl) qrisEl.style.display = 'none';
+                if (kertasEl) kertasEl.style.display = 'none';
 
             } else {
-                // Menunggu
+                // Menunggu: user sudah kirim, tunggu admin
                 statusText.textContent = '⏳ MENUNGGU VERIFIKASI ADMIN';
                 statusText.className = 'status-badge status-menunggu';
-                btnKonfirmasi.style.display = 'none'; // Sembunyikan karena sudah submit
+                btnKonfirmasi.style.display = 'none'; // Tidak bisa kirim lagi
                 konfirmasiBox.style.display = 'none'; // Tutup form jika terbuka
+
+                // Pastikan opsi bank tetap tampil (user masih bisa lihat)
+                const bankIds = ["bca","mandiri","bri","bni","cimb"];
+                bankIds.forEach(bank => {
+                    const opsi = document.getElementById(`opsi-produk-${bank}`);
+                    if (opsi) opsi.style.display = 'flex';
+                });
             }
         } else {
-            // Belum ada pembayaran
+            // Belum ada pembayaran / sudah dihapus setelah lunas
             statusBox.style.display = 'none';
             btnKonfirmasi.style.display = 'block';
+            konfirmasiBox.style.display = 'none';
 
-            // Pastikan opsi bank tampil kembali jika sebelumnya disembunyikan
+            // Pastikan opsi bank tampil kembali
             const bankIds = ["bca","mandiri","bri","bni","cimb"];
             bankIds.forEach(bank => {
                 const opsi = document.getElementById(`opsi-produk-${bank}`);
@@ -1681,25 +1702,23 @@
     };
 
     window.setujuiPembayaran = async function(paymentId) {
-        if (!confirm('Setujui pembayaran ini?')) return;
+        if (!confirm('Setujui pembayaran ini? Data akan dihapus agar user bisa transaksi lagi.')) return;
         try {
             if (isOffline) {
                 const idx = dataPembayaran.findIndex(p => p.id === paymentId);
                 if (idx >= 0) {
-                    dataPembayaran[idx].status = 'lunas';
-                    dataPembayaran[idx].verifiedAt = new Date().toISOString();
+                    const layananIdLunas = dataPembayaran[idx].layananId;
+                    // Hapus langsung — user bisa bayar lagi
+                    dataPembayaran.splice(idx, 1);
                     savePaymentsOffline();
                     renderPaymentTable();
-                    // Update user view jika layanan ini sedang aktif
-                    if (activeItemId && dataPembayaran[idx].layananId === activeItemId) {
+                    if (activeItemId && activeItemId === layananIdLunas) {
                         updateUserPaymentStatus(activeItemId);
                     }
                 }
             } else {
-                await updateDoc(doc(db, 'pembayaran', paymentId), { 
-                    status: 'lunas', 
-                    verifiedAt: new Date().toISOString() 
-                });
+                // Hapus dokumen langsung — user bisa bayar lagi tanpa reset manual
+                await deleteDoc(doc(db, 'pembayaran', paymentId));
             }
         } catch(err) { alert('Error: ' + err.message); }
     };
