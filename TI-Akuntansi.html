@@ -671,6 +671,7 @@
     </style>
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 
@@ -1459,27 +1460,61 @@
         const statusBox = document.getElementById('user-payment-status');
         const statusText = document.getElementById('user-status-text');
         const btnKonfirmasi = document.getElementById('btn-konfirmasi-bayar');
+        const konfirmasiBox = document.getElementById('konfirmasi-box');
 
         // Cari pembayaran untuk layanan ini yang terbaru
         const payment = dataPembayaran.find(p => p.layananId === layananId);
 
         if (payment) {
             statusBox.style.display = 'block';
-            statusText.textContent = payment.status === 'lunas' ? '✅ LUNAS' : 
-                                      payment.status === 'ditolak' ? '❌ DITOLAK' : '⏳ MENUNGGU VERIFIKASI';
-            statusText.className = 'status-badge ' + 
-                (payment.status === 'lunas' ? 'status-lunas' : 
-                 payment.status === 'ditolak' ? 'status-ditolak' : 'status-menunggu');
 
-            // Sembunyikan tombol konfirmasi jika sudah ada pembayaran pending/lunas
-            if (payment.status === 'menunggu' || payment.status === 'lunas') {
+            if (payment.status === 'lunas') {
+                // Status lunas: hapus semua input, tampilkan badge sukses
+                statusText.textContent = '✅ LUNAS — Terima kasih!';
+                statusText.className = 'status-badge status-lunas';
+
+                // Sembunyikan tombol dan form konfirmasi sepenuhnya
                 btnKonfirmasi.style.display = 'none';
+                konfirmasiBox.style.display = 'none';
+
+                // Sembunyikan juga opsi bank agar user tidak bingung
+                const bankIds = ["bca","mandiri","bri","bni","cimb"];
+                bankIds.forEach(bank => {
+                    const opsi = document.getElementById(`opsi-produk-${bank}`);
+                    if (opsi) opsi.style.display = 'none';
+                });
+                const qrisEl = document.getElementById('opsi-produk-qris');
+                const kertasEl = document.getElementById('opsi-produk-kertas');
+                const loadingEl = document.getElementById('status-loading-bank-produk');
+                const notifEl = document.getElementById('notifikasi-pembayaran-produk');
+                if (qrisEl) qrisEl.style.display = 'none';
+                if (kertasEl) kertasEl.style.display = 'none';
+                if (loadingEl) loadingEl.style.display = 'none';
+                if (notifEl) notifEl.style.display = 'none';
+
+            } else if (payment.status === 'ditolak') {
+                statusText.textContent = '❌ DITOLAK — Silakan coba lagi';
+                statusText.className = 'status-badge status-ditolak';
+                btnKonfirmasi.style.display = 'block'; // Bisa coba lagi
+
             } else {
-                btnKonfirmasi.style.display = 'block';
+                // Menunggu
+                statusText.textContent = '⏳ MENUNGGU VERIFIKASI ADMIN';
+                statusText.className = 'status-badge status-menunggu';
+                btnKonfirmasi.style.display = 'none'; // Sembunyikan karena sudah submit
+                konfirmasiBox.style.display = 'none'; // Tutup form jika terbuka
             }
         } else {
+            // Belum ada pembayaran
             statusBox.style.display = 'none';
             btnKonfirmasi.style.display = 'block';
+
+            // Pastikan opsi bank tampil kembali jika sebelumnya disembunyikan
+            const bankIds = ["bca","mandiri","bri","bni","cimb"];
+            bankIds.forEach(bank => {
+                const opsi = document.getElementById(`opsi-produk-${bank}`);
+                if (opsi) opsi.style.display = 'flex';
+            });
         }
     }
 
