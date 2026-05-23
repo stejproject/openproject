@@ -1673,6 +1673,7 @@
                         <button class="danger" onclick="window.tolakPembayaran('${p.id}')" style="width:auto; padding:4px 8px; font-size:0.7rem;">❌</button>
                     ` : '<span style="color:#666; font-size:0.7rem;">Selesai</span>'}
                     ${p.buktiBase64 ? `<br><a href="${p.buktiBase64}" target="_blank" style="font-size:0.65rem; color:#00ffcc;">📎 Lihat Bukti</a>` : ''}
+                    <br><button class="danger" onclick="window.hapusPembayaran('${p.id}')" style="width:auto; padding:3px 6px; font-size:0.65rem; margin-top:4px;">🗑 Hapus</button>
                 </td>
             </tr>
             `;
@@ -1727,6 +1728,25 @@
                 });
             }
         } catch(err) { alert('Error: ' + err.message); }
+    };
+
+    window.hapusPembayaran = async function(paymentId) {
+        if (!confirm('Yakin hapus data pembayaran ini? Data akan hilang permanen.')) return;
+        try {
+            if (isOffline) {
+                const idx = dataPembayaran.findIndex(p => p.id === paymentId);
+                const layananIdHapus = idx >= 0 ? dataPembayaran[idx].layananId : null;
+                dataPembayaran = dataPembayaran.filter(p => p.id !== paymentId);
+                savePaymentsOffline();
+                renderPaymentTable();
+                if (activeItemId && activeItemId === layananIdHapus) {
+                    updateUserPaymentStatus(activeItemId);
+                }
+            } else {
+                await deleteDoc(doc(db, 'pembayaran', paymentId));
+                // Render & update akan ditangani oleh onSnapshot listener
+            }
+        } catch(err) { alert('Error hapus: ' + err.message); }
     };
 
     // ===================== ADMIN PANEL =====================
