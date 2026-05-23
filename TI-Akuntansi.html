@@ -1382,6 +1382,13 @@
     };
 
     function resetAreaPembayaranProduk() {
+        // Cek dulu apakah sudah lunas — kalau ya, jangan reset apa-apa
+        const payment = dataPembayaran.find(p => p.layananId === activeItemId);
+        if (payment && payment.status === 'lunas') {
+            // Sudah lunas, biarkan updateUserPaymentStatus yang mengatur tampilan
+            return;
+        }
+
         document.getElementById('status-loading-bank-produk').style.display = 'block';
         document.getElementById('notifikasi-pembayaran-produk').style.display = 'none';
         ["bca","mandiri","bri","bni","cimb"].forEach(bank => {
@@ -1406,6 +1413,14 @@
           .then(res => res.ok ? res.json() : Promise.reject(res.status))
           .then(statusBank => {
               loadingEl.style.display = 'none';
+
+              // Cek lagi: kalau sudah lunas, jangan tampilkan apa-apa
+              const payment = dataPembayaran.find(p => p.layananId === activeItemId);
+              if (payment && payment.status === 'lunas') {
+                  updateUserPaymentStatus(activeItemId);
+                  return;
+              }
+
               let bankPilihanTerbaik = null;
               let adaBankAktif = false;
 
@@ -1439,6 +1454,14 @@
           .catch(err => {
               console.error("[SISTEM] Gagal konek ke Railway:", err);
               loadingEl.style.display = 'none';
+
+              // Cek lagi: kalau sudah lunas, jangan tampilkan apa-apa
+              const payment = dataPembayaran.find(p => p.layananId === activeItemId);
+              if (payment && payment.status === 'lunas') {
+                  updateUserPaymentStatus(activeItemId);
+                  return;
+              }
+
               // Railway error → tampilkan semua bank sebagai opsi default
               URUTAN_PRIORITAS.forEach(bank => {
                   const opsi = document.getElementById(`opsi-produk-${bank}`);
