@@ -680,9 +680,8 @@
 
 <div class="container">
     <header>
-        <h1>ストリアンダルウムの国「公式飛脚大店」</h1>
-        <h3>Streanderuum no Kuni,Kōshiki Hikyaku Ōdana</h3>
-        <p class="sub-title">Pusat Layanan & Usaha Bersama</p>
+        <h1>Arsitektur TI Papan Pindai</h1>
+        <p class="sub-title">Sistem Etalase Statis Beban Nol Abad ke-21</p>
     </header>
 
     <!-- STATUS KONEKSI -->
@@ -708,8 +707,10 @@
         <!-- AREA DETAIL SETELAH KLIK -->
         <div id="area-detail-produk" style="display: none; flex-direction: column; align-items: center; gap: 12px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #2d2d2d;">
             <!-- VIDEO REVIEW -->
+            <!-- VIDEO REVIEW -->
             <div class="detail-video-box" id="detail-video-box" style="display: none;">
                 <video id="detail-video" autoplay muted loop playsinline></video>
+                <iframe id="detail-video-iframe" style="display:none; width:100%; height:220px; border:none; border-radius:6px;" allow="autoplay" allowfullscreen></iframe>
             </div>
             <p id="detail-video-label" class="detail-label" style="display: none;">▶️ Review Produk</p>
 
@@ -939,10 +940,24 @@
 
             <!-- ================= TABEL PEMBAYARAN PENDING ================= -->
             <div style="margin-top:30px; padding-top:20px; border-top:2px solid #333;">
-                <h3 style="color:#ffcc00; font-size:1rem; margin:0 0 15px 0;">💰 Verifikasi Pembayaran</h3>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                    <h3 style="color:#ffcc00; font-size:1rem; margin:0;">💰 Verifikasi Pembayaran 
+                        <span id="badge-menunggu" style="background:#ffcc00; color:#121212; font-size:0.75rem; padding:2px 8px; border-radius:10px; margin-left:6px; display:none;">0</span>
+                    </h3>
+                    <button class="secondary" onclick="window.gantiPinAdmin()" style="width:auto; font-size:0.7rem; padding:4px 10px;">🔐 Ganti PIN</button>
+                </div>
                 <p style="font-size:0.75rem; color:#888; margin:0 0 10px 0;">
-                    Klik ✅ Setujui atau ❌ Tolak. Status akan update real-time ke pelanggan.
+                    Klik ✅ Setujui atau ❌ Tolak. Data lunas otomatis dihapus.
                 </p>
+
+                <!-- FILTER STATUS -->
+                <div style="display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap;">
+                    <button class="secondary" onclick="window.filterPayment('semua')" id="filter-semua" style="width:auto; padding:4px 12px; font-size:0.75rem; background:#444;">Semua</button>
+                    <button class="secondary" onclick="window.filterPayment('menunggu')" id="filter-menunggu" style="width:auto; padding:4px 12px; font-size:0.75rem;">⏳ Menunggu</button>
+                    <button class="secondary" onclick="window.filterPayment('lunas')" id="filter-lunas" style="width:auto; padding:4px 12px; font-size:0.75rem;">✅ Lunas</button>
+                    <button class="secondary" onclick="window.filterPayment('ditolak')" id="filter-ditolak" style="width:auto; padding:4px 12px; font-size:0.75rem;">❌ Ditolak</button>
+                </div>
+
                 <table class="payment-table">
                     <thead>
                         <tr>
@@ -1195,10 +1210,10 @@
             snapshot.forEach(docSnap => dataLayanan.push({ id: docSnap.id, ...docSnap.data() }));
             renderLayanan();
             renderAdminTable();
-            updateStatus(true, 'Sistem Administrasi Digital Garda Sains — Aktif');
+            updateStatus(true, 'Terhubung ke Firestore');
         }, err => {
             console.error(err);
-            updateStatus(false, 'Sistem Administrasi Digital Garda Sains — Tutup, beralih offline...');
+            updateStatus(false, 'Gagal konek Firestore, beralih offline...');
             setTimeout(() => aktifkanOffline(), 2000);
         });
     }
@@ -1349,16 +1364,33 @@
         const qrDisplay = document.getElementById('qr-display');
         const qrNama = document.getElementById('qr-nama-layanan');
 
+        const iframeVideo = document.getElementById('detail-video-iframe');
         if (item.videoUrl) {
-            detailVideo.src = item.videoUrl;
-            detailVideoBox.style.display = 'block';
-            detailVideoLabel.style.display = 'block';
-            detailVideo.load();
-            detailVideo.play().catch(() => {});
+            const driveId = extractGoogleDriveId(item.videoUrl);
+            if (driveId) {
+                // Google Drive → pakai iframe embed
+                detailVideo.style.display = 'none';
+                iframeVideo.style.display = 'block';
+                iframeVideo.src = `https://drive.google.com/file/d/${driveId}/preview`;
+                detailVideoBox.style.display = 'block';
+                detailVideoLabel.style.display = 'block';
+            } else {
+                // Link langsung (CDN, Firebase Storage, dll) → pakai <video>
+                iframeVideo.style.display = 'none';
+                iframeVideo.src = '';
+                detailVideo.style.display = 'block';
+                detailVideo.src = item.videoUrl;
+                detailVideoBox.style.display = 'block';
+                detailVideoLabel.style.display = 'block';
+                detailVideo.load();
+                detailVideo.play().catch(() => {});
+            }
         } else {
             detailVideoBox.style.display = 'none';
             detailVideoLabel.style.display = 'none';
             detailVideo.src = '';
+            iframeVideo.src = '';
+            iframeVideo.style.display = 'none';
         }
 
         if (item.qrBase64) {
@@ -1664,10 +1696,57 @@
     }
 
     // ===================== ADMIN: VERIFIKASI PEMBAYARAN =====================
+    let currentPaymentFilter = 'semua';
+    let lastPaymentCount = 0;
+
+    window.filterPayment = function(status) {
+        currentPaymentFilter = status;
+        // Update button styles
+        ['semua','menunggu','lunas','ditolak'].forEach(s => {
+            const btn = document.getElementById('filter-' + s);
+            if (btn) btn.style.background = (s === status) ? '#444' : '#333';
+        });
+        renderPaymentTable();
+    };
+
+    function playNotificationSound() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = 880;
+            gain.gain.value = 0.1;
+            osc.start();
+            osc.stop(ctx.currentTime + 0.15);
+        } catch(e) {}
+    }
+
     window.renderPaymentTable = function() {
         const tbody = document.getElementById('payment-table-body');
+        const badge = document.getElementById('badge-menunggu');
+
         // Filter pembayaran untuk akun yang sedang aktif
-        const filtered = dataPembayaran.filter(p => !p.accountId || p.accountId === currentAccountId);
+        let filtered = dataPembayaran.filter(p => !p.accountId || p.accountId === currentAccountId);
+
+        // Update badge counter (menunggu)
+        const menungguCount = filtered.filter(p => p.status === 'menunggu').length;
+        if (badge) {
+            badge.textContent = menungguCount;
+            badge.style.display = menungguCount > 0 ? 'inline-block' : 'none';
+        }
+
+        // Sound notification kalau ada pembayaran baru menunggu
+        if (menungguCount > lastPaymentCount && lastPaymentCount > 0) {
+            playNotificationSound();
+        }
+        lastPaymentCount = menungguCount;
+
+        // Apply status filter
+        if (currentPaymentFilter !== 'semua') {
+            filtered = filtered.filter(p => p.status === currentPaymentFilter);
+        }
 
         if (filtered.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Belum ada pembayaran</td></tr>';
@@ -1770,16 +1849,32 @@
     };
 
     // ===================== ADMIN PANEL =====================
-    let klikTrigger = 0;
+    // ===================== ADMIN PIN PROTECTION =====================
+    const PIN_STORAGE_KEY = 'stej_admin_pin_v1';
+    const DEFAULT_PIN = '1234';
+
+    function getAdminPin() {
+        return localStorage.getItem(PIN_STORAGE_KEY) || DEFAULT_PIN;
+    }
+
+    window.gantiPinAdmin = function() {
+        const pinLama = prompt('PIN Lama:');
+        if (pinLama !== getAdminPin()) { alert('PIN salah!'); return; }
+        const pinBaru = prompt('PIN Baru (4-6 digit):');
+        if (!pinBaru || pinBaru.length < 4) { alert('PIN minimal 4 digit'); return; }
+        localStorage.setItem(PIN_STORAGE_KEY, pinBaru);
+        alert('PIN berhasil diganti!');
+    };
+
     document.getElementById('admin-trigger').addEventListener('click', () => {
-        klikTrigger++;
-        if (klikTrigger >= 5) {
+        const pin = prompt('🔐 Masukkan PIN Admin:');
+        if (pin === getAdminPin()) {
             document.getElementById('admin-panel').style.display = 'block';
-            klikTrigger = 0;
             if (isOffline) { loadData(); loadPaymentsOffline(); }
             loadAccounts();
+        } else if (pin !== null) {
+            alert('PIN salah! Akses ditolak.');
         }
-        setTimeout(() => { if(klikTrigger>0) klikTrigger--; }, 2000);
     });
 
     window.tutupAdmin = function() {
@@ -1876,7 +1971,17 @@
         document.getElementById('input-video-url').value = item.videoUrl || '';
         if (item.qrBase64) { qrBase64Cache = item.qrBase64; qrPreviewImg.src = item.qrBase64; qrPreviewBox.style.display = 'block'; }
         else { qrBase64Cache = null; qrPreviewBox.style.display = 'none'; document.getElementById('input-qr').value = ''; }
-        if (item.videoUrl) { videoUrlCache = item.videoUrl; videoPreview.src = item.videoUrl; videoPreviewBox.style.display = 'block'; videoPreview.load(); }
+        if (item.videoUrl) { 
+            videoUrlCache = item.videoUrl; 
+            const driveId = extractGoogleDriveId(item.videoUrl);
+            if (driveId) {
+                videoPreview.src = `https://drive.google.com/file/d/${driveId}/preview`;
+            } else {
+                videoPreview.src = item.videoUrl;
+            }
+            videoPreviewBox.style.display = 'block'; 
+            videoPreview.load(); 
+        }
         else { videoUrlCache = null; videoPreviewBox.style.display = 'none'; videoPreview.src = ''; }
         if (item.accountId) {
             currentAccountId = item.accountId;
@@ -1984,6 +2089,17 @@
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    function extractGoogleDriveId(url) {
+        if (!url) return null;
+        // Format: https://drive.google.com/file/d/FILE_ID/view?...
+        let m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (m) return m[1];
+        // Format: https://drive.google.com/open?id=FILE_ID
+        m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (m) return m[1];
+        return null;
     }
 
     document.addEventListener('contextmenu', e => e.preventDefault());
