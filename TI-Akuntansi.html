@@ -1195,10 +1195,10 @@
             snapshot.forEach(docSnap => dataLayanan.push({ id: docSnap.id, ...docSnap.data() }));
             renderLayanan();
             renderAdminTable();
-            updateStatus(true, 'Terhubung ke Firestore');
+            updateStatus(true, 'Sistem Administrasi Digital Garda Sains — Aktif');
         }, err => {
             console.error(err);
-            updateStatus(false, 'Gagal konek Firestore, beralih offline...');
+            updateStatus(false, 'Sistem Administrasi Digital Garda Sains — Tutup, beralih offline...');
             setTimeout(() => aktifkanOffline(), 2000);
         });
     }
