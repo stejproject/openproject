@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -145,13 +146,21 @@
         .google-btn:hover { border-color: var(--primary); box-shadow: var(--shadow-lg); }
         .google-btn img { width: 20px; height: 20px; }
         .readonly-banner { background: rgba(59,130,246,0.1); border-left: 4px solid var(--info); padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--info); }
+        .railway-banner { background: rgba(16,185,129,0.1); border-left: 4px solid var(--success); padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--success); }
+        .section-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+        .section-title i { color: var(--primary); }
+        .bank-card { background: var(--white); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .bank-info h4 { margin: 0 0 4px 0; font-size: 15px; }
+        .bank-info p { margin: 0; font-size: 12px; color: var(--gray); }
+        .bank-actions { display: flex; gap: 8px; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
         @media (max-width: 1024px) {
             .sidebar { width: 70px; }
             .sidebar-header h2, .sidebar-nav a span, .sidebar-footer p { display: none; }
             .sidebar-header { justify-content: center; }
             .sidebar-nav a { justify-content: center; padding: 14px; }
             .main-content { margin-left: 70px; max-width: calc(100% - 70px); padding: 16px; }
-            .charts-section { grid-template-columns: 1fr; }
+            .charts-section, .two-col { grid-template-columns: 1fr; }
         }
         @media (max-width: 768px) {
             .stats-grid { grid-template-columns: 1fr; }
@@ -165,7 +174,6 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         tbody tr { animation: fadeIn 0.3s ease; }
     </style>
-<base target="_blank">
 </head>
 <body>
     <div class="loading-overlay" id="loadingOverlay">
@@ -181,13 +189,15 @@
             </div>
             <nav class="sidebar-nav">
                 <a href="TI-Akuntansi.html"><i class="fas fa-home"></i> <span>Dashboard</span></a>
-                <a href="#" class="active"><i class="fas fa-chart-line"></i> <span>Analisis Transaksi</span></a>
+                <a href="#" class="active" onclick="showSection('analisis')"><i class="fas fa-chart-line"></i> <span>Analisis Transaksi</span></a>
+                <a href="#" onclick="showSection('bank'); return false;" id="navBank"><i class="fas fa-university"></i> <span>Kelola Akun Bank</span></a>
+                <a href="#" onclick="showSection('invoice'); return false;" id="navInvoice"><i class="fas fa-file-invoice-dollar"></i> <span>Invoice & Bayar</span></a>
                 <a href="#" onclick="openAddModal(); return false;" id="navAdd"><i class="fas fa-plus-circle"></i> <span>Tambah Transaksi</span></a>
                 <a href="#"><i class="fas fa-history"></i> <span>Riwayat</span></a>
                 <a href="#"><i class="fas fa-cog"></i> <span>Pengaturan</span></a>
             </nav>
             <div class="sidebar-footer">
-                <p>Production v3.0</p>
+                <p>Production v3.1</p>
             </div>
         </aside>
 
@@ -199,6 +209,9 @@
                         <span class="badge-firestore"><i class="fas fa-database"></i> Firestore Production</span>
                         <span class="connection-status offline" id="connStatus">
                             <i class="fas fa-circle"></i> <span id="connText">Offline</span>
+                        </span>
+                        <span class="connection-status offline" id="railwayStatus">
+                            <i class="fas fa-circle"></i> <span id="railwayText">Railway Offline</span>
                         </span>
                     </div>
                 </div>
@@ -213,101 +226,186 @@
                 <span>Anda login sebagai <strong>Viewer</strong>. Hanya bisa melihat data.</span>
             </div>
 
-            <section class="stats-grid">
-                <div class="stat-card total">
-                    <div class="stat-icon"><i class="fas fa-wallet"></i></div>
-                    <div class="stat-info"><h3 id="totalTransaksi">0</h3><p>Total Transaksi</p></div>
-                </div>
-                <div class="stat-card amount">
-                    <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
-                    <div class="stat-info"><h3 id="totalNominal">Rp 0</h3><p>Total Nominal</p></div>
-                </div>
-                <div class="stat-card approved">
-                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-                    <div class="stat-info"><h3 id="totalApproved">0</h3><p>Terverifikasi</p></div>
-                </div>
-                <div class="stat-card pending">
-                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                    <div class="stat-info"><h3 id="totalPending">0</h3><p>Menunggu</p></div>
-                </div>
-                <div class="stat-card rejected">
-                    <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
-                    <div class="stat-info"><h3 id="totalRejected">0</h3><p>Ditolak</p></div>
-                </div>
-                <div class="stat-card alert">
-                    <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                    <div class="stat-info"><h3 id="totalAnomali">0</h3><p>Anomali Terdeteksi</p></div>
-                </div>
-            </section>
+            <!-- SECTION: ANALISIS -->
+            <div id="section-analisis">
+                <section class="stats-grid">
+                    <div class="stat-card total">
+                        <div class="stat-icon"><i class="fas fa-wallet"></i></div>
+                        <div class="stat-info"><h3 id="totalTransaksi">0</h3><p>Total Transaksi</p></div>
+                    </div>
+                    <div class="stat-card amount">
+                        <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+                        <div class="stat-info"><h3 id="totalNominal">Rp 0</h3><p>Total Nominal</p></div>
+                    </div>
+                    <div class="stat-card approved">
+                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-info"><h3 id="totalApproved">0</h3><p>Terverifikasi</p></div>
+                    </div>
+                    <div class="stat-card pending">
+                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                        <div class="stat-info"><h3 id="totalPending">0</h3><p>Menunggu</p></div>
+                    </div>
+                    <div class="stat-card rejected">
+                        <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+                        <div class="stat-info"><h3 id="totalRejected">0</h3><p>Ditolak</p></div>
+                    </div>
+                    <div class="stat-card alert">
+                        <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="stat-info"><h3 id="totalAnomali">0</h3><p>Anomali Terdeteksi</p></div>
+                    </div>
+                </section>
 
-            <section class="charts-section">
-                <div class="chart-container">
-                    <h3><i class="fas fa-chart-bar"></i> Transaksi per Status</h3>
-                    <canvas id="statusChart"></canvas>
-                </div>
-                <div class="chart-container">
-                    <h3><i class="fas fa-chart-line"></i> Trend Transaksi Harian</h3>
-                    <canvas id="trendChart"></canvas>
-                </div>
-            </section>
+                <section class="charts-section">
+                    <div class="chart-container">
+                        <h3><i class="fas fa-chart-bar"></i> Transaksi per Status</h3>
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3><i class="fas fa-chart-line"></i> Trend Transaksi Harian</h3>
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </section>
 
-            <section class="filter-section">
-                <div class="filter-group">
-                    <input type="text" id="searchInput" placeholder="Cari ID, nama, atau nominal..." onkeyup="filterTransactions()">
-                    <select id="filterStatus" onchange="filterTransactions()">
-                        <option value="">Semua Status</option>
-                        <option value="approved">Terverifikasi</option>
-                        <option value="pending">Menunggu</option>
-                        <option value="rejected">Ditolak</option>
-                    </select>
-                    <select id="filterType" onchange="filterTransactions()">
-                        <option value="">Semua Tipe</option>
-                        <option value="pemasukan">Pemasukan</option>
-                        <option value="pengeluaran">Pengeluaran</option>
-                    </select>
-                    <input type="date" id="filterDateFrom" onchange="filterTransactions()">
-                    <input type="date" id="filterDateTo" onchange="filterTransactions()">
-                    <button class="btn btn-secondary" onclick="resetFilters()"><i class="fas fa-undo"></i> Reset</button>
-                </div>
-            </section>
+                <section class="filter-section">
+                    <div class="filter-group">
+                        <input type="text" id="searchInput" placeholder="Cari ID, nama, atau nominal..." onkeyup="filterTransactions()">
+                        <select id="filterStatus" onchange="filterTransactions()">
+                            <option value="">Semua Status</option>
+                            <option value="approved">Terverifikasi</option>
+                            <option value="pending">Menunggu</option>
+                            <option value="rejected">Ditolak</option>
+                        </select>
+                        <select id="filterType" onchange="filterTransactions()">
+                            <option value="">Semua Tipe</option>
+                            <option value="pemasukan">Pemasukan</option>
+                            <option value="pengeluaran">Pengeluaran</option>
+                        </select>
+                        <input type="date" id="filterDateFrom" onchange="filterTransactions()">
+                        <input type="date" id="filterDateTo" onchange="filterTransactions()">
+                        <button class="btn btn-secondary" onclick="resetFilters()"><i class="fas fa-undo"></i> Reset</button>
+                    </div>
+                </section>
 
-            <section class="table-section">
-                <div class="table-header">
-                    <h3><i class="fas fa-list"></i> Daftar Transaksi</h3>
-                    <div class="table-actions"><span id="showingInfo">Menghubungkan ke Firestore...</span></div>
-                </div>
-                <div class="table-responsive">
-                    <table id="transactionTable">
-                        <thead>
-                            <tr>
-                                <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
-                                <th onclick="sortTable('id')">ID <i class="fas fa-sort"></i></th>
-                                <th onclick="sortTable('tanggal')">Tanggal <i class="fas fa-sort"></i></th>
-                                <th onclick="sortTable('nama')">Nama <i class="fas fa-sort"></i></th>
-                                <th onclick="sortTable('tipe')">Tipe <i class="fas fa-sort"></i></th>
-                                <th onclick="sortTable('nominal')">Nominal <i class="fas fa-sort"></i></th>
-                                <th onclick="sortTable('metode')">Metode <i class="fas fa-sort"></i></th>
-                                <th onclick="sortTable('status')">Status <i class="fas fa-sort"></i></th>
-                                <th>Pengecekan</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            <tr><td colspan="10" class="empty-state"><i class="fas fa-lock"></i><p>Silakan login untuk melihat data</p></td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="pagination">
-                    <button onclick="changePage(-1)" id="prevBtn" disabled><i class="fas fa-chevron-left"></i></button>
-                    <span id="pageInfo">Halaman 1</span>
-                    <button onclick="changePage(1)" id="nextBtn" disabled><i class="fas fa-chevron-right"></i></button>
-                </div>
-            </section>
+                <section class="table-section">
+                    <div class="table-header">
+                        <h3><i class="fas fa-list"></i> Daftar Transaksi</h3>
+                        <div class="table-actions"><span id="showingInfo">Menghubungkan ke Firestore...</span></div>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="transactionTable">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                                    <th onclick="sortTable('id')">ID <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable('tanggal')">Tanggal <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable('nama')">Nama <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable('tipe')">Tipe <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable('nominal')">Nominal <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable('metode')">Metode <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable('status')">Status <i class="fas fa-sort"></i></th>
+                                    <th>Pengecekan</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <tr><td colspan="10" class="empty-state"><i class="fas fa-lock"></i><p>Silakan login untuk melihat data</p></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination">
+                        <button onclick="changePage(-1)" id="prevBtn" disabled><i class="fas fa-chevron-left"></i></button>
+                        <span id="pageInfo">Halaman 1</span>
+                        <button onclick="changePage(1)" id="nextBtn" disabled><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </section>
 
-            <section class="anomaly-section" id="anomalySection">
-                <h3><i class="fas fa-exclamation-triangle"></i> Pengecekan & Anomali</h3>
-                <div id="anomalyList" class="anomaly-list"></div>
-            </section>
+                <section class="anomaly-section" id="anomalySection">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Pengecekan & Anomali</h3>
+                    <div id="anomalyList" class="anomaly-list"></div>
+                </section>
+            </div>
+
+            <!-- SECTION: KELOLA AKUN BANK -->
+            <div id="section-bank" style="display:none;">
+                <div class="railway-banner">
+                    <i class="fas fa-university"></i>
+                    <span>Data akun bank tersimpan di <strong>Firestore</strong> dan otomatis tersedia di <strong>TI-Akuntansi.html</strong> serta backend Railway.</span>
+                </div>
+                <section class="table-section">
+                    <div class="table-header">
+                        <h3><i class="fas fa-university"></i> Kelola Akun Bank</h3>
+                        <button class="btn btn-primary btn-sm" onclick="openBankModal()"><i class="fas fa-plus"></i> Tambah Rekening</button>
+                    </div>
+                    <div id="bankList" style="margin-top:10px;">
+                        <div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Memuat data rekening...</p></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- SECTION: INVOICE & PEMBAYARAN -->
+            <div id="section-invoice" style="display:none;">
+                <div class="railway-banner">
+                    <i class="fas fa-server"></i>
+                    <span>Terhubung ke Railway API untuk invoice otomatis & verifikasi pembayaran real-time.</span>
+                </div>
+                <div class="two-col">
+                    <section class="table-section">
+                        <div class="table-header">
+                            <h3><i class="fas fa-file-invoice"></i> Invoice Aktif (Railway)</h3>
+                            <button class="btn btn-outline btn-sm" onclick="refreshRailwayData()"><i class="fas fa-sync"></i> Refresh</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead><tr><th>Invoice ID</th><th>Layanan</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead>
+                                <tbody id="railwayInvoiceBody"><tr><td colspan="5" class="empty-state">Klik Refresh untuk memuat</td></tr></tbody>
+                            </table>
+                        </div>
+                    </section>
+                    <section class="table-section">
+                        <div class="table-header">
+                            <h3><i class="fas fa-money-check"></i> Konfirmasi Bayar (Railway)</h3>
+                            <button class="btn btn-outline btn-sm" onclick="refreshRailwayPayments()"><i class="fas fa-sync"></i> Refresh</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead><tr><th>ID</th><th>Pengirim</th><th>Nominal</th><th>Status</th><th>Aksi</th></tr></thead>
+                                <tbody id="railwayPaymentBody"><tr><td colspan="5" class="empty-state">Klik Refresh untuk memuat</td></tr></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+                <section class="table-section" style="margin-top:24px;">
+                    <div class="table-header">
+                        <h3><i class="fas fa-plus-circle"></i> Buat Invoice Manual</h3>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ID Layanan</label>
+                            <input type="text" id="invLayananId" placeholder="layanan-001">
+                        </div>
+                        <div class="form-group">
+                            <label>Nama Layanan</label>
+                            <input type="text" id="invLayananNama" placeholder="Nama Layanan">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Harga Tampilan</label>
+                            <input type="text" id="invLayananHarga" placeholder="Rp 150.000">
+                        </div>
+                        <div class="form-group">
+                            <label>Nominal Dasar (Rp)</label>
+                            <input type="number" id="invAmount" placeholder="150000">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Rekening Tujuan (Bank Code)</label>
+                        <select id="invBankCode"><option value="">-- Pilih Bank --</option></select>
+                    </div>
+                    <button class="btn btn-primary" onclick="createInvoiceRailway()"><i class="fas fa-paper-plane"></i> Buat Invoice ke Railway</button>
+                    <div id="invoiceResult" style="margin-top:16px;"></div>
+                </section>
+            </div>
         </main>
     </div>
 
@@ -408,16 +506,18 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Nama Bank</label>
-                                <input type="text" id="addBank" placeholder="BCA / Mandiri / BNI">
+                                <select id="addBank" style="width:100%; padding: 12px 14px; border: 2px solid var(--border); border-radius: 8px; font-size: 14px;">
+                                    <option value="">-- Pilih Rekening --</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label>No. Rekening</label>
-                                <input type="text" id="addRekening" placeholder="1234-5678-9012">
+                                <input type="text" id="addRekening" placeholder="1234-5678-9012" readonly style="background:var(--light-gray);">
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Atas Nama Rekening</label>
-                            <input type="text" id="addAtasNama" placeholder="Nama pemilik rekening">
+                            <input type="text" id="addAtasNama" placeholder="Nama pemilik rekening" readonly style="background:var(--light-gray);">
                         </div>
                     </div>
                     <div id="cekFields" style="display:none;">
@@ -465,11 +565,46 @@
         </div>
     </div>
 
+    <!-- Modal Bank Account -->
+    <div id="bankModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-university"></i> <span id="bankModalTitle">Tambah Rekening Bank</span></h2>
+                <span class="close" onclick="closeBankModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Kode Bank (ID unik)</label>
+                    <input type="text" id="bankCode" placeholder="bca / mandiri / bri">
+                </div>
+                <div class="form-group">
+                    <label>Nama Bank</label>
+                    <input type="text" id="bankName" placeholder="Bank BCA">
+                </div>
+                <div class="form-group">
+                    <label>Nomor Rekening</label>
+                    <input type="text" id="bankNumber" placeholder="1234567890">
+                </div>
+                <div class="form-group">
+                    <label>Atas Nama</label>
+                    <input type="text" id="bankHolder" placeholder="PT STEJ INDONESIA">
+                </div>
+                <div class="form-group">
+                    <label><input type="checkbox" id="bankActive" checked style="width:auto; margin-right:8px;"> Aktif</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="saveBankAccount()"><i class="fas fa-save"></i> Simpan</button>
+                <button class="btn btn-outline" onclick="closeBankModal()">Batal</button>
+            </div>
+        </div>
+    </div>
+
     <div id="toast" class="toast"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp, where } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -486,9 +621,12 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         const transactionsRef = collection(db, "transactions");
+        const bankAccountsRef = collection(db, "bank_accounts");
         const ADMIN_EMAIL = 'urbaubouf@gmail.com';
+        const RAILWAY_URL = 'https://contoh-transaksi-stej-production.up.railway.app';
 
         let transactions = [];
+        let bankAccounts = [];
         let currentPage = 1;
         let itemsPerPage = 10;
         let filteredData = [];
@@ -499,12 +637,13 @@
         let statusChartInstance = null;
         let trendChartInstance = null;
         let unsubscribe = null;
+        let unsubscribeBanks = null;
         let currentUser = null;
         let isAdmin = false;
 
         window.formatRupiah = function(angka) {
             if (!angka && angka !== 0) return 'Rp 0';
-            return 'Rp ' + Number(angka).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            return 'Rp ' + Number(angka).toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.');
         };
 
         onAuthStateChanged(auth, (user) => {
@@ -514,8 +653,10 @@
             if (user) {
                 closeLoginModal();
                 startRealtimeListener();
+                startBankListener();
             } else {
                 stopRealtimeListener();
+                if (unsubscribeBanks) { unsubscribeBanks(); unsubscribeBanks = null; }
                 document.getElementById('tableBody').innerHTML = '<tr><td colspan="10" class="empty-state"><i class="fas fa-lock"></i><p>Silakan login untuk melihat data transaksi.</p></td></tr>';
                 document.getElementById('showingInfo').textContent = 'Login diperlukan';
                 updateStats();
@@ -546,6 +687,8 @@
             const headerActions = document.getElementById('headerActions');
             const readonlyBanner = document.getElementById('readonlyBanner');
             const navAdd = document.getElementById('navAdd');
+            const navBank = document.getElementById('navBank');
+            const navInvoice = document.getElementById('navInvoice');
 
             if (currentUser) {
                 const roleClass = isAdmin ? 'admin' : 'viewer';
@@ -553,10 +696,14 @@
                 headerActions.innerHTML = '<div class="user-badge"><img src="' + (currentUser.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.displayName || 'User')) + '" alt=""><div class="info"><span class="name">' + (currentUser.displayName || currentUser.email) + '</span><span class="role ' + roleClass + '">' + roleText + '</span></div></div><button class="btn btn-outline" onclick="exportData()"><i class="fas fa-download"></i> Export</button>' + (isAdmin ? '<button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus"></i> Baru</button>' : '') + '<button class="btn btn-secondary" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>';
                 readonlyBanner.style.display = isAdmin ? 'none' : 'flex';
                 navAdd.style.display = isAdmin ? 'flex' : 'none';
+                navBank.style.display = isAdmin ? 'flex' : 'none';
+                navInvoice.style.display = 'flex';
             } else {
                 headerActions.innerHTML = '<button class="btn btn-outline" onclick="exportData()"><i class="fas fa-download"></i> Export</button><button class="btn btn-primary" onclick="openLoginModal()"><i class="fas fa-sign-in-alt"></i> Login Admin</button>';
                 readonlyBanner.style.display = 'none';
                 navAdd.style.display = 'none';
+                navBank.style.display = 'none';
+                navInvoice.style.display = 'none';
             }
         }
 
@@ -609,6 +756,20 @@
             updateConnectionStatus(false);
         }
 
+        function startBankListener() {
+            unsubscribeBanks = onSnapshot(bankAccountsRef, (snapshot) => {
+                bankAccounts = [];
+                snapshot.forEach(docSnap => {
+                    const d = docSnap.data();
+                    d.docId = docSnap.id;
+                    bankAccounts.push(d);
+                });
+                renderBankList();
+                populateBankSelect();
+                populateInvoiceBankSelect();
+            });
+        }
+
         function updateConnectionStatus(online) {
             const el = document.getElementById('connStatus');
             const txt = document.getElementById('connText');
@@ -616,6 +777,255 @@
             else { el.className = 'connection-status offline'; txt.textContent = 'Offline'; }
         }
 
+        function updateRailwayStatus(online) {
+            const el = document.getElementById('railwayStatus');
+            const txt = document.getElementById('railwayText');
+            if (online) { el.className = 'connection-status online'; txt.textContent = 'Railway Online'; }
+            else { el.className = 'connection-status offline'; txt.textContent = 'Railway Offline'; }
+        }
+
+        // ===================== BANK ACCOUNTS =====================
+        window.showSection = function(sec) {
+            document.getElementById('section-analisis').style.display = sec === 'analisis' ? 'block' : 'none';
+            document.getElementById('section-bank').style.display = sec === 'bank' ? 'block' : 'none';
+            document.getElementById('section-invoice').style.display = sec === 'invoice' ? 'block' : 'none';
+            document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+            if (sec === 'analisis') document.querySelector('.sidebar-nav a:nth-child(2)').classList.add('active');
+            if (sec === 'bank') document.getElementById('navBank').classList.add('active');
+            if (sec === 'invoice') document.getElementById('navInvoice').classList.add('active');
+        };
+
+        function renderBankList() {
+            const container = document.getElementById('bankList');
+            const active = bankAccounts.filter(b => b.active !== false);
+            if (active.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-university"></i><p>Belum ada rekening bank. Klik "Tambah Rekening".</p></div>';
+                return;
+            }
+            container.innerHTML = active.map(b => `
+                <div class="bank-card">
+                    <div class="bank-info">
+                        <h4>${escapeHtml(b.name)} <span style="font-size:11px; color:var(--gray);">(${escapeHtml(b.docId)})</span></h4>
+                        <p>${escapeHtml(b.number)} — a.n ${escapeHtml(b.holder)}</p>
+                    </div>
+                    <div class="bank-actions">
+                        <button class="btn btn-sm btn-outline" onclick="editBankAccount('${b.docId}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteBankAccount('${b.docId}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function populateBankSelect() {
+            const sel = document.getElementById('addBank');
+            const active = bankAccounts.filter(b => b.active !== false);
+            let html = '<option value="">-- Pilih Rekening --</option>';
+            active.forEach(b => {
+                html += `<option value="${escapeHtml(b.docId)}" data-number="${escapeHtml(b.number)}" data-holder="${escapeHtml(b.holder)}">${escapeHtml(b.name)} — ${escapeHtml(b.number)}</option>`;
+            });
+            sel.innerHTML = html;
+            sel.onchange = function() {
+                const opt = sel.options[sel.selectedIndex];
+                document.getElementById('addRekening').value = opt.getAttribute('data-number') || '';
+                document.getElementById('addAtasNama').value = opt.getAttribute('data-holder') || '';
+            };
+        }
+
+        function populateInvoiceBankSelect() {
+            const sel = document.getElementById('invBankCode');
+            const active = bankAccounts.filter(b => b.active !== false);
+            let html = '<option value="">-- Pilih Bank --</option>';
+            active.forEach(b => {
+                html += `<option value="${escapeHtml(b.docId)}">${escapeHtml(b.name)} — ${escapeHtml(b.number)}</option>`;
+            });
+            sel.innerHTML = html;
+        }
+
+        window.openBankModal = function() {
+            if (!isAdmin) { showToast('Hanya admin', 'error'); return; }
+            document.getElementById('bankModalTitle').textContent = 'Tambah Rekening Bank';
+            document.getElementById('bankCode').value = '';
+            document.getElementById('bankName').value = '';
+            document.getElementById('bankNumber').value = '';
+            document.getElementById('bankHolder').value = '';
+            document.getElementById('bankActive').checked = true;
+            document.getElementById('bankCode').readOnly = false;
+            document.getElementById('bankModal').style.display = 'block';
+        };
+
+        window.closeBankModal = function() {
+            document.getElementById('bankModal').style.display = 'none';
+        };
+
+        window.saveBankAccount = async function() {
+            if (!isAdmin) { showToast('Hanya admin', 'error'); return; }
+            const code = document.getElementById('bankCode').value.trim().toLowerCase();
+            const name = document.getElementById('bankName').value.trim();
+            const number = document.getElementById('bankNumber').value.trim();
+            const holder = document.getElementById('bankHolder').value.trim();
+            const active = document.getElementById('bankActive').checked;
+            if (!code || !name || !number || !holder) { showToast('Lengkapi semua field', 'warning'); return; }
+
+            const payload = { name, number, holder, active, updatedAt: serverTimestamp() };
+            try {
+                const existing = bankAccounts.find(b => b.docId === code);
+                if (existing) {
+                    await updateDoc(doc(db, "bank_accounts", code), payload);
+                    showToast('Rekening diperbarui', 'success');
+                } else {
+                    payload.createdAt = serverTimestamp();
+                    await addDoc(doc(db, "bank_accounts", code), payload);
+                    showToast('Rekening ditambahkan', 'success');
+                }
+                closeBankModal();
+            } catch (err) { showToast('Gagal: ' + err.message, 'error'); }
+        };
+
+        window.editBankAccount = async function(docId) {
+            if (!isAdmin) return;
+            const b = bankAccounts.find(x => x.docId === docId);
+            if (!b) return;
+            document.getElementById('bankModalTitle').textContent = 'Edit Rekening Bank';
+            document.getElementById('bankCode').value = b.docId;
+            document.getElementById('bankCode').readOnly = true;
+            document.getElementById('bankName').value = b.name || '';
+            document.getElementById('bankNumber').value = b.number || '';
+            document.getElementById('bankHolder').value = b.holder || '';
+            document.getElementById('bankActive').checked = b.active !== false;
+            document.getElementById('bankModal').style.display = 'block';
+        };
+
+        window.deleteBankAccount = async function(docId) {
+            if (!isAdmin) return;
+            if (!confirm('Yakin hapus rekening ini? Data akan hilang di semua sistem.')) return;
+            try {
+                await deleteDoc(doc(db, "bank_accounts", docId));
+                showToast('Rekening dihapus', 'success');
+            } catch (err) { showToast('Gagal: ' + err.message, 'error'); }
+        };
+
+        // ===================== RAILWAY INTEGRATION =====================
+        window.refreshRailwayData = async function() {
+            try {
+                const res = await fetch(RAILWAY_URL + '/admin/invoices?status_filter=all');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                updateRailwayStatus(true);
+                const tbody = document.getElementById('railwayInvoiceBody');
+                if (!data.invoices || data.invoices.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Tidak ada invoice aktif</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.invoices.map(inv => {
+                    const statusBadge = inv.status === 'PAID' ? '<span class="badge badge-approved">LUNAS</span>' :
+                                       inv.status === 'EXPIRED' ? '<span class="badge badge-rejected">EXPIRED</span>' :
+                                       '<span class="badge badge-pending">PENDING</span>';
+                    return `<tr>
+                        <td><strong>${escapeHtml(inv.invoice_id)}</strong></td>
+                        <td>${escapeHtml(inv.layanan_nama)}</td>
+                        <td>Rp ${Number(inv.total_to_pay).toLocaleString('id-ID')}</td>
+                        <td>${statusBadge}</td>
+                        <td><button class="btn btn-sm btn-outline" onclick="checkInvoiceStatus('${inv.invoice_id}')">Cek</button></td>
+                    </tr>`;
+                }).join('');
+            } catch (err) {
+                updateRailwayStatus(false);
+                showToast('Gagal konek Railway: ' + err.message, 'error');
+            }
+        };
+
+        window.checkInvoiceStatus = async function(invoiceId) {
+            try {
+                const res = await fetch(RAILWAY_URL + '/invoice/status/' + encodeURIComponent(invoiceId));
+                const data = await res.json();
+                alert('Status Invoice ' + invoiceId + ': ' + data.status + '\\nTotal: ' + data.total_to_pay + '\\nUnique Code: ' + data.unique_code);
+            } catch (err) { showToast('Gagal cek status: ' + err.message, 'error'); }
+        };
+
+        window.refreshRailwayPayments = async function() {
+            try {
+                const res = await fetch(RAILWAY_URL + '/payment/list?status_filter=all');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                updateRailwayStatus(true);
+                const tbody = document.getElementById('railwayPaymentBody');
+                if (!data.payments || data.payments.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Tidak ada konfirmasi bayar</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.payments.map(p => {
+                    const badge = p.status === 'lunas' ? '<span class="badge badge-approved">LUNAS</span>' :
+                                  p.status === 'ditolak' ? '<span class="badge badge-rejected">DITOLAK</span>' :
+                                  '<span class="badge badge-pending">MENUNGGU</span>';
+                    return `<tr>
+                        <td>${escapeHtml(p.id || p.docId)}</td>
+                        <td>${escapeHtml(p.namaPengirim)}</td>
+                        <td>Rp ${Number(p.nominal).toLocaleString('id-ID')}</td>
+                        <td>${badge}</td>
+                        <td>
+                            ${p.status === 'menunggu' && isAdmin ? `
+                                <button class="btn btn-sm btn-success" onclick="verifyRailwayPayment('${p.docId || p.id}', 'lunas')">✅</button>
+                                <button class="btn btn-sm btn-danger" onclick="verifyRailwayPayment('${p.docId || p.id}', 'ditolak')">❌</button>
+                            ` : '<span style="color:var(--gray); font-size:12px;">Selesai</span>'}
+                        </td>
+                    </tr>`;
+                }).join('');
+            } catch (err) {
+                updateRailwayStatus(false);
+                showToast('Gagal konek Railway: ' + err.message, 'error');
+            }
+        };
+
+        window.verifyRailwayPayment = async function(paymentId, status) {
+            if (!isAdmin) { showToast('Hanya admin', 'error'); return; }
+            const alasan = status === 'ditolak' ? (prompt('Alasan penolakan:') || '') : '';
+            try {
+                const res = await fetch(RAILWAY_URL + '/payment/' + encodeURIComponent(paymentId) + '/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status, alasan })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Status diperbarui: ' + status, 'success');
+                    refreshRailwayPayments();
+                } else {
+                    showToast('Gagal memperbarui', 'error');
+                }
+            } catch (err) { showToast('Error: ' + err.message, 'error'); }
+        };
+
+        window.createInvoiceRailway = async function() {
+            const layananId = document.getElementById('invLayananId').value.trim();
+            const layananNama = document.getElementById('invLayananNama').value.trim();
+            const layananHarga = document.getElementById('invLayananHarga').value.trim();
+            const amount = Number(document.getElementById('invAmount').value);
+            const bankCode = document.getElementById('invBankCode').value;
+            if (!layananId || !layananNama || !amount || !bankCode) { showToast('Lengkapi field invoice', 'warning'); return; }
+            try {
+                const res = await fetch(RAILWAY_URL + '/invoice/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ layanan_id: layananId, layanan_nama: layananNama, layanan_harga: layananHarga, amount, bank_code: bankCode })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('invoiceResult').innerHTML = `
+                        <div style="background:rgba(16,185,129,0.1); border-left:4px solid var(--success); padding:12px; border-radius:8px;">
+                            <strong style="color:var(--success)">Invoice Berhasil Dibuat!</strong><br>
+                            <span style="font-size:13px;">ID: <strong>${escapeHtml(data.invoice.invoice_id)}</strong></span><br>
+                            <span style="font-size:13px;">Total Bayar: Rp ${Number(data.invoice.total_to_pay).toLocaleString('id-ID')}</span><br>
+                            <span style="font-size:13px;">Kode Unik: ${data.invoice.unique_code}</span><br>
+                            <span style="font-size:13px; color:var(--gray);">${escapeHtml(data.instruction)}</span>
+                        </div>`;
+                    refreshRailwayData();
+                } else {
+                    showToast('Gagal membuat invoice', 'error');
+                }
+            } catch (err) { showToast('Error Railway: ' + err.message, 'error'); updateRailwayStatus(false); }
+        };
+
+        // ===================== TRANSACTIONS (ORIGINAL) =====================
         window.submitTransaction = async function(e) {
             if (e) e.preventDefault();
             if (!currentUser) { showToast('Login diperlukan', 'warning'); openLoginModal(); return; }
@@ -636,9 +1046,11 @@
 
             const data = { id: id, tanggal: tanggal, nama: nama, tipe: tipe, nominal: nominal, metode: metode, status: status, keterangan: keterangan, anomali: anomali, createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
             if (metode === 'Transfer Bank') {
-                data.bank = document.getElementById('addBank')?.value?.trim() || '';
-                data.noRekening = document.getElementById('addRekening')?.value?.trim() || '';
-                data.atasNama = document.getElementById('addAtasNama')?.value?.trim() || '';
+                const bankSel = document.getElementById('addBank');
+                const opt = bankSel.options[bankSel.selectedIndex];
+                data.bank = opt.text.split(' — ')[0] || '';
+                data.noRekening = document.getElementById('addRekening').value.trim();
+                data.atasNama = document.getElementById('addAtasNama').value.trim();
             } else if (metode === 'Cek Bank') {
                 data.noCek = document.getElementById('addNoCek')?.value?.trim() || '';
                 data.bankCek = document.getElementById('addBankCek')?.value?.trim() || '';
@@ -724,7 +1136,7 @@
                     '<td>' + trx.metode + '</td>' +
                     '<td><span class="badge badge-' + trx.status + '">' + getStatusLabel(trx.status) + '</span></td>' +
                     '<td><div class="check-indicator ' + check.type + '"><i class="fas ' + check.icon + '"></i><span>' + check.message + '</span></div></td>' +
-                    '<td><button class="btn btn-sm btn-outline" onclick="showDetail('' + trx.docId + '')"><i class="fas fa-eye"></i> Detail</button></td>';
+                    '<td><button class="btn btn-sm btn-outline" onclick="showDetail(' + "'" + trx.docId + "'" + ')"><i class="fas fa-eye"></i> Detail</button></td>';
                 tbody.appendChild(row);
             });
             document.getElementById('showingInfo').textContent = 'Menampilkan ' + pageData.length + ' dari ' + filteredData.length + ' transaksi';
@@ -759,7 +1171,7 @@
                 return;
             }
             container.innerHTML = issues.map(function(i) {
-                return '<div class="anomaly-item"><i class="fas fa-exclamation-triangle"></i><div class="anomaly-text"><strong>' + i.id + '</strong> - ' + i.nama + ': ' + i.message + '</div><button class="btn btn-sm btn-outline" onclick="showDetail('' + i.docId + '')">Periksa</button></div>';
+                return '<div class="anomaly-item"><i class="fas fa-exclamation-triangle"></i><div class="anomaly-text"><strong>' + i.id + '</strong> - ' + i.nama + ': ' + i.message + '</div><button class="btn btn-sm btn-outline" onclick="showDetail(' + "'" + i.docId + "'" + ')">Periksa</button></div>';
             }).join('');
         };
 
@@ -859,15 +1271,15 @@
             let footerHtml = '';
             if (isAdmin) {
                 if (trx.status === 'pending') {
-                    footerHtml += '<button class="btn btn-success" onclick="updateStatus('' + docId + '', 'approved')"><i class="fas fa-check"></i> Setujui</button>';
-                    footerHtml += '<button class="btn btn-danger" onclick="updateStatus('' + docId + '', 'rejected')"><i class="fas fa-times"></i> Tolak</button>';
+                    footerHtml += '<button class="btn btn-success" onclick="updateStatus(' + "'" + docId + "'" + ', ' + "'" + 'approved' + "'" + ')"><i class="fas fa-check"></i> Setujui</button>';
+                    footerHtml += '<button class="btn btn-danger" onclick="updateStatus(' + "'" + docId + "'" + ', ' + "'" + 'rejected' + "'" + ')"><i class="fas fa-times"></i> Tolak</button>';
                 } else if (trx.status === 'approved') {
-                    footerHtml += '<button class="btn btn-warning" onclick="updateStatus('' + docId + '', 'pending')"><i class="fas fa-undo"></i> Batalkan</button>';
+                    footerHtml += '<button class="btn btn-warning" onclick="updateStatus(' + "'" + docId + "'" + ', ' + "'" + 'pending' + "'" + ')"><i class="fas fa-undo"></i> Batalkan</button>';
                 } else if (trx.status === 'rejected') {
-                    footerHtml += '<button class="btn btn-success" onclick="updateStatus('' + docId + '', 'approved')"><i class="fas fa-check"></i> Setujui Ulang</button>';
+                    footerHtml += '<button class="btn btn-success" onclick="updateStatus(' + "'" + docId + "'" + ', ' + "'" + 'approved' + "'" + ')"><i class="fas fa-check"></i> Setujui Ulang</button>';
                 }
                 footerHtml += '<button class="btn btn-outline" onclick="openEditMode()"><i class="fas fa-edit"></i> Edit</button>';
-                footerHtml += '<button class="btn btn-danger" onclick="deleteTransaction('' + docId + '')"><i class="fas fa-trash"></i> Hapus</button>';
+                footerHtml += '<button class="btn btn-danger" onclick="deleteTransaction(' + "'" + docId + "'" + ')"><i class="fas fa-trash"></i> Hapus</button>';
             } else {
                 footerHtml += '<span style="color:var(--gray);font-size:13px;"><i class="fas fa-lock"></i> Hanya admin yang bisa mengubah data</span>';
             }
@@ -884,7 +1296,7 @@
                 '<div class="form-group"><label>Nama</label><input type="text" id="editNama" value="' + trx.nama + '"></div>' +
                 '<div class="form-group"><label>Keterangan</label><textarea id="editKeterangan">' + (trx.keterangan || '') + '</textarea></div>' +
                 '<div class="detail-grid" style="margin-top:12px"><div class="detail-item"><label>ID</label><span>' + trx.id + '</span></div><div class="detail-item"><label>Nominal</label><span>' + formatRupiah(trx.nominal) + '</span></div><div class="detail-item"><label>Status</label><span class="badge badge-' + trx.status + '">' + getStatusLabel(trx.status) + '</span></div><div class="detail-item"><label>Metode</label><span>' + trx.metode + '</span></div></div>';
-            document.getElementById('modalFooter').innerHTML = '<button class="btn btn-primary" onclick="saveEdit()"><i class="fas fa-save"></i> Simpan</button><button class="btn btn-outline" onclick="showDetail('' + selectedDocId + '')">Batal</button>';
+            document.getElementById('modalFooter').innerHTML = '<button class="btn btn-primary" onclick="saveEdit()"><i class="fas fa-save"></i> Simpan</button><button class="btn btn-outline" onclick="showDetail(' + "'" + selectedDocId + "'" + ')">Batal</button>';
         };
 
         window.closeModal = function() { document.getElementById('detailModal').style.display = 'none'; selectedTransaction = null; selectedDocId = null; };
@@ -923,7 +1335,7 @@
         };
 
         window.exportData = function() {
-            const csv = [['ID', 'Tanggal', 'Nama', 'Tipe', 'Nominal', 'Metode', 'Status', 'Keterangan', 'Anomali'].join(','), ...transactions.map(function(t) { return [t.id, t.tanggal, '"' + t.nama + '"', t.tipe, t.nominal, t.metode, t.status, '"' + (t.keterangan || '') + '"', t.anomali].join(','); })].join('\n');
+            const csv = [['ID', 'Tanggal', 'Nama', 'Tipe', 'Nominal', 'Metode', 'Status', 'Keterangan', 'Anomali'].join(','), ...transactions.map(function(t) { return [t.id, t.tanggal, '"' + t.nama + '"', t.tipe, t.nominal, t.metode, t.status, '"' + (t.keterangan || '') + '"', t.anomali].join(','); })].join('\\n');
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
@@ -944,10 +1356,18 @@
             if (e.target === document.getElementById('detailModal')) closeModal();
             if (e.target === document.getElementById('addModal')) closeAddModal();
             if (e.target === document.getElementById('loginModal')) closeLoginModal();
+            if (e.target === document.getElementById('bankModal')) closeBankModal();
         };
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') { closeModal(); closeAddModal(); closeLoginModal(); }
+            if (e.key === 'Escape') { closeModal(); closeAddModal(); closeLoginModal(); closeBankModal(); }
         });
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
         updateAuthUI();
     </script>
