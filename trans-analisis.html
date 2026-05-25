@@ -204,14 +204,13 @@
                 </div>
                 <div class="header-actions" id="headerActions">
                     <button class="btn btn-outline" onclick="exportData()"><i class="fas fa-download"></i> Export CSV</button>
-                    <button class="btn btn-primary" onclick="openAddModal()" id="btnAdd"><i class="fas fa-plus"></i> Transaksi Baru</button>
+                    <button class="btn btn-primary" onclick="openLoginModal()"><i class="fas fa-sign-in-alt"></i> Login Admin</button>
                 </div>
             </header>
 
-            <!-- Read-only banner untuk non-admin -->
             <div class="readonly-banner" id="readonlyBanner" style="display:none;">
                 <i class="fas fa-info-circle"></i>
-                <span>Anda login sebagai <strong>Viewer</strong>. Hanya bisa melihat data. Hubungi admin untuk mengubah transaksi.</span>
+                <span>Anda login sebagai <strong>Viewer</strong>. Hanya bisa melihat data.</span>
             </div>
 
             <section class="stats-grid">
@@ -294,7 +293,7 @@
                             </tr>
                         </thead>
                         <tbody id="tableBody">
-                            <tr><td colspan="10" class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Memuat data dari Firestore...</p></td></tr>
+                            <tr><td colspan="10" class="empty-state"><i class="fas fa-lock"></i><p>Silakan login untuk melihat data</p></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -333,7 +332,7 @@
         </div>
     </div>
 
-    <!-- Modal Detail / Edit / Approve -->
+    <!-- Modal Detail -->
     <div id="detailModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -347,61 +346,115 @@
 
     <!-- Modal Tambah Transaksi -->
     <div id="addModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
-                <h2><i class="fas fa-plus-circle"></i> Tambah Transaksi Baru</h2>
+                <h2><i class="fas fa-plus-circle"></i> Input Transaksi / Pembayaran</h2>
                 <span class="close" onclick="closeAddModal()">&times;</span>
             </div>
             <div class="modal-body">
                 <form id="addForm" onsubmit="submitTransaction(event)">
+                    <div style="background: var(--light-gray); padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; font-size: 14px; color: var(--dark);">
+                        <i class="fas fa-file-invoice"></i> Informasi Transaksi
+                    </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>ID Transaksi</label>
+                            <label>ID Transaksi <span style="color:var(--danger)">*</span></label>
                             <input type="text" id="addId" placeholder="TRX-001" required>
                         </div>
                         <div class="form-group">
-                            <label>Tanggal</label>
+                            <label>Tanggal Transaksi <span style="color:var(--danger)">*</span></label>
                             <input type="date" id="addTanggal" required>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Nama / Perusahaan</label>
-                        <input type="text" id="addNama" placeholder="PT Contoh Jaya" required>
+                        <label>Nama / Perusahaan <span style="color:var(--danger)">*</span></label>
+                        <input type="text" id="addNama" placeholder="PT Maju Jaya / Nama Lengkap" required>
+                    </div>
+                    <div style="background: var(--light-gray); padding: 12px 16px; border-radius: 8px; margin: 24px 0 20px; font-weight: 600; font-size: 14px; color: var(--dark);">
+                        <i class="fas fa-money-bill-wave"></i> Detail Pembayaran
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Tipe Transaksi</label>
+                            <label>Tipe Transaksi <span style="color:var(--danger)">*</span></label>
                             <select id="addTipe" required>
-                                <option value="pemasukan">Pemasukan</option>
-                                <option value="pengeluaran">Pengeluaran</option>
+                                <option value="pemasukan">Pemasukan (Uang Masuk)</option>
+                                <option value="pengeluaran">Pengeluaran (Uang Keluar)</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Nominal (Rp)</label>
-                            <input type="number" id="addNominal" placeholder="1000000" min="1" required>
+                            <label>Nominal (Rp) <span style="color:var(--danger)">*</span></label>
+                            <input type="number" id="addNominal" placeholder="2500000" min="1" required>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Metode Pembayaran</label>
-                            <select id="addMetode" required>
+                            <label>Metode Pembayaran <span style="color:var(--danger)">*</span></label>
+                            <select id="addMetode" required onchange="toggleMetodeFields()">
                                 <option value="Transfer Bank">Transfer Bank</option>
-                                <option value="Cek Bank">Cek Bank</option>
-                                <option value="Cash">Cash</option>
+                                <option value="Cek Bank">Cek / Giro Bank</option>
+                                <option value="Cash">Tunai (Cash)</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Status</label>
+                            <label>Status Verifikasi <span style="color:var(--danger)">*</span></label>
                             <select id="addStatus" required>
-                                <option value="pending">Menunggu</option>
+                                <option value="pending">Menunggu Verifikasi</option>
                                 <option value="approved">Terverifikasi</option>
                                 <option value="rejected">Ditolak</option>
                             </select>
                         </div>
                     </div>
+                    <div id="transferFields" style="display:none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nama Bank</label>
+                                <input type="text" id="addBank" placeholder="BCA / Mandiri / BNI">
+                            </div>
+                            <div class="form-group">
+                                <label>No. Rekening</label>
+                                <input type="text" id="addRekening" placeholder="1234-5678-9012">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Atas Nama Rekening</label>
+                            <input type="text" id="addAtasNama" placeholder="Nama pemilik rekening">
+                        </div>
+                    </div>
+                    <div id="cekFields" style="display:none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>No. Cek / Giro</label>
+                                <input type="text" id="addNoCek" placeholder="CEK-2026-001">
+                            </div>
+                            <div class="form-group">
+                                <label>Nama Bank Penerbit</label>
+                                <input type="text" id="addBankCek" placeholder="Bank BCA">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Tanggal Jatuh Tempo Cek</label>
+                            <input type="date" id="addJatuhTempo">
+                        </div>
+                    </div>
+                    <div id="cashFields" style="display:none;">
+                        <div class="form-group">
+                            <label>Penerima / Penyerah</label>
+                            <input type="text" id="addPenerimaCash" placeholder="Nama penerima uang tunai">
+                        </div>
+                        <div class="form-group">
+                            <label>Bukti / Keterangan Cash</label>
+                            <textarea id="addBuktiCash" placeholder="No. kwitansi, keterangan penyerahan..."></textarea>
+                        </div>
+                    </div>
+                    <div style="background: var(--light-gray); padding: 12px 16px; border-radius: 8px; margin: 24px 0 20px; font-weight: 600; font-size: 14px; color: var(--dark);">
+                        <i class="fas fa-sticky-note"></i> Keterangan Tambahan
+                    </div>
                     <div class="form-group">
-                        <label>Keterangan</label>
-                        <textarea id="addKeterangan" placeholder="Keterangan transaksi..."></textarea>
+                        <label>Keterangan / Catatan</label>
+                        <textarea id="addKeterangan" placeholder="Contoh: Pembayaran invoice #1023, Sewa gedung bulan Mei, dll."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label><input type="checkbox" id="addAnomali" style="width:auto; margin-right:8px;"> Tandai sebagai Anomali (perlu perhatian khusus)</label>
                     </div>
                 </form>
             </div>
@@ -414,7 +467,6 @@
 
     <div id="toast" class="toast"></div>
 
-    <!-- Firebase SDK v12.13.0 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
@@ -434,7 +486,6 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         const transactionsRef = collection(db, "transactions");
-
         const ADMIN_EMAIL = 'urbaubouf@gmail.com';
 
         let transactions = [];
@@ -451,9 +502,11 @@
         let currentUser = null;
         let isAdmin = false;
 
-        // ═══════════════════════════════════════════════════════════════
-        // AUTH - GOOGLE SIGN IN
-        // ═══════════════════════════════════════════════════════════════
+        window.formatRupiah = function(angka) {
+            if (!angka && angka !== 0) return 'Rp 0';
+            return 'Rp ' + Number(angka).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        };
+
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             isAdmin = user && user.email === ADMIN_EMAIL;
@@ -463,11 +516,7 @@
                 startRealtimeListener();
             } else {
                 stopRealtimeListener();
-                document.getElementById('tableBody').innerHTML = `
-                    <tr><td colspan="10" class="empty-state">
-                        <i class="fas fa-lock"></i>
-                        <p>Silakan login untuk melihat data transaksi.</p>
-                    </td></tr>`;
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="10" class="empty-state"><i class="fas fa-lock"></i><p>Silakan login untuk melihat data transaksi.</p></td></tr>';
                 document.getElementById('showingInfo').textContent = 'Login diperlukan';
                 updateStats();
                 renderCharts();
@@ -480,7 +529,6 @@
                 await signInWithPopup(auth, provider);
                 showToast('Login berhasil!', 'success');
             } catch (err) {
-                console.error(err);
                 showToast('Login gagal: ' + err.message, 'error');
             }
         };
@@ -498,42 +546,23 @@
             const headerActions = document.getElementById('headerActions');
             const readonlyBanner = document.getElementById('readonlyBanner');
             const navAdd = document.getElementById('navAdd');
-            const btnAdd = document.getElementById('btnAdd');
 
             if (currentUser) {
                 const roleClass = isAdmin ? 'admin' : 'viewer';
                 const roleText = isAdmin ? 'Admin' : 'Viewer';
-                headerActions.innerHTML = `
-                    <div class="user-badge">
-                        <img src="${currentUser.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.displayName || 'User')}" alt="">
-                        <div class="info">
-                            <span class="name">${currentUser.displayName || currentUser.email}</span>
-                            <span class="role ${roleClass}">${roleText}</span>
-                        </div>
-                    </div>
-                    <button class="btn btn-outline" onclick="exportData()"><i class="fas fa-download"></i> Export</button>
-                    ${isAdmin ? `<button class="btn btn-primary" onclick="openAddModal()" id="btnAdd"><i class="fas fa-plus"></i> Baru</button>` : ''}
-                    <button class="btn btn-secondary" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                `;
+                headerActions.innerHTML = '<div class="user-badge"><img src="' + (currentUser.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.displayName || 'User')) + '" alt=""><div class="info"><span class="name">' + (currentUser.displayName || currentUser.email) + '</span><span class="role ' + roleClass + '">' + roleText + '</span></div></div><button class="btn btn-outline" onclick="exportData()"><i class="fas fa-download"></i> Export</button>' + (isAdmin ? '<button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus"></i> Baru</button>' : '') + '<button class="btn btn-secondary" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>';
                 readonlyBanner.style.display = isAdmin ? 'none' : 'flex';
                 navAdd.style.display = isAdmin ? 'flex' : 'none';
             } else {
-                headerActions.innerHTML = `
-                    <button class="btn btn-outline" onclick="exportData()"><i class="fas fa-download"></i> Export</button>
-                    <button class="btn btn-primary" onclick="openLoginModal()"><i class="fas fa-sign-in-alt"></i> Login Admin</button>
-                `;
+                headerActions.innerHTML = '<button class="btn btn-outline" onclick="exportData()"><i class="fas fa-download"></i> Export</button><button class="btn btn-primary" onclick="openLoginModal()"><i class="fas fa-sign-in-alt"></i> Login Admin</button>';
                 readonlyBanner.style.display = 'none';
                 navAdd.style.display = 'none';
             }
         }
 
-        // ═══════════════════════════════════════════════════════════════
-        // REALTIME LISTENER
-        // ═══════════════════════════════════════════════════════════════
         function startRealtimeListener() {
             document.getElementById('loadingOverlay').classList.add('active');
             const q = query(transactionsRef, orderBy("createdAt", "desc"));
-
             unsubscribe = onSnapshot(q, (snapshot) => {
                 transactions = [];
                 snapshot.forEach((docSnap) => {
@@ -549,10 +578,17 @@
                         status: data.status || 'pending',
                         keterangan: data.keterangan || '',
                         anomali: data.anomali || false,
+                        bank: data.bank || '',
+                        noRekening: data.noRekening || '',
+                        atasNama: data.atasNama || '',
+                        noCek: data.noCek || '',
+                        bankCek: data.bankCek || '',
+                        jatuhTempo: data.jatuhTempo || '',
+                        penerima: data.penerima || '',
+                        buktiCash: data.buktiCash || '',
                         createdAt: data.createdAt
                     });
                 });
-
                 filteredData = [...transactions];
                 updateConnectionStatus(true);
                 updateStats();
@@ -560,9 +596,8 @@
                 renderCharts();
                 renderAnomalies();
                 document.getElementById('loadingOverlay').classList.remove('active');
-                document.getElementById('showingInfo').textContent = `Menampilkan ${Math.min(itemsPerPage, filteredData.length)} dari ${filteredData.length} transaksi`;
+                document.getElementById('showingInfo').textContent = 'Menampilkan ' + Math.min(itemsPerPage, filteredData.length) + ' dari ' + filteredData.length + ' transaksi';
             }, (error) => {
-                console.error("Firestore error:", error);
                 updateConnectionStatus(false);
                 document.getElementById('loadingOverlay').classList.remove('active');
                 showToast('Gagal terhubung ke Firestore.', 'error');
@@ -581,13 +616,10 @@
             else { el.className = 'connection-status offline'; txt.textContent = 'Offline'; }
         }
 
-        // ═══════════════════════════════════════════════════════════════
-        // CRUD
-        // ═══════════════════════════════════════════════════════════════
         window.submitTransaction = async function(e) {
             if (e) e.preventDefault();
-            if (!currentUser) { showToast('Login diperlukan untuk menambah transaksi', 'warning'); openLoginModal(); return; }
-            if (!isAdmin) { showToast('Hanya admin yang bisa menambah transaksi', 'error'); return; }
+            if (!currentUser) { showToast('Login diperlukan', 'warning'); openLoginModal(); return; }
+            if (!isAdmin) { showToast('Hanya admin', 'error'); return; }
 
             const id = document.getElementById('addId').value.trim();
             const tanggal = document.getElementById('addTanggal').value;
@@ -597,64 +629,76 @@
             const metode = document.getElementById('addMetode').value;
             const status = document.getElementById('addStatus').value;
             const keterangan = document.getElementById('addKeterangan').value.trim();
+            const anomali = document.getElementById('addAnomali').checked;
 
-            if (!id || !tanggal || !nama || !nominal) { showToast('Mohon lengkapi semua field wajib', 'warning'); return; }
-            if (transactions.some(t => t.id === id)) { showToast('ID Transaksi sudah ada!', 'error'); return; }
+            if (!id || !tanggal || !nama || !nominal) { showToast('Lengkapi field wajib', 'warning'); return; }
+            if (transactions.some(t => t.id === id)) { showToast('ID sudah ada!', 'error'); return; }
 
-            showToast('Menyimpan ke Firestore...', 'warning');
+            const data = { id: id, tanggal: tanggal, nama: nama, tipe: tipe, nominal: nominal, metode: metode, status: status, keterangan: keterangan, anomali: anomali, createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
+            if (metode === 'Transfer Bank') {
+                data.bank = document.getElementById('addBank')?.value?.trim() || '';
+                data.noRekening = document.getElementById('addRekening')?.value?.trim() || '';
+                data.atasNama = document.getElementById('addAtasNama')?.value?.trim() || '';
+            } else if (metode === 'Cek Bank') {
+                data.noCek = document.getElementById('addNoCek')?.value?.trim() || '';
+                data.bankCek = document.getElementById('addBankCek')?.value?.trim() || '';
+                data.jatuhTempo = document.getElementById('addJatuhTempo')?.value || '';
+            } else if (metode === 'Cash') {
+                data.penerima = document.getElementById('addPenerimaCash')?.value?.trim() || '';
+                data.buktiCash = document.getElementById('addBuktiCash')?.value?.trim() || '';
+            }
+
+            showToast('Menyimpan...', 'warning');
             try {
-                await addDoc(transactionsRef, { id, tanggal, nama, tipe, nominal, metode, status, keterangan, anomali: false, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
-                showToast('Transaksi berhasil disimpan!', 'success');
-                closeAddModal(); document.getElementById('addForm').reset();
-            } catch (err) { showToast('Gagal menyimpan: ' + err.message, 'error'); }
+                await addDoc(transactionsRef, data);
+                showToast('Berhasil disimpan!', 'success');
+                closeAddModal();
+                document.getElementById('addForm').reset();
+                toggleMetodeFields();
+            } catch (err) { showToast('Gagal: ' + err.message, 'error'); }
         };
 
         window.updateStatus = async function(docId, newStatus) {
-            if (!isAdmin) { showToast('Hanya admin yang bisa mengubah status', 'error'); return; }
-            showToast('Memperbarui status...', 'warning');
+            if (!isAdmin) { showToast('Hanya admin', 'error'); return; }
+            showToast('Memperbarui...', 'warning');
             try {
                 await updateDoc(doc(db, "transactions", docId), { status: newStatus, updatedAt: serverTimestamp() });
-                showToast(`Status diubah menjadi ${getStatusLabel(newStatus)}`, 'success');
-            } catch (err) { showToast('Gagal update: ' + err.message, 'error'); }
+                showToast('Status: ' + getStatusLabel(newStatus), 'success');
+            } catch (err) { showToast('Gagal: ' + err.message, 'error'); }
         };
 
         window.deleteTransaction = async function(docId) {
-            if (!isAdmin) { showToast('Hanya admin yang bisa menghapus', 'error'); return; }
-            if (!confirm('Yakin hapus transaksi ini dari Firestore?')) return;
+            if (!isAdmin) { showToast('Hanya admin', 'error'); return; }
+            if (!confirm('Yakin hapus?')) return;
             showToast('Menghapus...', 'warning');
-            try { await deleteDoc(doc(db, "transactions", docId)); showToast('Transaksi dihapus', 'success'); closeModal(); }
-            catch (err) { showToast('Gagal hapus: ' + err.message, 'error'); }
+            try { await deleteDoc(doc(db, "transactions", docId)); showToast('Dihapus', 'success'); closeModal(); }
+            catch (err) { showToast('Gagal: ' + err.message, 'error'); }
         };
 
         window.saveEdit = async function() {
-            if (!isAdmin) { showToast('Hanya admin yang bisa mengedit', 'error'); return; }
+            if (!isAdmin) { showToast('Hanya admin', 'error'); return; }
             if (!selectedDocId) return;
             const keterangan = document.getElementById('editKeterangan')?.value;
             const nama = document.getElementById('editNama')?.value;
-            showToast('Menyimpan perubahan...', 'warning');
+            showToast('Menyimpan...', 'warning');
             try {
                 const updateData = { updatedAt: serverTimestamp() };
                 if (keterangan !== undefined) updateData.keterangan = keterangan;
                 if (nama !== undefined) updateData.nama = nama;
                 await updateDoc(doc(db, "transactions", selectedDocId), updateData);
-                showToast('Perubahan disimpan', 'success'); closeModal();
-            } catch (err) { showToast('Gagal simpan: ' + err.message, 'error'); }
+                showToast('Disimpan', 'success'); closeModal();
+            } catch (err) { showToast('Gagal: ' + err.message, 'error'); }
         };
-
-        // ═══════════════════════════════════════════════════════════════
-        // STATS, TABLE, CHARTS, ANOMALIES, FILTERS
-        // ═══════════════════════════════════════════════════════════════
-        window.formatRupiah = function(angka) { if (!angka && angka !== 0) return 'Rp 0'; return 'Rp ' + Number(angka).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); };
 
         window.updateStats = function() {
             const total = transactions.length;
-            const totalNominal = transactions.reduce((sum, t) => sum + (Number(t.nominal) || 0), 0);
+            const totalNominal = transactions.reduce(function(sum, t) { return sum + (Number(t.nominal) || 0); }, 0);
             document.getElementById('totalTransaksi').textContent = total;
             document.getElementById('totalNominal').textContent = formatRupiah(totalNominal);
-            document.getElementById('totalApproved').textContent = transactions.filter(t => t.status === 'approved').length;
-            document.getElementById('totalPending').textContent = transactions.filter(t => t.status === 'pending').length;
-            document.getElementById('totalRejected').textContent = transactions.filter(t => t.status === 'rejected').length;
-            document.getElementById('totalAnomali').textContent = transactions.filter(t => t.anomali).length;
+            document.getElementById('totalApproved').textContent = transactions.filter(function(t) { return t.status === 'approved'; }).length;
+            document.getElementById('totalPending').textContent = transactions.filter(function(t) { return t.status === 'pending'; }).length;
+            document.getElementById('totalRejected').textContent = transactions.filter(function(t) { return t.status === 'rejected'; }).length;
+            document.getElementById('totalAnomali').textContent = transactions.filter(function(t) { return t.anomali; }).length;
         };
 
         window.renderTable = function() {
@@ -662,34 +706,29 @@
             const start = (currentPage - 1) * itemsPerPage;
             const end = start + itemsPerPage;
             const pageData = filteredData.slice(start, end);
-
             if (pageData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" class="empty-state"><i class="fas fa-inbox"></i><p>Tidak ada transaksi</p></td></tr>`;
+                tbody.innerHTML = '<tr><td colspan="10" class="empty-state"><i class="fas fa-inbox"></i><p>Tidak ada transaksi</p></td></tr>';
                 document.getElementById('showingInfo').textContent = '0 transaksi';
                 return;
             }
-
             tbody.innerHTML = '';
-            pageData.forEach(trx => {
+            pageData.forEach(function(trx) {
                 const check = performCheck(trx);
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><input type="checkbox" class="row-check" data-id="${trx.docId}"></td>
-                    <td><strong>${trx.id}</strong></td>
-                    <td>${trx.tanggal}</td>
-                    <td>${trx.nama}</td>
-                    <td><span class="badge badge-${trx.tipe === 'pemasukan' ? 'approved' : 'pending'}">${trx.tipe === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran'}</span></td>
-                    <td><strong>${formatRupiah(trx.nominal)}</strong></td>
-                    <td>${trx.metode}</td>
-                    <td><span class="badge badge-${trx.status}">${getStatusLabel(trx.status)}</span></td>
-                    <td><div class="check-indicator ${check.type}"><i class="fas ${check.icon}"></i><span>${check.message}</span></div></td>
-                    <td><button class="btn btn-sm btn-outline" onclick="showDetail('${trx.docId}')"><i class="fas fa-eye"></i> Detail</button></td>
-                `;
+                row.innerHTML = '<td><input type="checkbox" class="row-check" data-id="' + trx.docId + '"></td>' +
+                    '<td><strong>' + trx.id + '</strong></td>' +
+                    '<td>' + trx.tanggal + '</td>' +
+                    '<td>' + trx.nama + '</td>' +
+                    '<td><span class="badge badge-' + (trx.tipe === 'pemasukan' ? 'approved' : 'pending') + '">' + (trx.tipe === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran') + '</span></td>' +
+                    '<td><strong>' + formatRupiah(trx.nominal) + '</strong></td>' +
+                    '<td>' + trx.metode + '</td>' +
+                    '<td><span class="badge badge-' + trx.status + '">' + getStatusLabel(trx.status) + '</span></td>' +
+                    '<td><div class="check-indicator ' + check.type + '"><i class="fas ' + check.icon + '"></i><span>' + check.message + '</span></div></td>' +
+                    '<td><button class="btn btn-sm btn-outline" onclick="showDetail('' + trx.docId + '')"><i class="fas fa-eye"></i> Detail</button></td>';
                 tbody.appendChild(row);
             });
-
-            document.getElementById('showingInfo').textContent = `Menampilkan ${pageData.length} dari ${filteredData.length} transaksi`;
-            document.getElementById('pageInfo').textContent = `Halaman ${currentPage} dari ${Math.ceil(filteredData.length / itemsPerPage)}`;
+            document.getElementById('showingInfo').textContent = 'Menampilkan ' + pageData.length + ' dari ' + filteredData.length + ' transaksi';
+            document.getElementById('pageInfo').textContent = 'Halaman ' + currentPage + ' dari ' + Math.ceil(filteredData.length / itemsPerPage);
             document.getElementById('prevBtn').disabled = currentPage === 1;
             document.getElementById('nextBtn').disabled = end >= filteredData.length;
         };
@@ -700,20 +739,28 @@
             if (!trx.nama || trx.nama.trim() === '') checks.push('Nama kosong');
             const diffDays = Math.ceil((new Date(trx.tanggal) - new Date()) / (1000 * 60 * 60 * 24));
             if (diffDays > 1) checks.push('Tanggal di masa depan');
-            if (trx.nominal > 20000000) checks.push('Nominal > 20jt, perlu verifikasi');
+            if (trx.nominal > 20000000) checks.push('Nominal > 20jt');
             if (trx.anomali) checks.push('Anomali terdeteksi');
-            if (trx.metode === 'Cash' && trx.nominal > 5000000) checks.push('Cash > 5jt, perlu bukti');
+            if (trx.metode === 'Cash' && trx.nominal > 5000000) checks.push('Cash > 5jt');
             if (checks.length === 0) return { type: 'valid', icon: 'fa-check-circle', message: 'Valid' };
             if (checks.length === 1) return { type: 'warning', icon: 'fa-exclamation-circle', message: checks[0] };
-            return { type: 'invalid', icon: 'fa-times-circle', message: `${checks.length} masalah` };
+            return { type: 'invalid', icon: 'fa-times-circle', message: checks.length + ' masalah' };
         };
 
         window.renderAnomalies = function() {
             const issues = [];
-            transactions.forEach(trx => { const check = performCheck(trx); if (check.type !== 'valid') issues.push({ docId: trx.docId, id: trx.id, nama: trx.nama, message: check.message }); });
+            transactions.forEach(function(trx) {
+                const check = performCheck(trx);
+                if (check.type !== 'valid') issues.push({ docId: trx.docId, id: trx.id, nama: trx.nama, message: check.message });
+            });
             const container = document.getElementById('anomalyList');
-            if (issues.length === 0) { container.innerHTML = `<div class="anomaly-item" style="border-left-color:var(--success);background:rgba(16,185,129,0.05);"><i class="fas fa-check-circle" style="color:var(--success)"></i><span class="anomaly-text">Tidak ada anomali terdeteksi. Semua transaksi valid.</span></div>`; return; }
-            container.innerHTML = issues.map(i => `<div class="anomaly-item"><i class="fas fa-exclamation-triangle"></i><div class="anomaly-text"><strong>${i.id}</strong> - ${i.nama}: ${i.message}</div><button class="btn btn-sm btn-outline" onclick="showDetail('${i.docId}')">Periksa</button></div>`).join('');
+            if (issues.length === 0) {
+                container.innerHTML = '<div class="anomaly-item" style="border-left-color:var(--success);background:rgba(16,185,129,0.05);"><i class="fas fa-check-circle" style="color:var(--success)"></i><span class="anomaly-text">Tidak ada anomali. Semua valid.</span></div>';
+                return;
+            }
+            container.innerHTML = issues.map(function(i) {
+                return '<div class="anomaly-item"><i class="fas fa-exclamation-triangle"></i><div class="anomaly-text"><strong>' + i.id + '</strong> - ' + i.nama + ': ' + i.message + '</div><button class="btn btn-sm btn-outline" onclick="showDetail('' + i.docId + '')">Periksa</button></div>';
+            }).join('');
         };
 
         window.filterTransactions = function() {
@@ -722,68 +769,109 @@
             const type = document.getElementById('filterType').value;
             const from = document.getElementById('filterDateFrom').value;
             const to = document.getElementById('filterDateTo').value;
-            filteredData = transactions.filter(t => (!search || (t.id && t.id.toLowerCase().includes(search)) || (t.nama && t.nama.toLowerCase().includes(search)) || String(t.nominal).includes(search)) && (!status || t.status === status) && (!type || t.tipe === type) && (!from || t.tanggal >= from) && (!to || t.tanggal <= to));
-            currentPage = 1; renderTable();
+            filteredData = transactions.filter(function(t) {
+                return (!search || (t.id && t.id.toLowerCase().indexOf(search) !== -1) || (t.nama && t.nama.toLowerCase().indexOf(search) !== -1) || String(t.nominal).indexOf(search) !== -1) &&
+                       (!status || t.status === status) && (!type || t.tipe === type) &&
+                       (!from || t.tanggal >= from) && (!to || t.tanggal <= to);
+            });
+            currentPage = 1;
+            renderTable();
         };
 
         window.resetFilters = function() {
-            document.getElementById('searchInput').value = ''; document.getElementById('filterStatus').value = '';
-            document.getElementById('filterType').value = ''; document.getElementById('filterDateFrom').value = '';
-            document.getElementById('filterDateTo').value = ''; filteredData = [...transactions]; currentPage = 1; renderTable();
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterType').value = '';
+            document.getElementById('filterDateFrom').value = '';
+            document.getElementById('filterDateTo').value = '';
+            filteredData = [...transactions];
+            currentPage = 1;
+            renderTable();
         };
 
         window.sortTable = function(column) {
             if (sortColumn === column) sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
             else { sortColumn = column; sortDirection = 'asc'; }
-            filteredData.sort((a, b) => { let va = a[column], vb = b[column]; if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); } if (va < vb) return sortDirection === 'asc' ? -1 : 1; if (va > vb) return sortDirection === 'asc' ? 1 : -1; return 0; });
+            filteredData.sort(function(a, b) {
+                let va = a[column], vb = b[column];
+                if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+                if (va < vb) return sortDirection === 'asc' ? -1 : 1;
+                if (va > vb) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
             renderTable();
         };
 
-        window.changePage = function(direction) { const maxPage = Math.ceil(filteredData.length / itemsPerPage); const newPage = currentPage + direction; if (newPage >= 1 && newPage <= maxPage) { currentPage = newPage; renderTable(); } };
-        window.toggleSelectAll = function() { const selectAll = document.getElementById('selectAll'); document.querySelectorAll('.row-check').forEach(c => c.checked = selectAll.checked); };
+        window.changePage = function(direction) {
+            const maxPage = Math.ceil(filteredData.length / itemsPerPage);
+            const newPage = currentPage + direction;
+            if (newPage >= 1 && newPage <= maxPage) { currentPage = newPage; renderTable(); }
+        };
 
-        // ═══════════════════════════════════════════════════════════════
-        // MODALS
-        // ═══════════════════════════════════════════════════════════════
+        window.toggleSelectAll = function() {
+            const selectAll = document.getElementById('selectAll');
+            document.querySelectorAll('.row-check').forEach(function(c) { c.checked = selectAll.checked; });
+        };
+
         window.showDetail = function(docId) {
-            const trx = transactions.find(t => t.docId === docId);
+            const trx = transactions.find(function(t) { return t.docId === docId; });
             if (!trx) return;
-            selectedTransaction = trx; selectedDocId = docId;
+            selectedTransaction = trx;
+            selectedDocId = docId;
             const check = performCheck(trx);
 
+            let metodeDetail = '';
+            if (trx.metode === 'Transfer Bank' && (trx.bank || trx.noRekening || trx.atasNama)) {
+                metodeDetail = '<div style="margin-top:16px;padding:12px;background:rgba(37,99,235,0.05);border-radius:8px;border-left:4px solid var(--primary)"><strong style="color:var(--primary)"><i class="fas fa-university"></i> Detail Transfer Bank</strong><div class="detail-grid" style="margin-top:8px">' +
+                    (trx.bank ? '<div class="detail-item"><label>Bank</label><span>' + trx.bank + '</span></div>' : '') +
+                    (trx.noRekening ? '<div class="detail-item"><label>No. Rekening</label><span>' + trx.noRekening + '</span></div>' : '') +
+                    (trx.atasNama ? '<div class="detail-item"><label>Atas Nama</label><span>' + trx.atasNama + '</span></div>' : '') +
+                    '</div></div>';
+            } else if (trx.metode === 'Cek Bank' && (trx.noCek || trx.bankCek || trx.jatuhTempo)) {
+                metodeDetail = '<div style="margin-top:16px;padding:12px;background:rgba(245,158,11,0.05);border-radius:8px;border-left:4px solid var(--warning)"><strong style="color:var(--warning)"><i class="fas fa-money-check"></i> Detail Cek / Giro</strong><div class="detail-grid" style="margin-top:8px">' +
+                    (trx.noCek ? '<div class="detail-item"><label>No. Cek</label><span>' + trx.noCek + '</span></div>' : '') +
+                    (trx.bankCek ? '<div class="detail-item"><label>Bank Penerbit</label><span>' + trx.bankCek + '</span></div>' : '') +
+                    (trx.jatuhTempo ? '<div class="detail-item"><label>Jatuh Tempo</label><span>' + trx.jatuhTempo + '</span></div>' : '') +
+                    '</div></div>';
+            } else if (trx.metode === 'Cash' && (trx.penerima || trx.buktiCash)) {
+                metodeDetail = '<div style="margin-top:16px;padding:12px;background:rgba(16,185,129,0.05);border-radius:8px;border-left:4px solid var(--success)"><strong style="color:var(--success)"><i class="fas fa-hand-holding-usd"></i> Detail Cash</strong><div class="detail-grid" style="margin-top:8px">' +
+                    (trx.penerima ? '<div class="detail-item"><label>Penerima</label><span>' + trx.penerima + '</span></div>' : '') +
+                    (trx.buktiCash ? '<div class="detail-item"><label>Bukti</label><span>' + trx.buktiCash + '</span></div>' : '') +
+                    '</div></div>';
+            }
+
             document.getElementById('modalTitle').textContent = 'Detail Transaksi';
-            document.getElementById('modalBody').innerHTML = `
-                <div class="detail-grid">
-                    <div class="detail-item"><label>Firestore Doc ID</label><span style="font-size:12px;color:var(--gray)">${trx.docId}</span></div>
-                    <div class="detail-item"><label>ID Transaksi</label><span>${trx.id}</span></div>
-                    <div class="detail-item"><label>Tanggal</label><span>${trx.tanggal}</span></div>
-                    <div class="detail-item"><label>Nama</label><span>${trx.nama}</span></div>
-                    <div class="detail-item"><label>Tipe</label><span class="badge badge-${trx.tipe === 'pemasukan' ? 'approved' : 'pending'}">${trx.tipe === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran'}</span></div>
-                    <div class="detail-item"><label>Nominal</label><span class="value-large">${formatRupiah(trx.nominal)}</span></div>
-                    <div class="detail-item"><label>Metode</label><span>${trx.metode}</span></div>
-                    <div class="detail-item"><label>Status</label><span class="badge badge-${trx.status}">${getStatusLabel(trx.status)}</span></div>
-                    <div class="detail-item" style="grid-column:1/-1"><label>Keterangan</label><span>${trx.keterangan || '-'}</span></div>
-                    <div class="detail-item" style="grid-column:1/-1"><label>Hasil Pengecekan</label><span style="color:${check.type === 'valid' ? 'var(--success)' : check.type === 'warning' ? 'var(--warning)' : 'var(--danger)'}"><i class="fas ${check.icon}"></i> ${check.message}</span></div>
-                </div>
-                ${trx.anomali ? `<div style="margin-top:16px;padding:12px;background:rgba(239,68,68,0.1);border-radius:8px;border-left:4px solid var(--danger)"><strong style="color:var(--danger)"><i class="fas fa-exclamation-triangle"></i> Anomali Terdeteksi</strong><p style="margin-top:4px;font-size:14px">Transaksi ini memerlukan perhatian khusus admin.</p></div>` : ''}
-            `;
+            document.getElementById('modalBody').innerHTML =
+                '<div class="detail-grid">' +
+                '<div class="detail-item"><label>Firestore Doc ID</label><span style="font-size:12px;color:var(--gray)">' + trx.docId + '</span></div>' +
+                '<div class="detail-item"><label>ID Transaksi</label><span>' + trx.id + '</span></div>' +
+                '<div class="detail-item"><label>Tanggal</label><span>' + trx.tanggal + '</span></div>' +
+                '<div class="detail-item"><label>Nama</label><span>' + trx.nama + '</span></div>' +
+                '<div class="detail-item"><label>Tipe</label><span class="badge badge-' + (trx.tipe === 'pemasukan' ? 'approved' : 'pending') + '">' + (trx.tipe === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran') + '</span></div>' +
+                '<div class="detail-item"><label>Nominal</label><span class="value-large">' + formatRupiah(trx.nominal) + '</span></div>' +
+                '<div class="detail-item"><label>Metode</label><span>' + trx.metode + '</span></div>' +
+                '<div class="detail-item"><label>Status</label><span class="badge badge-' + trx.status + '">' + getStatusLabel(trx.status) + '</span></div>' +
+                '<div class="detail-item" style="grid-column:1/-1"><label>Keterangan</label><span>' + (trx.keterangan || '-') + '</span></div>' +
+                '<div class="detail-item" style="grid-column:1/-1"><label>Pengecekan</label><span style="color:' + (check.type === 'valid' ? 'var(--success)' : check.type === 'warning' ? 'var(--warning)' : 'var(--danger)') + '"><i class="fas ' + check.icon + '"></i> ' + check.message + '</span></div>' +
+                '</div>' + metodeDetail +
+                (trx.anomali ? '<div style="margin-top:16px;padding:12px;background:rgba(239,68,68,0.1);border-radius:8px;border-left:4px solid var(--danger)"><strong style="color:var(--danger)"><i class="fas fa-exclamation-triangle"></i> Anomali Terdeteksi</strong><p style="margin-top:4px;font-size:14px">Transaksi ini memerlukan perhatian khusus admin.</p></div>' : '');
 
             let footerHtml = '';
             if (isAdmin) {
                 if (trx.status === 'pending') {
-                    footerHtml += `<button class="btn btn-success" onclick="updateStatus('${docId}', 'approved')"><i class="fas fa-check"></i> Setujui</button>`;
-                    footerHtml += `<button class="btn btn-danger" onclick="updateStatus('${docId}', 'rejected')"><i class="fas fa-times"></i> Tolak</button>`;
+                    footerHtml += '<button class="btn btn-success" onclick="updateStatus('' + docId + '', 'approved')"><i class="fas fa-check"></i> Setujui</button>';
+                    footerHtml += '<button class="btn btn-danger" onclick="updateStatus('' + docId + '', 'rejected')"><i class="fas fa-times"></i> Tolak</button>';
                 } else if (trx.status === 'approved') {
-                    footerHtml += `<button class="btn btn-warning" onclick="updateStatus('${docId}', 'pending')"><i class="fas fa-undo"></i> Batalkan & Pending</button>`;
+                    footerHtml += '<button class="btn btn-warning" onclick="updateStatus('' + docId + '', 'pending')"><i class="fas fa-undo"></i> Batalkan</button>';
                 } else if (trx.status === 'rejected') {
-                    footerHtml += `<button class="btn btn-success" onclick="updateStatus('${docId}', 'approved')"><i class="fas fa-check"></i> Setujui Ulang</button>`;
+                    footerHtml += '<button class="btn btn-success" onclick="updateStatus('' + docId + '', 'approved')"><i class="fas fa-check"></i> Setujui Ulang</button>';
                 }
-                footerHtml += `<button class="btn btn-outline" onclick="openEditMode()"><i class="fas fa-edit"></i> Edit</button>`;
-                footerHtml += `<button class="btn btn-danger" onclick="deleteTransaction('${docId}')"><i class="fas fa-trash"></i> Hapus</button>`;
+                footerHtml += '<button class="btn btn-outline" onclick="openEditMode()"><i class="fas fa-edit"></i> Edit</button>';
+                footerHtml += '<button class="btn btn-danger" onclick="deleteTransaction('' + docId + '')"><i class="fas fa-trash"></i> Hapus</button>';
             } else {
-                footerHtml += `<span style="color:var(--gray);font-size:13px;"><i class="fas fa-lock"></i> Hanya admin yang bisa mengubah data</span>`;
+                footerHtml += '<span style="color:var(--gray);font-size:13px;"><i class="fas fa-lock"></i> Hanya admin yang bisa mengubah data</span>';
             }
-            footerHtml += `<button class="btn btn-outline" onclick="closeModal()">Tutup</button>`;
+            footerHtml += '<button class="btn btn-outline" onclick="closeModal()">Tutup</button>';
             document.getElementById('modalFooter').innerHTML = footerHtml;
             document.getElementById('detailModal').style.display = 'block';
         };
@@ -792,60 +880,75 @@
             if (!selectedTransaction || !isAdmin) return;
             const trx = selectedTransaction;
             document.getElementById('modalTitle').textContent = 'Edit Transaksi';
-            document.getElementById('modalBody').innerHTML = `
-                <div class="form-group"><label>Nama / Perusahaan</label><input type="text" id="editNama" value="${trx.nama}"></div>
-                <div class="form-group"><label>Keterangan</label><textarea id="editKeterangan">${trx.keterangan || ''}</textarea></div>
-                <div class="detail-grid" style="margin-top:12px"><div class="detail-item"><label>ID</label><span>${trx.id}</span></div><div class="detail-item"><label>Nominal</label><span>${formatRupiah(trx.nominal)}</span></div><div class="detail-item"><label>Status</label><span class="badge badge-${trx.status}">${getStatusLabel(trx.status)}</span></div><div class="detail-item"><label>Metode</label><span>${trx.metode}</span></div></div>
-            `;
-            document.getElementById('modalFooter').innerHTML = `<button class="btn btn-primary" onclick="saveEdit()"><i class="fas fa-save"></i> Simpan Perubahan</button><button class="btn btn-outline" onclick="showDetail('${selectedDocId}')">Batal</button>`;
+            document.getElementById('modalBody').innerHTML =
+                '<div class="form-group"><label>Nama</label><input type="text" id="editNama" value="' + trx.nama + '"></div>' +
+                '<div class="form-group"><label>Keterangan</label><textarea id="editKeterangan">' + (trx.keterangan || '') + '</textarea></div>' +
+                '<div class="detail-grid" style="margin-top:12px"><div class="detail-item"><label>ID</label><span>' + trx.id + '</span></div><div class="detail-item"><label>Nominal</label><span>' + formatRupiah(trx.nominal) + '</span></div><div class="detail-item"><label>Status</label><span class="badge badge-' + trx.status + '">' + getStatusLabel(trx.status) + '</span></div><div class="detail-item"><label>Metode</label><span>' + trx.metode + '</span></div></div>';
+            document.getElementById('modalFooter').innerHTML = '<button class="btn btn-primary" onclick="saveEdit()"><i class="fas fa-save"></i> Simpan</button><button class="btn btn-outline" onclick="showDetail('' + selectedDocId + '')">Batal</button>';
         };
 
         window.closeModal = function() { document.getElementById('detailModal').style.display = 'none'; selectedTransaction = null; selectedDocId = null; };
-        window.openAddModal = function() { if (!currentUser) { openLoginModal(); return; } if (!isAdmin) { showToast('Hanya admin yang bisa menambah transaksi', 'error'); return; } document.getElementById('addTanggal').value = new Date().toISOString().split('T')[0]; document.getElementById('addModal').style.display = 'block'; };
-        window.closeAddModal = function() { document.getElementById('addModal').style.display = 'none'; document.getElementById('addForm').reset(); };
+        window.openAddModal = function() { if (!currentUser) { openLoginModal(); return; } if (!isAdmin) { showToast('Hanya admin', 'error'); return; } document.getElementById('addTanggal').value = new Date().toISOString().split('T')[0]; document.getElementById('addModal').style.display = 'block'; setTimeout(function() { toggleMetodeFields(); }, 100); };
+        window.closeAddModal = function() { document.getElementById('addModal').style.display = 'none'; document.getElementById('addForm').reset(); toggleMetodeFields(); };
         window.openLoginModal = function() { document.getElementById('loginModal').style.display = 'block'; };
         window.closeLoginModal = function() { document.getElementById('loginModal').style.display = 'none'; };
         window.getStatusLabel = function(status) { return { approved: 'Terverifikasi', pending: 'Menunggu', rejected: 'Ditolak' }[status] || status; };
+        window.toggleMetodeFields = function() {
+            const metode = document.getElementById('addMetode').value;
+            document.getElementById('transferFields').style.display = metode === 'Transfer Bank' ? 'block' : 'none';
+            document.getElementById('cekFields').style.display = metode === 'Cek Bank' ? 'block' : 'none';
+            document.getElementById('cashFields').style.display = metode === 'Cash' ? 'block' : 'none';
+        };
 
-        // ═══════════════════════════════════════════════════════════════
-        // CHARTS
-        // ═══════════════════════════════════════════════════════════════
         window.renderCharts = function() { renderStatusChart(); renderTrendChart(); };
         window.renderStatusChart = function() {
             const ctx = document.getElementById('statusChart').getContext('2d');
-            const a = transactions.filter(t => t.status === 'approved').length;
-            const p = transactions.filter(t => t.status === 'pending').length;
-            const r = transactions.filter(t => t.status === 'rejected').length;
+            const a = transactions.filter(function(t) { return t.status === 'approved'; }).length;
+            const p = transactions.filter(function(t) { return t.status === 'pending'; }).length;
+            const r = transactions.filter(function(t) { return t.status === 'rejected'; }).length;
             if (statusChartInstance) statusChartInstance.destroy();
             statusChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Terverifikasi', 'Menunggu', 'Ditolak'], datasets: [{ data: [a, p, r], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { padding: 20, font: { size: 12 } } } } } });
         };
         window.renderTrendChart = function() {
             const ctx = document.getElementById('trendChart').getContext('2d');
             const dm = {};
-            transactions.forEach(t => { if (!dm[t.tanggal]) dm[t.tanggal] = { pemasukan: 0, pengeluaran: 0 }; if (t.tipe === 'pemasukan') dm[t.tanggal].pemasukan += Number(t.nominal) || 0; else dm[t.tanggal].pengeluaran += Number(t.nominal) || 0; });
+            transactions.forEach(function(t) {
+                if (!dm[t.tanggal]) dm[t.tanggal] = { pemasukan: 0, pengeluaran: 0 };
+                if (t.tipe === 'pemasukan') dm[t.tanggal].pemasukan += Number(t.nominal) || 0;
+                else dm[t.tanggal].pengeluaran += Number(t.nominal) || 0;
+            });
             const sd = Object.keys(dm).sort();
             if (trendChartInstance) trendChartInstance.destroy();
-            trendChartInstance = new Chart(ctx, { type: 'line', data: { labels: sd, datasets: [{ label: 'Pemasukan', data: sd.map(d => dm[d].pemasukan), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.4 }, { label: 'Pengeluaran', data: sd.map(d => dm[d].pengeluaran), borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true, ticks: { callback: v => 'Rp ' + (v / 1000000).toFixed(1) + 'M' } } } } });
+            trendChartInstance = new Chart(ctx, { type: 'line', data: { labels: sd, datasets: [{ label: 'Pemasukan', data: sd.map(function(d) { return dm[d].pemasukan; }), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.4 }, { label: 'Pengeluaran', data: sd.map(function(d) { return dm[d].pengeluaran; }), borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true, ticks: { callback: function(v) { return 'Rp ' + (v / 1000000).toFixed(1) + 'M'; } } } } } });
         };
 
-        // ═══════════════════════════════════════════════════════════════
-        // EXPORT
-        // ═══════════════════════════════════════════════════════════════
         window.exportData = function() {
-            const csv = [['ID', 'Tanggal', 'Nama', 'Tipe', 'Nominal', 'Metode', 'Status', 'Keterangan', 'Anomali'].join(','), ...transactions.map(t => [t.id, t.tanggal, `"${t.nama}"`, t.tipe, t.nominal, t.metode, t.status, `"${t.keterangan || ''}"`, t.anomali].join(','))].join('\n');
+            const csv = [['ID', 'Tanggal', 'Nama', 'Tipe', 'Nominal', 'Metode', 'Status', 'Keterangan', 'Anomali'].join(','), ...transactions.map(function(t) { return [t.id, t.tanggal, '"' + t.nama + '"', t.tipe, t.nominal, t.metode, t.status, '"' + (t.keterangan || '') + '"', t.anomali].join(','); })].join('\n');
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `firestore-transaksi-${new Date().toISOString().split('T')[0]}.csv`; link.click();
-            showToast('Data berhasil diexport ke CSV', 'success');
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'firestore-transaksi-' + new Date().toISOString().split('T')[0] + '.csv';
+            link.click();
+            showToast('Data berhasil diexport', 'success');
         };
 
-        // ═══════════════════════════════════════════════════════════════
-        // TOAST & UTILS
-        // ═══════════════════════════════════════════════════════════════
-        window.showToast = function(message, type = 'success') { const toast = document.getElementById('toast'); toast.className = `toast ${type} show`; const icons = { success: 'fa-check-circle', error: 'fa-times-circle', warning: 'fa-exclamation-circle' }; toast.innerHTML = `<i class="fas ${icons[type]}"></i> ${message}`; setTimeout(() => toast.classList.remove('show'), 3000); };
-        window.onclick = function(e) { if (e.target === document.getElementById('detailModal')) closeModal(); if (e.target === document.getElementById('addModal')) closeAddModal(); if (e.target === document.getElementById('loginModal')) closeLoginModal(); };
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeAddModal(); closeLoginModal(); } });
+        window.showToast = function(message, type) {
+            const toast = document.getElementById('toast');
+            toast.className = 'toast ' + type + ' show';
+            const icons = { success: 'fa-check-circle', error: 'fa-times-circle', warning: 'fa-exclamation-circle' };
+            toast.innerHTML = '<i class="fas ' + icons[type] + '"></i> ' + message;
+            setTimeout(function() { toast.classList.remove('show'); }, 3000);
+        };
 
-        // Init auth UI
+        window.onclick = function(e) {
+            if (e.target === document.getElementById('detailModal')) closeModal();
+            if (e.target === document.getElementById('addModal')) closeAddModal();
+            if (e.target === document.getElementById('loginModal')) closeLoginModal();
+        };
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') { closeModal(); closeAddModal(); closeLoginModal(); }
+        });
+
         updateAuthUI();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
