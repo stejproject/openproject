@@ -6,3 +6,4 @@ List projects links:
 - https://stejproject.github.io/ai-chatbot/ (AI Chatbot)
 - https://stejproject.github.io/Blantik-Gancar/store-toko.html?merchant=lCWUeA1ehMfFb95XG2bp6OsW0Uf1 (Toko Kopi Blantik Samples)
 - https://stejproject.github.io/budget-line/ (budget mainline)
+- - https://stejproject.github.io/openproject/- https://stejproject.github.io/budget-line/chemist-sim.html (budget mainline)
