@@ -7,157 +7,258 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <style>
-        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
-        .stej-header { background: linear-gradient(135deg, #1e293b, #0f172a); color: #fff; padding: 32px 20px; border-bottom: 4px solid #d97706; }
+        body { background: linear-gradient(180deg, #e6f3fb 0%, #f7fbfe 100%); min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #263238; }
+        .stej-header { background: linear-gradient(135deg, #1e293b, #0f172a); color: #fff; padding: 18px 20px; border-bottom: 4px solid #d97706; }
         .stej-header .motto { color: #cbd5e1; }
+        .phet-panel { background: #fffdf2; border: 2px solid #f1e3a6; border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,.06); }
+        .phet-panel h6 { font-weight: 700; color: #7c4a03; margin-bottom: 8px; font-size: .9rem; }
+        .phet-screen { background: #fff; border: 2px solid #cfd8dc; border-radius: 14px; padding: 12px; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+        #reaktor, #grafik { width: 100%; height: auto; border-radius: 10px; background: #0f172a; display: block; }
+        .legend-dot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 4px; vertical-align: middle; border: 1px solid rgba(0,0,0,.25); }
+        .stat { background: #eef5f9; border-radius: 10px; padding: 6px 10px; height: 100%; }
+        .stat .v { font-weight: 700; font-size: .98rem; }
+        .stat .l { font-size: .72rem; color: #64748b; }
+        .playbar { background: #e3eef5; border-radius: 40px; padding: 8px 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .pbtn { width: 46px; height: 46px; border-radius: 50%; border: 3px solid #fff; color: #fff; font-size: 1.3rem; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,.25); cursor: pointer; }
+        .pbtn:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,.25); }
+        .pbtn-play { background: #2e9e4f; width: 56px; height: 56px; font-size: 1.7rem; }
+        .pbtn-step { background: #4a90c2; }
+        .pbtn-reset { background: #f59e0b; }
+        .pbtn-pump { background: #7c3aed; }
+        .heat-range { height: 12px; border-radius: 8px; background: linear-gradient(90deg, #3b82f6, #22c55e 45%, #ef4444); -webkit-appearance: none; appearance: none; outline: none; width: 100%; }
+        .heat-range::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: #fff; border: 4px solid #7c4a03; cursor: grab; }
+        .heat-range::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 4px solid #7c4a03; cursor: grab; }
+        .nav-pills .nav-link { color: #1e3a8a; font-weight: 600; border-radius: 12px 12px 0 0; background: #dbe9f3; margin-right: 6px; }
+        .nav-pills .nav-link.active { background: #fff; color: #7c2d12; border-bottom: 3px solid #d97706; }
         .card { border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .card-header-gold { background-color: #92400e; color: #fff; font-weight: 600; border-radius: 12px 12px 0 0 !important; }
         .card-header-mipa { background-color: #7f1d1d; color: #fff; font-weight: 600; border-radius: 12px 12px 0 0 !important; }
         .card-header-bisnis { background-color: #1e3a8a; color: #fff; font-weight: 600; border-radius: 12px 12px 0 0 !important; }
-        .card-header-gold { background-color: #92400e; color: #fff; font-weight: 600; border-radius: 12px 12px 0 0 !important; }
-        .btn-gold { background-color: #d97706; color: #fff; }
-        .btn-gold:hover { background-color: #b45309; color: #fff; }
-        #reaktor { width: 100%; height: auto; border-radius: 8px; background: #0f172a; display: block; }
-        .legend-dot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
-        .stat { background: #f1f5f9; border-radius: 8px; padding: 8px 10px; }
-        .stat .v { font-weight: 700; font-size: 1.05rem; }
-        .stat .l { font-size: .75rem; color: #64748b; }
         .chart-box { position: relative; height: 340px; }
-        footer { margin-top: 50px; padding: 20px; background-color: #0f172a; color: #94a3b8; font-size: 0.9rem; }
+        footer { margin-top: 40px; padding: 20px; background-color: #0f172a; color: #94a3b8; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
 <div class="stej-header text-center">
-    <h1 class="display-6 fw-bold"><i class="bi bi-braces-asterisk text-warning"></i> STEJ Project</h1>
-    <p class="lead motto mb-1"><em>"Simple, Trusted, Elegant, and Jenius"</em></p>
-    <p class="small motto mb-0">Da Amorem Sapientiam Producere</p>
+    <h1 class="h3 fw-bold mb-0"><i class="bi bi-braces-asterisk text-warning"></i> STEJ Project <small class="fs-6 motto"><em>- Techno-Economics Simulator</em></small></h1>
+    <div class="small motto">"Simple, Trusted, Elegant, and Jenius" · Da Amorem Sapientiam Producere</div>
 </div>
 
-<div class="container my-4">
+<div class="container-xl my-3">
 
-    <div class="card p-3 mb-4">
-        <h5 class="text-primary mb-2"><i class="bi bi-lightbulb-fill text-warning"></i> Mengapa kalkulator bisnis gagal di hadapan reaksi kimia?</h5>
-        <p class="mb-1 small">BEP konvensional mengasumsikan rendemen 100% dan biaya variabel konstan. Di laboratorium, rendemen berfluktuasi acak (tumpahan, suhu, pengadukan, reagen kadaluarsa). Simulator ini menjalankan reaksi reduksi <strong>AuCl₄⁻ oleh NaHSO₃</strong> secara partikel, lalu memakai rendemen acak tiap batch untuk melihat efeknya pada grafik laba dan sebaran BEP.</p>
-        <p class="mb-0 small text-muted">2 HAuCl₄ + 3 NaHSO₃ + 3 H₂O → 2 Au + 3 NaHSO₄ + 8 HCl</p>
-    </div>
+    <ul class="nav nav-pills" id="tabs" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-sim" type="button"><i class="bi bi-flask"></i> Simulasi Reaktor</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-eko" type="button"><i class="bi bi-graph-up-arrow"></i> Ekonomi &amp; BEP</button></li>
+    </ul>
 
-    <div class="row g-4">
-        <!-- REAKTOR -->
-        <div class="col-lg-7">
-            <div class="card h-100">
-                <div class="card-header card-header-mipa py-2"><i class="bi bi-flask"></i> SISI MIPA: Reaktor Molekuler (aliran larutan)</div>
-                <div class="card-body">
+    <div class="tab-content">
+
+    <!-- ===================== TAB 1: SIMULASI ===================== -->
+    <div class="tab-pane fade show active" id="tab-sim">
+        <div class="row g-3 mt-0">
+            <div class="col-lg-8">
+                <div class="phet-screen">
                     <canvas id="reaktor" width="640" height="300"></canvas>
                     <div class="small mt-2">
-                        <span class="me-3"><span class="legend-dot" style="background:#dc2626"></span>AuCl₄⁻</span>
-                        <span class="me-3"><span class="legend-dot" style="background:#38bdf8"></span>HSO₃⁻ (reduktor, masuk dari kiri)</span>
-                        <span class="me-3"><span class="legend-dot" style="background:#facc15"></span>Au (endapan)</span>
-                        <span><span class="legend-dot" style="background:#94a3b8"></span>HCl / NaHSO₄</span>
+                        <span class="me-3"><span class="legend-dot" id="dot-A"></span><span id="lg-A"></span></span>
+                        <span class="me-3"><span class="legend-dot" id="dot-R"></span><span id="lg-R"></span></span>
+                        <span class="me-3"><span class="legend-dot" id="dot-G"></span><span id="lg-G"></span></span>
+                        <span><span class="legend-dot" id="dot-B"></span><span id="lg-B"></span></span>
                     </div>
-                    <div class="row g-2 mt-2">
-                        <div class="col-6 col-md-3"><div class="stat"><div class="v" id="st-status">Siap</div><div class="l">Status batch</div></div></div>
-                        <div class="col-6 col-md-3"><div class="stat"><div class="v" id="st-conv">0 / 0</div><div class="l">Au terreduksi</div></div></div>
-                        <div class="col-6 col-md-3"><div class="stat"><div class="v" id="st-y">-</div><div class="l">Rendemen batch ini</div></div></div>
-                        <div class="col-6 col-md-3"><div class="stat"><div class="v" id="st-n">0</div><div class="l">Batch selesai</div></div></div>
+
+                    <div class="row row-cols-2 row-cols-md-5 g-2 my-2">
+                        <div class="col"><div class="stat"><div class="v" id="st-status">Siap</div><div class="l">Status batch</div></div></div>
+                        <div class="col"><div class="stat"><div class="v" id="st-conv">0 / 0</div><div class="l">Partikel terkonversi</div></div></div>
+                        <div class="col"><div class="stat"><div class="v" id="st-t">-</div><div class="l">Suhu reaktor</div></div></div>
+                        <div class="col"><div class="stat"><div class="v" id="st-y">-</div><div class="l">Rendemen batch ini</div></div></div>
+                        <div class="col"><div class="stat"><div class="v" id="st-n">0</div><div class="l">Batch selesai</div></div></div>
+                    </div>
+
+                    <!-- BAR PLAYBACK ala PhET -->
+                    <div class="playbar">
+                        <button class="pbtn pbtn-reset" id="btn-reset" title="Atur ulang semua"><i class="bi bi-arrow-counterclockwise"></i></button>
+                        <button class="pbtn pbtn-play" id="btn-play" title="Mulai / Jeda"><i class="bi bi-play-fill" id="ico-play"></i></button>
+                        <button class="pbtn pbtn-step" id="btn-step" title="Maju satu langkah"><i class="bi bi-skip-forward-fill"></i></button>
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Kecepatan">
+                            <input type="radio" class="btn-check" name="spd" id="spd-slow" value="0.7" autocomplete="off">
+                            <label class="btn btn-outline-secondary" for="spd-slow"><i class="bi bi-hourglass-split"></i> Lambat</label>
+                            <input type="radio" class="btn-check" name="spd" id="spd-norm" value="2" autocomplete="off" checked>
+                            <label class="btn btn-outline-secondary" for="spd-norm">Normal</label>
+                            <input type="radio" class="btn-check" name="spd" id="spd-fast" value="6" autocomplete="off">
+                            <label class="btn btn-outline-secondary" for="spd-fast"><i class="bi bi-lightning-charge"></i> Cepat</label>
+                        </div>
+                        <button class="pbtn pbtn-pump ms-auto" id="btn-pump" title="Pompa: tambah 30 partikel reagen ke reaktor"><i class="bi bi-plus-lg"></i></button>
+                        <span class="small text-muted">Tambah reagen</span>
+                        <button class="btn btn-sm btn-outline-secondary fw-bold" id="btn-auto"><i class="bi bi-arrow-repeat"></i> Auto-run: Mati</button>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- PARAMETER -->
-        <div class="col-lg-5">
-            <div class="card h-100">
-                <div class="card-header card-header-bisnis py-2"><i class="bi bi-sliders"></i> Parameter Kimia &amp; Bisnis</div>
-                <div class="card-body">
+                <div class="phet-screen mt-3" id="wrap-graf">
+                    <div class="fw-semibold small mb-1" style="color:#7c4a03">Grafik jumlah partikel terhadap waktu</div>
+                    <canvas id="grafik" width="640" height="150"></canvas>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="phet-panel">
+                    <h6><i class="bi bi-beaker"></i> Zat / industri</h6>
+                    <select id="pilihan-zat" class="form-select form-select-sm">
+                        <option value="emas">Emas (AuCl₄⁻) - pemurnian logam mulia</option>
+                        <option value="palladium">Palladium (Pd²⁺) - daur ulang e-waste</option>
+                        <option value="aspirin">Aspirin - industri farmasi</option>
+                        <option value="biodiesel">Biodiesel - minyak jelantah</option>
+                    </select>
+                    <div class="form-text" id="catatan-zat"></div>
+                    <div class="small text-muted mt-1" id="reaksi-teks"></div>
+                </div>
+
+                <div class="phet-panel">
+                    <h6><i class="bi bi-thermometer-half"></i> Pemanas / Pendingin</h6>
+                    <div class="d-flex justify-content-between small"><span class="text-primary"><i class="bi bi-snow"></i> Dingin</span><strong><span id="lbl-suhu-live">70</span> °C</strong><span class="text-danger">Panas <i class="bi bi-fire"></i></span></div>
+                    <input type="range" class="heat-range my-2" id="suhu-r" min="20" max="100" step="1" value="70">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-5"><input type="number" class="form-control form-control-sm" id="suhu" value="70" step="1"></div>
+                        <div class="col-7">
+                            <select id="mode-suhu" class="form-select form-select-sm">
+                                <option value="konstan">Konstan</option>
+                                <option value="tidak">Tidak stabil</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="box-fluk" class="d-none mt-1">
+                        <label class="form-label small mb-0">Fluktuasi (simpangan baku): <strong id="lbl-fluk">4.0</strong> °C</label>
+                        <input type="range" class="form-range" id="fluk" min="0" max="15" step="0.5" value="4">
+                    </div>
+                    <div class="small mt-1">Peluang tabrakan efektif: <strong id="st-pr">-</strong></div>
+                    <div class="form-text mt-0" id="suhu-info"></div>
+                    <div class="form-text mt-0">Geser pemanas saat reaksi berjalan: kecepatan partikel dan rendemen ikut berubah.</div>
+                </div>
+
+                <div class="phet-panel">
+                    <h6><i class="bi bi-clipboard-data"></i> Kondisi laboratorium</h6>
                     <div class="row g-2">
                         <div class="col-6">
-                            <label class="form-label small mb-0">Emas diproses / batch (g)</label>
+                            <label class="form-label small mb-0" id="lb-M">Bahan / batch</label>
                             <input type="number" class="form-control form-control-sm" id="berat-emas" value="10" min="1">
                         </div>
                         <div class="col-6">
-                            <label class="form-label small mb-0">Rendemen rata-rata (%)</label>
-                            <input type="number" class="form-control form-control-sm" id="rendemen" value="95" min="30" max="100">
+                            <label class="form-label small mb-0">Rendemen di suhu optimum (%)</label>
+                            <input type="number" class="form-control form-control-sm" id="rendemen" value="95" min="20" max="100">
                         </div>
                     </div>
-
-                    <div class="form-check form-switch mt-3">
+                    <div id="box-air" class="mt-2 d-none">
+                        <label class="form-label small mb-0">Kadar air minyak: <strong id="lbl-air">0.5</strong>%</label>
+                        <input type="range" class="form-range" id="air" min="0" max="5" step="0.1" value="0.5">
+                        <div class="form-text mt-0" id="air-info"></div>
+                    </div>
+                    <div class="form-check form-switch mt-2">
                         <input class="form-check-input" type="checkbox" id="acak" checked>
-                        <label class="form-check-label fw-semibold" for="acak">Rendemen acak (simulasi error laboratorium)</label>
+                        <label class="form-check-label small fw-semibold" for="acak">Rendemen acak (error lab)</label>
                     </div>
-                    <label class="form-label small mb-0 mt-2">Simpangan baku rendemen: <strong id="lbl-sd">4</strong>%</label>
+                    <label class="form-label small mb-0 mt-1">Simpangan baku rendemen: <strong id="lbl-sd">4</strong>%</label>
                     <input type="range" class="form-range" id="sd" min="0" max="15" step="0.5" value="4">
-                    <label class="form-label small mb-0">Peluang insiden (tumpah/kontaminasi): <strong id="lbl-inc">5</strong>%</label>
+                    <label class="form-label small mb-0">Peluang insiden: <strong id="lbl-inc">5</strong>%</label>
                     <input type="range" class="form-range" id="inc" min="0" max="30" step="1" value="5">
-                    <div class="form-text mt-0 mb-2">Insiden menurunkan rendemen batch sebesar 10-25 poin persen.</div>
+                    <div class="form-text mt-0" id="inc-info"></div>
+                </div>
 
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <label class="form-label small mb-0">Biaya tetap (Rp)</label>
-                            <input type="number" class="form-control form-control-sm" id="fixed-cost" value="50000000">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small mb-0">Harga jual / g (Rp)</label>
-                            <input type="number" class="form-control form-control-sm" id="harga-jual" value="1200000">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small mb-0">Biaya variabel / g diproses (Rp)</label>
-                            <input type="number" class="form-control form-control-sm" id="variable-cost" value="400000">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small mb-0">Volume penjualan rencana (g)</label>
-                            <input type="number" class="form-control form-control-sm" id="plan-q" value="100">
-                        </div>
-                    </div>
-
-                    <div class="row g-2 mt-1">
-                        <div class="col-6">
-                            <label class="form-label small mb-0">Kecepatan simulasi: <strong id="lbl-speed">2</strong>x</label>
-                            <input type="range" class="form-range" id="speed" min="1" max="8" step="1" value="2">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small mb-0">Aliran larutan: <strong id="lbl-flow">1.0</strong></label>
-                            <input type="range" class="form-range" id="flow" min="0" max="3" step="0.1" value="1">
-                        </div>
-                    </div>
-
-                    <div class="d-grid gap-2 mt-2">
-                        <button class="btn btn-gold fw-bold" id="btn-batch"><i class="bi bi-play-fill"></i> Jalankan 1 Batch</button>
-                        <button class="btn btn-outline-secondary fw-bold" id="btn-auto"><i class="bi bi-arrow-repeat"></i> Auto-run: Mati</button>
-                        <button class="btn btn-primary fw-bold" id="btn-mc"><i class="bi bi-dice-5"></i> Monte Carlo 2.000 batch</button>
-                        <button class="btn btn-outline-danger btn-sm" id="btn-reset"><i class="bi bi-x-circle"></i> Reset</button>
-                    </div>
+                <div class="phet-panel">
+                    <h6><i class="bi bi-eye"></i> Tampilan</h6>
+                    <div class="form-check"><input class="form-check-input" type="checkbox" id="chk-graf" checked><label class="form-check-label small" for="chk-graf">Grafik jumlah partikel</label></div>
+                    <div class="form-check"><input class="form-check-input" type="checkbox" id="chk-flow" checked><label class="form-check-label small" for="chk-flow">Garis aliran larutan</label></div>
+                    <label class="form-label small mb-0 mt-1">Aliran larutan: <strong id="lbl-flow">1.0</strong></label>
+                    <input type="range" class="form-range" id="flow" min="0" max="3" step="0.1" value="1">
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- GRAFIK -->
-    <div class="row g-4 mt-1">
-        <div class="col-lg-7">
-            <div class="card h-100">
-                <div class="card-header card-header-gold py-2"><i class="bi bi-graph-up-arrow"></i> Prediksi Laba vs Volume Penjualan</div>
-                <div class="card-body">
-                    <div class="chart-box"><canvas id="chart-laba"></canvas></div>
-                    <div class="small text-muted mt-2">Pita biru = rentang rendemen P5-P95. Titik emas = laba kumulatif aktual dari batch yang sedang disimulasikan.</div>
+    <!-- ===================== TAB 2: EKONOMI ===================== -->
+    <div class="tab-pane fade" id="tab-eko">
+        <div class="phet-panel mt-3">
+            <h6><i class="bi bi-cash-coin"></i> Parameter bisnis</h6>
+            <div class="row g-2">
+                <div class="col-6 col-md-3">
+                    <label class="form-label small mb-0">Biaya tetap (Rp)</label>
+                    <input type="number" class="form-control form-control-sm" id="fixed-cost" value="50000000">
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label small mb-0" id="lb-price">Harga jual (Rp)</label>
+                    <input type="number" class="form-control form-control-sm" id="harga-jual" value="1200000">
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label small mb-0" id="lb-vc">Biaya bahan (Rp)</label>
+                    <input type="number" class="form-control form-control-sm" id="variable-cost" value="400000">
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label small mb-0" id="lb-plan">Volume penjualan rencana</label>
+                    <input type="number" class="form-control form-control-sm" id="plan-q" value="100">
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label small mb-0" id="lb-eper">Biaya energi / °C (Rp)</label>
+                    <input type="number" class="form-control form-control-sm" id="eper" value="0" min="0">
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label small mb-0" id="lb-pen">Biaya pemurnian ulang (Rp)</label>
+                    <input type="number" class="form-control form-control-sm" id="pen" value="0" min="0">
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label small mb-0">Pemurnian berlaku jika rendemen &lt; (%)</label>
+                    <input type="number" class="form-control form-control-sm" id="thr" value="80" min="20" max="100">
+                </div>
+                <div class="col-6 col-md-3 d-flex align-items-end">
+                    <button class="btn btn-primary btn-sm fw-bold w-100" id="btn-mc"><i class="bi bi-dice-5"></i> Monte Carlo 2.000 batch</button>
+                </div>
+            </div>
+            <div class="form-text">Rendemen, suhu, dan zat diatur di tab Simulasi. Jalankan batch di sana, hasilnya otomatis muncul di grafik tab ini.</div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-lg-7">
+                <div class="card h-100">
+                    <div class="card-header card-header-gold py-2"><i class="bi bi-graph-up-arrow"></i> Prediksi Laba vs Volume Penjualan</div>
+                    <div class="card-body">
+                        <div class="chart-box"><canvas id="chart-laba"></canvas></div>
+                        <div class="small text-muted mt-2">Pita biru = rentang rendemen P5-P95 (termasuk fluktuasi suhu bila mode tidak stabil). Titik emas = laba kumulatif aktual.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card h-100">
+                    <div class="card-header card-header-gold py-2"><i class="bi bi-bar-chart-fill"></i> Sebaran BEP (Monte Carlo)</div>
+                    <div class="card-body">
+                        <div class="chart-box" style="height:260px"><canvas id="chart-hist"></canvas></div>
+                        <div class="small text-muted mt-1">Batang merah = BEP lebih besar dari volume rencana (rugi).</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header card-header-mipa py-2"><i class="bi bi-thermometer-sun"></i> Suhu &amp; Rendemen per Batch</div>
+                    <div class="card-body"><div class="chart-box" style="height:260px"><canvas id="chart-batch"></canvas></div></div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header card-header-mipa py-2"><i class="bi bi-activity"></i> Kurva Respon Rendemen terhadap Suhu</div>
+                    <div class="card-body">
+                        <div class="chart-box" style="height:260px"><canvas id="chart-kurva"></canvas></div>
+                        <div class="small text-muted mt-1">Titik = batch yang sudah berjalan. Garis putus-putus = setpoint.</div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-5">
-            <div class="card h-100">
-                <div class="card-header card-header-gold py-2"><i class="bi bi-bar-chart-fill"></i> Sebaran BEP (Monte Carlo)</div>
-                <div class="card-body">
-                    <div class="chart-box" style="height:230px"><canvas id="chart-hist"></canvas></div>
-                    <div class="small text-muted mt-1">Batang merah = BEP lebih besar dari volume rencana (rugi).</div>
-                </div>
+
+        <div class="card mt-3">
+            <div class="card-header card-header-bisnis py-2"><i class="bi bi-calculator"></i> Ringkasan Finansial, BEP &amp; Titik Tutup (SDP)</div>
+            <div class="card-body">
+                <div class="row g-2" id="ringkasan"></div>
+                <div class="small text-muted mt-2">SDP (Shut-Down Point): kondisi saat harga jual tidak lagi menutup biaya variabel efektif, sehingga produksi sebaiknya dihentikan. Angka bawaan, kurva suhu, dan biaya energi tiap zat hanya ilustrasi, silakan sesuaikan dengan data riil.</div>
             </div>
         </div>
     </div>
 
-    <div class="card mt-4">
-        <div class="card-header card-header-bisnis py-2"><i class="bi bi-calculator"></i> Ringkasan Finansial</div>
-        <div class="card-body">
-            <div class="row g-2" id="ringkasan"></div>
-        </div>
     </div>
 </div>
 
@@ -174,20 +275,91 @@
     const rp = n => (isFinite(n) ? (n < 0 ? '-' : '') + 'Rp ' + Math.round(Math.abs(n)).toLocaleString('id-ID') : '-');
     const num = (n, d = 1) => isFinite(n) ? n.toLocaleString('id-ID', { maximumFractionDigits: d }) : '∞';
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const T_AMB = 28;
+
+    /* ---------- DATA ZAT / INDUSTRI ---------- */
+    const SUB = {
+        emas: {
+            nama: 'Emas (AuCl₄⁻)', unit: 'g', ratio: 1.5, float: false,
+            eq: '2 HAuCl₄ + 3 NaHSO₃ + 3 H₂O → 2 Au + 3 NaHSO₄ + 8 HCl',
+            catatan: 'Reduksi kompleks kloroaurat dari larutan aqua regia dengan natrium bisulfit.',
+            incInfo: 'Insiden (tumpah/suhu lepas kendali) menurunkan rendemen batch 10-25 poin persen.',
+            tint: '185,28,28', byRGB: '203,213,225',
+            col: { A: '#dc2626', R: '#38bdf8', G: '#facc15', Gs: '#92400e', B: '#94a3b8', lost: '#dc2626' },
+            lg: { A: 'AuCl₄⁻', R: 'HSO₃⁻ (reduktor, masuk dari kiri)', G: 'Au (endapan)', B: 'HCl / NaHSO₄' },
+            rIn: 'NaHSO₃ →', water: false,
+            temp: { opt: 70, min: 20, max: 100, wCold: 25, wHot: 14, eper: 1500, fluk: 4 },
+            def: { M: 10, y: 95, sd: 4, inc: 5, fc: 50000000, price: 1200000, vc: 400000, plan: 100, pen: 0, thr: 80 }
+        },
+        palladium: {
+            nama: 'Palladium (Pd²⁺)', unit: 'g', ratio: 1, float: false,
+            eq: 'Pd²⁺ + C₆H₈O₆ → Pd + C₆H₆O₆ + 2 H⁺   (asam askorbat sebagai reduktor)',
+            catatan: 'Daur ulang PCB bekas. Sisa Fe/Cu di larutan membuat rendemen mudah anjlok.',
+            incInfo: 'Insiden = kontaminasi logam lain (Fe/Cu) yang menurunkan rendemen 10-25 poin persen.',
+            tint: '120,53,15', byRGB: '203,213,225',
+            col: { A: '#b45309', R: '#86efac', G: '#94a3b8', Gs: '#1e293b', B: '#cbd5e1', lost: '#b45309' },
+            lg: { A: 'Pd²⁺ (larutan)', R: 'Asam askorbat (reduktor)', G: 'Pd (endapan logam)', B: 'dehidroaskorbat / H⁺' },
+            rIn: 'Asam askorbat →', water: false,
+            temp: { opt: 60, min: 20, max: 90, wCold: 22, wHot: 12, eper: 600, fluk: 4 },
+            def: { M: 20, y: 90, sd: 6, inc: 8, fc: 30000000, price: 520000, vc: 160000, plan: 150, pen: 0, thr: 80 }
+        },
+        aspirin: {
+            nama: 'Aspirin', unit: 'kg', ratio: 1, float: false,
+            eq: 'C₇H₆O₃ (asam salisilat) + (CH₃CO)₂O → C₉H₈O₄ (aspirin) + CH₃COOH   [katalis H₂SO₄]',
+            catatan: 'Rendemen rendah berarti zat sisa menjadi impuritas dan perlu kristalisasi ulang yang mahal.',
+            incInfo: 'Insiden = batch kontaminasi/suhu salah yang menurunkan rendemen 10-25 poin persen.',
+            tint: '148,163,184', byRGB: '251,191,36',
+            col: { A: '#cbd5e1', R: '#fbbf24', G: '#ffffff', Gs: '#64748b', B: '#fbbf24', lost: '#94a3b8' },
+            lg: { A: 'Asam salisilat', R: 'Anhidrida asetat', G: 'Aspirin (kristal)', B: 'Asam asetat' },
+            rIn: 'Anhidrida asetat →', water: false,
+            temp: { opt: 80, min: 20, max: 120, wCold: 25, wHot: 12, eper: 400, fluk: 4 },
+            def: { M: 500, y: 85, sd: 5, inc: 6, fc: 400000000, price: 250000, vc: 120000, plan: 5000, pen: 60000, thr: 80 }
+        },
+        biodiesel: {
+            nama: 'Biodiesel (transesterifikasi)', unit: 'kg', ratio: 3, float: true,
+            eq: 'Trigliserida + 3 CH₃OH → 3 FAME (biodiesel) + gliserol   [katalis NaOH]. Air berlebih → penyabunan.',
+            catatan: 'Minyak jelantah + metanol. Kadar air tinggi mengubah reaksi menjadi pembentukan sabun. Di atas ±65 °C metanol mulai menguap.',
+            incInfo: 'Insiden = katalis rusak/pencampuran buruk yang menurunkan rendemen 10-25 poin persen.',
+            tint: '161,98,7', byRGB: '217,119,6',
+            col: { A: '#a16207', R: '#a78bfa', G: '#fef08a', Gs: '#ca8a04', B: '#d97706', lost: '#7c2d12' },
+            lg: { A: 'Trigliserida (minyak); coklat = jadi sabun', R: 'Metanol', G: 'FAME biodiesel (mengapung)', B: 'Gliserol' },
+            rIn: 'Metanol + NaOH →', water: true,
+            temp: { opt: 60, min: 20, max: 90, wCold: 20, wHot: 8, eper: 20, fluk: 4 },
+            def: { M: 5000, y: 95, sd: 3, inc: 4, fc: 150000000, price: 14000, vc: 11000, plan: 100000, pen: 0, thr: 80 }
+        }
+    };
+    let SK = 'emas';
+    const S = () => SUB[SK];
+    const waterFactor = w => Math.max(0.2, 1 - 0.12 * Math.max(0, w - 0.5));
+    function tfun(T) {
+        const t = S().temp;
+        const w = T < t.opt ? t.wCold : t.wHot;
+        return Math.exp(-0.5 * Math.pow((T - t.opt) / w, 2));
+    }
 
     /* ---------- KONFIGURASI & MODEL ---------- */
     function cfg() {
+        const s = S();
+        const base = clamp((parseFloat($('rendemen').value) || 95) / 100, 0.2, 1);
+        const water = parseFloat($('air').value) || 0;
+        const wf = s.water ? waterFactor(water) : 1;
+        const T = clamp(parseFloat($('suhu').value) || s.temp.opt, 0, 150);
+        const unstable = $('mode-suhu').value === 'tidak';
         return {
-            M: Math.max(1, parseFloat($('berat-emas').value) || 10),
-            ymean: clamp((parseFloat($('rendemen').value) || 95) / 100, 0.3, 1),
+            M: Math.max(1, parseFloat($('berat-emas').value) || 1),
+            base, water, wf, T, unstable,
+            fluk: unstable ? (parseFloat($('fluk').value) || 0) : 0,
+            ymean: clamp(base * wf * tfun(T), 0.2, 1),
             random: $('acak').checked,
             sd: parseFloat($('sd').value) / 100,
             pInc: parseFloat($('inc').value) / 100,
             fc: parseFloat($('fixed-cost').value) || 0,
             price: parseFloat($('harga-jual').value) || 0,
             vc: parseFloat($('variable-cost').value) || 0,
-            planQ: Math.max(1, parseFloat($('plan-q').value) || 100),
-            speed: parseInt($('speed').value),
+            planQ: Math.max(1, parseFloat($('plan-q').value) || 1),
+            eper: parseFloat($('eper').value) || 0,
+            pen: parseFloat($('pen').value) || 0,
+            thr: clamp((parseFloat($('thr').value) || 0) / 100, 0, 1),
             flow: parseFloat($('flow').value)
         };
     }
@@ -197,15 +369,19 @@
         while (v === 0) v = Math.random();
         return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
     }
-    function sampleYield(c) {
-        let y = c.ymean;
+    const meanYieldAt = (T, c) => clamp(c.base * c.wf * tfun(T), 0.2, 1);
+    function sampleNoise(c) {
+        let n = 0;
         if (c.random) {
-            y += randn() * c.sd;
-            if (Math.random() < c.pInc) y -= 0.10 + Math.random() * 0.15;
+            n = randn() * c.sd;
+            if (Math.random() < c.pInc) n -= 0.10 + Math.random() * 0.15;
         }
-        return clamp(y, 0.30, 1.0);
+        return n;
     }
-    const margin = (y, c) => c.price - c.vc / y;
+    const sampleYield = (c, T) => clamp(meanYieldAt(T, c) + sampleNoise(c), 0.2, 1.0);
+    const sampleTemp = c => c.unstable ? clamp(c.T + randn() * c.fluk, 5, 130) : c.T;
+    const vcEff = (y, c) => c.vc + c.eper * Math.max(0, c.T - T_AMB) + (y < c.thr ? c.pen : 0);
+    const margin = (y, c) => c.price - vcEff(y, c) / y;
     const bepFor = (y, c) => { const m = margin(y, c); return m > 0 ? c.fc / m : Infinity; };
     const profitAt = (q, y, c) => q * margin(y, c) - c.fc;
     function pct(sorted, p) {
@@ -214,70 +390,113 @@
         const lo = Math.floor(i), hi = Math.ceil(i);
         return sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo);
     }
+    function minYield(c, test) {
+        let found = null;
+        for (let y = 1.0; y >= 0.2; y -= 0.002) {
+            if (test(y)) found = y; else break;
+        }
+        return found;
+    }
 
     /* ---------- STATE ---------- */
-    let history = [];       // batch selesai
+    let history = [];
     let cumOut = 0, cumCost = 0, cumRev = 0;
     let trajectory = [{ x: 0, y: 0 }];
-    let mc = null;          // hasil Monte Carlo
+    let mc = null;
     let auto = false;
+    let paused = false, acc = 0, stepReq = 0;
+    let tOff = 0;                 // simpangan suhu antar-batch (mode tidak stabil)
+    let bandCache = { key: '', lo: 0, hi: 0 };
+    let gA = [], gR = [], gG = [];
 
     /* ---------- MESIN PARTIKEL ---------- */
     const cv = $('reaktor'), ctx = cv.getContext('2d');
     const W = cv.width, H = cv.height;
-    const NA = 100, NR = 200;
-    const TOP = 34, BOT = H - 22, LEFT = 14, RIGHT = W - 14;
+    const NA = 100;
+    const TOP = 34, BOT = H - 26, LEFT = 14, RIGHT = W - 14;
     let P = [];
-    let B = { state: 'idle', y: 0, target: 0, conv: 0, spawned: 0, t: 0, rxn: 0, c: null };
+    let B = { state: 'idle', y: 0, target: 0, conv: 0, spawned: 0, t: 0, rAcc: 0, nR: 0, T: 70, tLive: 70, dT: 0, noise: 0, tfSum: 0, tSum: 0 };
+
+    function rate() { return parseFloat(document.querySelector('input[name=spd]:checked').value); }
 
     function startBatch() {
         if (B.state === 'running' || B.state === 'wait') return;
-        const c = cfg();
-        const y = sampleYield(c);
-        B = { state: 'running', y, target: Math.round(y * NA), conv: 0, spawned: 0, t: 0, rxn: 0, c };
+        const c = cfg(), s = S();
+        if (c.unstable) {
+            tOff = tOff * 0.7 + randn() * c.fluk * 0.714;      // jalan acak antar-batch (Ornstein-Uhlenbeck)
+        } else tOff = 0;
+        const Tb = clamp(c.T + tOff, 5, 130);
+        const noise = sampleNoise(c);
+        const y = clamp(meanYieldAt(Tb, c) + noise, 0.2, 1);
+        B = { state: 'running', y, target: Math.round(y * NA), conv: 0, spawned: 0, t: 0, rAcc: 0,
+              nR: Math.ceil(NA * s.ratio * 1.35) + 20, T: Tb, tLive: Tb, dT: tOff, noise, tfSum: 0, tSum: 0 };
         P = [];
+        gA = []; gR = []; gG = [];
         for (let i = 0; i < NA; i++) {
             P.push({ k: 'A', x: LEFT + 10 + Math.random() * (RIGHT - LEFT - 20), y: TOP + 6 + Math.random() * (BOT - TOP - 30), dead: false });
         }
+        paused = false; setPlayIcon();
         setStatus('Bereaksi');
         $('st-y').textContent = '...';
         updateCounters();
     }
 
     function step(c) {
+        const s = S();
         B.t++;
-        // injeksi reduktor
-        if (B.spawned < NR && B.t % 2 === 0) {
-            for (let i = 0; i < 2 && B.spawned < NR; i++, B.spawned++) {
+        // pemanas dibaca langsung: geser slider saat reaksi berjalan -> suhu ikut berubah
+        B.T = clamp(c.T + B.dT, 0, 140);
+        B.tfSum += tfun(B.T); B.tSum += B.T;
+        // rendemen bergantung pada rata-rata kondisi suhu selama batch + kondisi lab (acak) saat batch dimulai
+        B.y = clamp(c.base * c.wf * (B.tfSum / B.t) + B.noise, 0.2, 1);
+        B.target = Math.max(B.conv, Math.round(B.y * NA));
+
+        if (c.unstable) {
+            B.tLive += (B.T - B.tLive) * 0.02 + randn() * c.fluk * 0.04;
+            B.tLive = clamp(B.tLive, 5, 140);
+        } else B.tLive = B.T;
+        const Tk = s.temp.opt + 273.15, Tl = B.tLive + 273.15;
+        const kT = Math.sqrt(Tl / Tk);
+        const pr = clamp(0.35 * Math.exp(6014 * (1 / Tk - 1 / Tl)), 0.05, 0.95);   // Arrhenius, Ea ≈ 50 kJ/mol
+        B.pr = pr;
+
+        const perTick = Math.max(2, Math.ceil(B.nR / 100));
+        if (B.spawned < B.nR && B.t % 2 === 0) {
+            for (let i = 0; i < perTick && B.spawned < B.nR; i++, B.spawned++) {
                 P.push({ k: 'R', x: LEFT + 2, y: TOP + 20 + Math.random() * (BOT - TOP - 60), dead: false });
             }
         }
         const f = c.flow;
         for (const p of P) {
             if (p.k === 'A') {
-                p.x += f * 0.6 + (Math.random() - 0.5) * 1.3;
-                p.y += (Math.random() - 0.5) * 1.3;
+                p.x += f * 0.6 + (Math.random() - 0.5) * 1.3 * kT;
+                p.y += (Math.random() - 0.5) * 1.3 * kT;
             } else if (p.k === 'R') {
-                p.x += f * 1.0 + (Math.random() - 0.5) * 1.6;
-                p.y += (Math.random() - 0.5) * 1.6;
+                p.x += f * 1.0 + (Math.random() - 0.5) * 1.6 * kT;
+                p.y += (Math.random() - 0.5) * 1.6 * kT;
             } else if (p.k === 'B') {
-                p.x += f * 0.5 + (Math.random() - 0.5) * 0.8;
-                p.y += (Math.random() - 0.5) * 0.8;
+                p.x += f * 0.5 + (Math.random() - 0.5) * 0.8 * kT;
+                p.y += (Math.random() - 0.5) * 0.8 * kT;
                 p.life--;
                 if (p.life <= 0) p.dead = true;
             } else if (p.k === 'G' && !p.settled) {
-                p.vy = Math.min((p.vy || 0) + 0.08, 2.2);
-                p.y += p.vy;
+                if (s.float) {
+                    p.vy = Math.max((p.vy || 0) - 0.06, -1.8);
+                    p.y += p.vy;
+                    if (p.y <= p.floor) { p.y = p.floor; p.settled = true; }
+                } else {
+                    p.vy = Math.min((p.vy || 0) + 0.08, 2.2);
+                    p.y += p.vy;
+                    if (p.y >= p.floor) { p.y = p.floor; p.settled = true; }
+                }
                 p.x += (Math.random() - 0.5) * 0.4;
-                if (p.y >= p.floor) { p.y = p.floor; p.settled = true; }
             }
             if (p.k !== 'G') {
-                if (p.x > RIGHT) p.x = LEFT + 2;      // sirkulasi (pengaduk)
+                if (p.x > RIGHT) p.x = LEFT + 2;
                 if (p.x < LEFT) p.x = RIGHT - 2;
                 p.y = clamp(p.y, TOP + 4, BOT - 6);
             }
         }
-        // reaksi: AuCl4- + HSO3- -> Au
         if (B.conv < B.target) {
             const As = P.filter(p => p.k === 'A' && !p.dead);
             const Rs = P.filter(p => p.k === 'R' && !p.dead);
@@ -286,36 +505,39 @@
                 for (const r of Rs) {
                     if (r.dead) continue;
                     const dx = a.x - r.x, dy = a.y - r.y;
-                    if (dx * dx + dy * dy < 150 && Math.random() < 0.35) {
-                        toGold(a, r);
-                        break;
-                    }
+                    if (dx * dx + dy * dy < 150 && Math.random() < pr) { toGold(a, r); break; }
                 }
             }
         }
-        // jika reduktor belum cukup mengenai partikel, paksa selesai setelah batas waktu
         if (B.conv < B.target && B.t > 1000 && B.t % 4 === 0) {
             const a = P.find(p => p.k === 'A' && !p.dead);
             if (a) toGold(a, null);
         }
-        // batasi partikel produk samping
         const bs = P.filter(p => p.k === 'B');
         if (bs.length > 260) for (let i = 0; i < bs.length - 260; i++) bs[i].dead = true;
         P = P.filter(p => !p.dead);
 
-        // selesai?
+        if (B.t % 5 === 0) {
+            let a = 0, r = 0, g = 0;
+            for (const p of P) { if (p.k === 'A') a++; else if (p.k === 'R') r++; else if (p.k === 'G') g++; }
+            gA.push(a); gR.push(r); gG.push(g);
+            if (gA.length > 260) { gA.shift(); gR.shift(); gG.shift(); }
+        }
+
         const allSettled = P.filter(p => p.k === 'G').every(p => p.settled);
         if (B.conv >= B.target && allSettled && B.t > 120) finishBatch(c);
         else if (B.t % 6 === 0) updateCounters();
     }
 
     function toGold(a, r) {
+        const s = S();
         a.k = 'G'; a.vy = 0; a.settled = false;
-        a.floor = BOT - 4 - Math.random() * 14;
-        B.conv++; B.rxn++;
+        a.floor = s.float ? TOP + 8 + Math.random() * 14 : BOT - 4 - Math.random() * 14;
+        B.conv++;
         if (r) r.dead = true;
-        // stoikiometri 3 HSO3- : 2 Au -> tiap reaksi genap memakai satu reduktor tambahan
-        if (B.rxn % 2 === 0) {
+        B.rAcc += s.ratio - 1;
+        while (B.rAcc >= 1) {
+            B.rAcc -= 1;
             const extra = P.find(p => p.k === 'R' && !p.dead);
             if (extra) extra.dead = true;
         }
@@ -323,53 +545,79 @@
     }
 
     function finishBatch(c) {
+        const Tavg = B.tSum / Math.max(1, B.t);
+        const cb = Object.assign({}, c, { T: Tavg });
         const out = c.M * B.y;
-        history.push({ y: B.y, out });
+        history.push({ y: B.y, out, T: Tavg });
         cumOut += out;
         cumRev += out * c.price;
-        cumCost += c.M * c.vc;
+        cumCost += c.M * vcEff(B.y, cb);
         trajectory.push({ x: cumOut, y: cumRev - cumCost - c.fc });
         B.state = 'wait';
         setStatus('Selesai');
         $('st-y').textContent = num(B.y * 100, 1) + '%';
         updateCounters();
+        setPlayIcon();
         updateProfitChart();
+        updateTempCharts();
         updateSummary();
         setTimeout(() => {
             B.state = 'idle';
-            if (auto) startBatch(); else setStatus('Siap');
+            if (auto) startBatch(); else { setStatus('Siap'); setPlayIcon(); }
         }, 900);
     }
 
     function setStatus(t) { $('st-status').textContent = t; }
     function updateCounters() {
-        $('st-conv').textContent = B.state === 'idle' && !B.target ? '0 / 0' : B.conv + ' / ' + B.target;
+        $('st-conv').textContent = (B.state === 'idle' && !B.target) ? '0 / 0' : B.conv + ' / ' + B.target;
         $('st-n').textContent = history.length;
+        if (B.state === 'running') $('st-y').textContent = '≈ ' + num(B.y * 100, 1) + '%';
+    }
+    function setPlayIcon() {
+        const running = B.state === 'running' && !paused;
+        $('ico-play').className = 'bi ' + (running ? 'bi-pause-fill' : 'bi-play-fill');
     }
 
     /* ---------- RENDER REAKTOR ---------- */
+    function mix(a, b, t) { return a.map((v, i) => Math.round(v + (b[i] - v) * t)); }
+    function tempColor(T) {
+        const d = T - S().temp.opt;
+        const cold = [59, 130, 246], ok = [34, 197, 94], hot = [239, 68, 68];
+        const rgb = d < 0 ? mix(ok, cold, clamp(-d / 30, 0, 1)) : mix(ok, hot, clamp(d / 20, 0, 1));
+        return `rgb(${rgb.join(',')})`;
+    }
     function draw() {
+        const s = S(), c = cfg();
+        const Tshow = B.state === 'running' ? B.tLive : (B.state === 'wait' ? B.T : c.T);
         ctx.clearRect(0, 0, W, H);
         ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
 
-        // warna larutan: merah (AuCl4- banyak) -> jingga muda (habis)
-        const remaining = B.target || B.state !== 'idle' ? (NA - B.conv) / NA : 1;
-        const a = 0.22 + 0.5 * remaining;
-        ctx.fillStyle = `rgba(185, 28, 28, ${a})`;
+        const remaining = (B.target || B.state !== 'idle') ? (NA - B.conv) / NA : 1;
+        ctx.fillStyle = `rgba(${s.tint}, ${0.22 + 0.5 * remaining})`;
         ctx.fillRect(LEFT, TOP, RIGHT - LEFT, BOT - TOP);
 
-        // dinding reaktor
         ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
         ctx.strokeRect(LEFT, TOP, RIGHT - LEFT, BOT - TOP);
 
-        // pipa masuk
+        // pemanas di bawah tabung
+        ctx.fillStyle = tempColor(Tshow);
+        ctx.fillRect(LEFT - 4, BOT + 6, RIGHT - LEFT + 8, 10);
+        ctx.fillStyle = '#e2e8f0'; ctx.font = '10px sans-serif';
+        ctx.fillText('pemanas', LEFT, BOT + 24 > H - 2 ? H - 2 : BOT + 24);
+
         ctx.fillStyle = '#334155'; ctx.fillRect(0, TOP + 40, LEFT, 16);
         ctx.fillStyle = '#7dd3fc'; ctx.font = '11px sans-serif';
-        ctx.fillText('NaHSO₃ →', 6, TOP - 8);
+        ctx.fillText(s.rIn, 6, TOP - 8);
+        ctx.fillStyle = tempColor(Tshow); ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'right';
+        ctx.fillText('T = ' + Tshow.toFixed(1) + ' °C', RIGHT, TOP - 8);
+        ctx.textAlign = 'start';
+        $('st-t').textContent = Tshow.toFixed(1) + ' °C';
+        $('lbl-suhu-live').textContent = Tshow.toFixed(1);
 
-        // panah aliran
-        const flow = parseFloat($('flow').value);
-        if (flow > 0) {
+        const Tk = s.temp.opt + 273.15, Tl = Tshow + 273.15;
+        $('st-pr').textContent = num(clamp(0.35 * Math.exp(6014 * (1 / Tk - 1 / Tl)), 0.05, 0.95) * 100, 0) + '%';
+
+        if (c.flow > 0 && $('chk-flow').checked) {
             ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1;
             for (let i = 0; i < 4; i++) {
                 const yy = TOP + 20 + i * 55;
@@ -378,34 +626,69 @@
             }
         }
 
+        const done = B.target > 0 && B.conv >= B.target;
         for (const p of P) {
             ctx.beginPath();
             if (p.k === 'A') {
-                ctx.fillStyle = '#dc2626'; ctx.arc(p.x, p.y, 5, 0, 7);
+                ctx.fillStyle = done ? s.col.lost : s.col.A; ctx.arc(p.x, p.y, 5, 0, 7);
             } else if (p.k === 'R') {
-                ctx.fillStyle = '#38bdf8'; ctx.arc(p.x, p.y, 3, 0, 7);
+                ctx.fillStyle = s.col.R; ctx.arc(p.x, p.y, 3, 0, 7);
             } else if (p.k === 'G') {
-                ctx.fillStyle = '#facc15'; ctx.arc(p.x, p.y, 4, 0, 7);
-                ctx.fill(); ctx.strokeStyle = '#92400e'; ctx.lineWidth = 1; ctx.stroke(); continue;
+                ctx.fillStyle = s.col.G; ctx.arc(p.x, p.y, 4, 0, 7);
+                ctx.fill(); ctx.strokeStyle = s.col.Gs; ctx.lineWidth = 1; ctx.stroke(); continue;
             } else {
-                ctx.fillStyle = `rgba(203,213,225,${clamp(p.life / 200, 0.08, 0.45)})`; ctx.arc(p.x, p.y, 2, 0, 7);
+                ctx.fillStyle = `rgba(${s.byRGB},${clamp(p.life / 200, 0.08, 0.45)})`; ctx.arc(p.x, p.y, 2, 0, 7);
             }
             ctx.fill();
         }
 
         if (B.state === 'idle' && !history.length) {
-            ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
-            ctx.fillText('Tekan "Jalankan 1 Batch" atau aktifkan Auto-run', W / 2, H / 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('Tekan tombol hijau ▶ untuk memulai batch', W / 2, H / 2);
             ctx.textAlign = 'start';
         }
+    }
+
+    /* ---------- GRAFIK PARTIKEL (waktu nyata) ---------- */
+    const gcv = $('grafik'), gctx = gcv.getContext('2d');
+    function drawGraph() {
+        if (!$('chk-graf').checked) return;
+        const s = S(), GW = gcv.width, GH = gcv.height, pl = 34, pb = 20, pt = 8, pr = 10;
+        gctx.clearRect(0, 0, GW, GH);
+        gctx.fillStyle = '#0f172a'; gctx.fillRect(0, 0, GW, GH);
+        const ymax = Math.max(100, ...gA, ...gR, ...gG);
+        gctx.strokeStyle = 'rgba(255,255,255,0.35)'; gctx.lineWidth = 1;
+        gctx.beginPath(); gctx.moveTo(pl, pt); gctx.lineTo(pl, GH - pb); gctx.lineTo(GW - pr, GH - pb); gctx.stroke();
+        gctx.fillStyle = '#cbd5e1'; gctx.font = '10px sans-serif';
+        gctx.fillText(Math.round(ymax), 4, pt + 8); gctx.fillText('0', 20, GH - pb);
+        gctx.fillText('waktu →', GW - 52, GH - 6);
+        const series = [[gA, s.col.A, 'Reaktan terlarut'], [gR, s.col.R, 'Reagen bebas'], [gG, s.col.G, 'Produk']];
+        const n = 260;
+        series.forEach(([arr, col], idx) => {
+            gctx.strokeStyle = col; gctx.lineWidth = 2; gctx.beginPath();
+            arr.forEach((v, i) => {
+                const x = pl + (i / (n - 1)) * (GW - pl - pr);
+                const y = GH - pb - (v / ymax) * (GH - pb - pt);
+                if (i === 0) gctx.moveTo(x, y); else gctx.lineTo(x, y);
+            });
+            gctx.stroke();
+        });
+        series.forEach(([, col, name], i) => {
+            gctx.fillStyle = col; gctx.fillRect(pl + 8 + i * 120, 6, 10, 10);
+            gctx.fillStyle = '#e2e8f0'; gctx.fillText(name, pl + 22 + i * 120, 15);
+        });
     }
 
     function loop() {
         if (B.state === 'running') {
             const c = cfg();
-            for (let i = 0; i < c.speed; i++) { if (B.state === 'running') step(c); }
+            let n = 0;
+            if (!paused) { acc += rate(); n = Math.floor(acc); acc -= n; }
+            else if (stepReq > 0) { n = 3; stepReq--; }
+            for (let i = 0; i < n && B.state === 'running'; i++) step(c);
         }
         draw();
+        drawGraph();
         requestAnimationFrame(loop);
     }
 
@@ -418,7 +701,7 @@
                 { label: 'Konvensional (rendemen 100%)', data: [], borderColor: '#6b7280', borderDash: [6, 4], pointRadius: 0, borderWidth: 2 },
                 { label: 'Rendemen rendah (P5)', data: [], borderColor: 'rgba(37,99,235,0.35)', pointRadius: 0, borderWidth: 1 },
                 { label: 'Rentang rendemen P5-P95', data: [], borderColor: 'rgba(37,99,235,0.35)', backgroundColor: 'rgba(37,99,235,0.15)', pointRadius: 0, borderWidth: 1, fill: '-1' },
-                { label: 'Rendemen rata-rata', data: [], borderColor: '#1e3a8a', pointRadius: 0, borderWidth: 2.5 },
+                { label: 'Rendemen rata-rata (di setpoint)', data: [], borderColor: '#1e3a8a', pointRadius: 0, borderWidth: 2.5 },
                 { label: 'Laba kumulatif aktual', data: [], borderColor: '#d97706', backgroundColor: '#f59e0b', pointRadius: 5, borderWidth: 2, tension: 0 },
                 { label: 'Volume rencana', data: [], borderColor: '#dc2626', borderDash: [2, 3], pointRadius: 0, borderWidth: 1.5 }
             ]
@@ -427,25 +710,32 @@
             parsing: false, animation: false, responsive: true, maintainAspectRatio: false,
             interaction: { mode: 'nearest', intersect: false },
             scales: {
-                x: { type: 'linear', min: 0, title: { display: true, text: 'Volume terjual (gram)' } },
+                x: { type: 'linear', min: 0, title: { display: true, text: 'Volume terjual' } },
                 y: { title: { display: true, text: 'Laba (juta Rp)' }, grid: gridZero, ticks: { callback: v => (v / 1e6).toLocaleString('id-ID', { maximumFractionDigits: 0 }) } }
             },
             plugins: { legend: { labels: { boxWidth: 12, font: { size: 11 } } },
-                tooltip: { callbacks: { label: t => t.dataset.label + ': ' + rp(t.parsed.y) + ' @ ' + num(t.parsed.x) + ' g' } } }
+                tooltip: { callbacks: { label: t => t.dataset.label + ': ' + rp(t.parsed.y) + ' @ ' + num(t.parsed.x) + ' ' + S().unit } } }
         }
     });
 
     function yieldBand(c) {
         if (mc) return { lo: pct(mc.ySorted, 0.05), hi: pct(mc.ySorted, 0.95) };
-        if (!c.random) return { lo: c.ymean, hi: c.ymean };
-        return { lo: clamp(c.ymean - 1.645 * c.sd, 0.3, 1), hi: clamp(c.ymean + 1.645 * c.sd, 0.3, 1) };
+        if (!c.random && !c.unstable) return { lo: c.ymean, hi: c.ymean };
+        const key = JSON.stringify([SK, c.base, c.wf, c.T, c.unstable, c.fluk, c.random, c.sd, c.pInc]);
+        if (bandCache.key !== key) {
+            const ys = [];
+            for (let i = 0; i < 800; i++) ys.push(sampleYield(c, sampleTemp(c)));
+            ys.sort((a, b) => a - b);
+            bandCache = { key, lo: pct(ys, 0.05), hi: pct(ys, 0.95) };
+        }
+        return { lo: bandCache.lo, hi: bandCache.hi };
     }
 
     function updateProfitChart() {
         const c = cfg();
         const band = yieldBand(c);
-        const cand = [bepFor(c.ymean, c), bepFor(band.lo, c), bepFor(1, c)].filter(isFinite);
-        let xmax = cand.length ? Math.max(...cand.slice(0, 2)) * 1.8 : c.M * 20;
+        const cand = [bepFor(c.ymean, c), bepFor(band.lo, c)].filter(isFinite);
+        let xmax = cand.length ? Math.max(...cand) * 1.8 : c.M * 20;
         xmax = Math.max(xmax, c.planQ * 1.3, cumOut * 1.1, 10);
         const line = y => [{ x: 0, y: -c.fc }, { x: xmax, y: profitAt(xmax, y, c) }];
         const d = profitChart.data.datasets;
@@ -454,9 +744,9 @@
         d[2].data = line(band.hi);
         d[3].data = line(c.ymean);
         d[4].data = trajectory.slice();
-        const yTop = Math.max(profitAt(xmax, 1, c), 1);
-        d[5].data = [{ x: c.planQ, y: -c.fc }, { x: c.planQ, y: yTop }];
+        d[5].data = [{ x: c.planQ, y: -c.fc }, { x: c.planQ, y: Math.max(profitAt(xmax, 1, c), 1) }];
         profitChart.options.scales.x.max = xmax;
+        profitChart.options.scales.x.title.text = 'Volume terjual (' + S().unit + ')';
         profitChart.update();
     }
 
@@ -467,13 +757,14 @@
         options: {
             animation: false, responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false } },
-            scales: { x: { title: { display: true, text: 'BEP (gram)' }, ticks: { maxTicksLimit: 8 } }, y: { title: { display: true, text: 'Jumlah batch' } } }
+            scales: { x: { title: { display: true, text: 'BEP' }, ticks: { maxTicksLimit: 8 } }, y: { title: { display: true, text: 'Jumlah batch' } } }
         }
     });
+    function clearHist() { histChart.data.labels = []; histChart.data.datasets[0].data = []; histChart.update(); }
 
     function drawHist(c) {
         const fin = mc.beps.filter(isFinite);
-        if (!fin.length) { histChart.data.labels = []; histChart.data.datasets[0].data = []; histChart.update(); return; }
+        if (!fin.length) { clearHist(); return; }
         const lo = Math.min(...fin), hi = Math.max(...fin), bins = 24;
         const w = (hi - lo) / bins || 1;
         const counts = new Array(bins).fill(0);
@@ -481,7 +772,59 @@
         histChart.data.labels = counts.map((_, i) => num(lo + w * (i + 0.5), 0));
         histChart.data.datasets[0].data = counts;
         histChart.data.datasets[0].backgroundColor = counts.map((_, i) => (lo + w * (i + 0.5)) > c.planQ ? 'rgba(220,38,38,0.75)' : 'rgba(37,99,235,0.75)');
+        histChart.options.scales.x.title.text = 'BEP (' + S().unit + ')';
         histChart.update();
+    }
+
+    /* ---------- GRAFIK SUHU ---------- */
+    const batchChart = new Chart($('chart-batch'), {
+        type: 'line',
+        data: { labels: [], datasets: [
+            { label: 'Suhu batch (°C)', data: [], borderColor: '#dc2626', backgroundColor: '#dc2626', yAxisID: 'yT', pointRadius: 3, borderWidth: 2, tension: 0.2 },
+            { label: 'Rendemen (%)', data: [], borderColor: '#1e3a8a', backgroundColor: '#1e3a8a', yAxisID: 'yY', pointRadius: 3, borderWidth: 2, tension: 0.2 }
+        ] },
+        options: {
+            animation: false, responsive: true, maintainAspectRatio: false,
+            scales: {
+                x: { title: { display: true, text: 'Batch ke-' } },
+                yT: { position: 'left', title: { display: true, text: 'Suhu (°C)' } },
+                yY: { position: 'right', min: 0, max: 100, title: { display: true, text: 'Rendemen (%)' }, grid: { drawOnChartArea: false } }
+            },
+            plugins: { legend: { labels: { boxWidth: 12, font: { size: 11 } } } }
+        }
+    });
+    const curveChart = new Chart($('chart-kurva'), {
+        type: 'line',
+        data: { datasets: [
+            { label: 'Rendemen rata-rata vs suhu', data: [], borderColor: '#1e3a8a', pointRadius: 0, borderWidth: 2.5 },
+            { label: 'Batch', data: [], type: 'scatter', borderColor: '#d97706', backgroundColor: '#f59e0b', pointRadius: 4, showLine: false },
+            { label: 'Setpoint', data: [], borderColor: '#dc2626', borderDash: [4, 4], pointRadius: 0, borderWidth: 1.5 }
+        ] },
+        options: {
+            parsing: false, animation: false, responsive: true, maintainAspectRatio: false,
+            scales: {
+                x: { type: 'linear', title: { display: true, text: 'Suhu (°C)' } },
+                y: { min: 0, max: 100, title: { display: true, text: 'Rendemen (%)' } }
+            },
+            plugins: { legend: { labels: { boxWidth: 12, font: { size: 11 } } } }
+        }
+    });
+
+    function updateTempCharts() {
+        const c = cfg(), t = S().temp;
+        batchChart.data.labels = history.map((_, i) => i + 1);
+        batchChart.data.datasets[0].data = history.map(h => +h.T.toFixed(1));
+        batchChart.data.datasets[1].data = history.map(h => +(h.y * 100).toFixed(1));
+        batchChart.update();
+
+        const pts = [];
+        for (let T = t.min; T <= t.max; T += 1) pts.push({ x: T, y: meanYieldAt(T, c) * 100 });
+        curveChart.data.datasets[0].data = pts;
+        curveChart.data.datasets[1].data = history.map(h => ({ x: h.T, y: h.y * 100 }));
+        curveChart.data.datasets[2].data = [{ x: c.T, y: 0 }, { x: c.T, y: 100 }];
+        curveChart.options.scales.x.min = t.min;
+        curveChart.options.scales.x.max = t.max;
+        curveChart.update();
     }
 
     /* ---------- MONTE CARLO ---------- */
@@ -489,11 +832,13 @@
         const c = cfg(), N = 2000;
         const ys = [], beps = [], profits = [];
         for (let i = 0; i < N; i++) {
-            const y = sampleYield(c);
-            ys.push(y); beps.push(bepFor(y, c)); profits.push(profitAt(c.planQ, y, c));
+            const T = sampleTemp(c);
+            const y = sampleYield(c, T);
+            const cc = Object.assign({}, c, { T });
+            ys.push(y); beps.push(bepFor(y, cc)); profits.push(profitAt(c.planQ, y, cc));
         }
         mc = {
-            c, ySorted: ys.slice().sort((a, b) => a - b), beps,
+            ySorted: ys.slice().sort((a, b) => a - b), beps,
             bepSorted: beps.filter(isFinite).sort((a, b) => a - b),
             profSorted: profits.slice().sort((a, b) => a - b),
             pLoss: profits.filter(p => p < 0).length / N,
@@ -508,59 +853,171 @@
     /* ---------- RINGKASAN ---------- */
     function box(l, v, cls) { return `<div class="col-6 col-md-3"><div class="stat"><div class="v ${cls || ''}">${v}</div><div class="l">${l}</div></div></div>`; }
     function updateSummary() {
-        const c = cfg();
+        const c = cfg(), s = S(), u = s.unit, t = s.temp;
         let h = '';
-        h += box('BEP konvensional (rendemen 100%)', num(bepFor(1, c)) + ' g');
-        h += box('BEP rendemen rata-rata ' + num(c.ymean * 100, 0) + '%', num(bepFor(c.ymean, c)) + ' g');
-        h += box('Laba @ ' + num(c.planQ, 0) + ' g (rendemen rata-rata)', rp(profitAt(c.planQ, c.ymean, c)), profitAt(c.planQ, c.ymean, c) >= 0 ? 'text-success' : 'text-danger');
-        h += box('Biaya variabel efektif / g', rp(c.vc / c.ymean));
+        h += box('BEP konvensional (rendemen 100%)', num(bepFor(1, c)) + ' ' + u);
+        h += box('BEP rendemen rata-rata ' + num(c.ymean * 100, 1) + '% (di ' + num(c.T, 0) + ' °C)', num(bepFor(c.ymean, c)) + ' ' + u);
+        const pr = profitAt(c.planQ, c.ymean, c);
+        h += box('Laba @ ' + num(c.planQ, 0) + ' ' + u + ' (rendemen rata-rata)', rp(pr), pr >= 0 ? 'text-success' : 'text-danger');
+        h += box('Biaya variabel efektif / ' + u + ' (bahan + energi)', rp(vcEff(c.ymean, c) / c.ymean));
+
+        const ySdp = minYield(c, y => margin(y, c) > 0);
+        const yBep = minYield(c, y => profitAt(c.planQ, y, c) >= 0);
+        h += box('Rendemen minimum agar tidak tutup (SDP)', ySdp === null ? 'Tak mungkin (harga < biaya variabel)' : num(ySdp * 100, 1) + '%');
+        h += box('Rendemen minimum agar laba ≥ 0 di volume rencana', yBep === null ? 'Tak tercapai' : num(yBep * 100, 1) + '%');
+        h += box('Status rendemen rata-rata', margin(c.ymean, c) <= 0 ? 'DI BAWAH SDP: hentikan produksi' : (pr < 0 ? 'Di atas SDP, belum BEP' : 'Di atas BEP rencana'), margin(c.ymean, c) <= 0 ? 'text-danger' : (pr < 0 ? 'text-warning' : 'text-success'));
+
+        let bestBep = Infinity, tBep = null, bestY = 0, tY = t.opt;
+        for (let T = t.min; T <= t.max; T += 1) {
+            const y = meanYieldAt(T, c), cc = Object.assign({}, c, { T });
+            const b = bepFor(y, cc);
+            if (b < bestBep) { bestBep = b; tBep = T; }
+            if (y > bestY) { bestY = y; tY = T; }
+        }
+        h += box('Suhu optimum rendemen', num(tY, 0) + ' °C');
+        h += box('Suhu optimum ekonomis (BEP terendah)', tBep === null ? 'Tak ada yang layak' : num(tBep, 0) + ' °C (BEP ' + num(bestBep) + ' ' + u + ')');
+        $('suhu-info').textContent = 'Optimum kurva ≈ ' + t.opt + ' °C. Rendemen rata-rata di setpoint ' + num(c.T, 0) + ' °C: ' + num(c.ymean * 100, 1) + '%' +
+            (c.unstable ? ' (suhu tiap batch bergeser ±' + num(c.fluk, 1) + ' °C).' : '.');
+
+        if (s.water) {
+            let wBep = null, wSdp = null;
+            for (let w = 0; w <= 5.0001; w += 0.05) {
+                const y = clamp(c.base * waterFactor(w) * tfun(c.T), 0.2, 1);
+                if (wBep === null && profitAt(c.planQ, y, c) < 0) wBep = w;
+                if (wSdp === null && margin(y, c) <= 0) wSdp = w;
+            }
+            h += box('Kadar air saat gagal BEP rencana', wBep === null ? 'Tidak gagal sampai 5%' : '≥ ' + num(wBep, 2) + '%', wBep === null ? '' : 'text-warning');
+            h += box('Kadar air saat menyentuh SDP', wSdp === null ? 'Tidak tercapai sampai 5%' : '≥ ' + num(wSdp, 2) + '%', wSdp === null ? '' : 'text-danger');
+            $('air-info').textContent = 'Rendemen efektif rata-rata (air + suhu): ' + num(c.ymean * 100, 1) + '%. Efek air mulai di atas 0,5%.';
+        }
+
         if (mc) {
-            h += box('BEP Monte Carlo: rata-rata', num(mc.bepSorted.length ? mc.bepSorted.reduce((s, v) => s + v, 0) / mc.bepSorted.length : Infinity) + ' g');
-            h += box('BEP P5 - P95', num(pct(mc.bepSorted, 0.05)) + ' - ' + num(pct(mc.bepSorted, 0.95)) + ' g');
+            h += box('BEP Monte Carlo: rata-rata', num(mc.bepSorted.length ? mc.bepSorted.reduce((a, v) => a + v, 0) / mc.bepSorted.length : Infinity) + ' ' + u);
+            h += box('BEP P5 - P95', num(pct(mc.bepSorted, 0.05)) + ' - ' + num(pct(mc.bepSorted, 0.95)) + ' ' + u);
             h += box('Laba rencana P5 / rata-rata / P95', rp(pct(mc.profSorted, 0.05)) + ' / ' + rp(mc.meanProfit) + ' / ' + rp(pct(mc.profSorted, 0.95)));
-            h += box('Peluang rugi di volume rencana', num(mc.pLoss * 100, 1) + '%' + (mc.pInviable > 0 ? ' (tak layak ' + num(mc.pInviable * 100, 1) + '%)' : ''), mc.pLoss > 0.25 ? 'text-danger' : 'text-success');
+            h += box('Peluang rugi di volume rencana', num(mc.pLoss * 100, 1) + '%' + (mc.pInviable > 0 ? ' (batch di bawah SDP: ' + num(mc.pInviable * 100, 1) + '%)' : ''), mc.pLoss > 0.25 ? 'text-danger' : 'text-success');
         }
         if (history.length) {
-            const my = history.reduce((s, b) => s + b.y, 0) / history.length;
+            const my = history.reduce((a, b) => a + b.y, 0) / history.length;
+            const mT = history.reduce((a, b) => a + b.T, 0) / history.length;
+            const lc = cumRev - cumCost - c.fc;
             h += box('Batch berjalan: rendemen rata-rata', num(my * 100, 1) + '% (' + history.length + ' batch)');
-            h += box('Laba kumulatif aktual', rp(cumRev - cumCost - c.fc), cumRev - cumCost - c.fc >= 0 ? 'text-success' : 'text-danger');
+            h += box('Batch berjalan: suhu rata-rata', num(mT, 1) + ' °C');
+            h += box('Laba kumulatif aktual', rp(lc), lc >= 0 ? 'text-success' : 'text-danger');
             const last = history[history.length - 1];
-            h += box('BEP batch terakhir', num(bepFor(last.y, c)) + ' g');
-            h += box('Total emas terjual', num(cumOut) + ' g');
+            h += box('BEP batch terakhir (' + num(last.T, 1) + ' °C)', num(bepFor(last.y, Object.assign({}, c, { T: last.T }))) + ' ' + u);
+            h += box('Total terjual', num(cumOut) + ' ' + u);
         }
         $('ringkasan').innerHTML = h;
     }
 
+    /* ---------- GANTI ZAT ---------- */
+    function applyLabels() {
+        const s = S(), u = s.unit;
+        $('reaksi-teks').textContent = s.eq;
+        $('catatan-zat').textContent = s.catatan;
+        $('inc-info').textContent = s.incInfo;
+        $('lb-M').textContent = 'Bahan diproses / batch (' + u + ')';
+        $('lb-price').textContent = 'Harga jual / ' + u + ' (Rp)';
+        $('lb-vc').textContent = 'Biaya bahan / ' + u + ' diproses (Rp)';
+        $('lb-plan').textContent = 'Volume penjualan rencana (' + u + ')';
+        $('lb-eper').textContent = 'Biaya energi / ' + u + ' / °C di atas ' + T_AMB + ' (Rp)';
+        $('lb-pen').textContent = 'Biaya pemurnian ulang / ' + u + ' (Rp)';
+        ['A', 'R', 'G', 'B'].forEach(k => {
+            $('dot-' + k).style.background = s.col[k];
+            $('lg-' + k).textContent = s.lg[k];
+        });
+        $('box-air').classList.toggle('d-none', !s.water);
+        $('suhu-r').min = s.temp.min; $('suhu-r').max = s.temp.max;
+    }
+
+    function resetAll() {
+        auto = false; paused = false; acc = 0; stepReq = 0; tOff = 0;
+        $('btn-auto').className = 'btn btn-sm fw-bold btn-outline-secondary';
+        $('btn-auto').innerHTML = '<i class="bi bi-arrow-repeat"></i> Auto-run: Mati';
+        history = []; cumOut = cumCost = cumRev = 0; trajectory = [{ x: 0, y: 0 }]; mc = null; P = [];
+        gA = []; gR = []; gG = [];
+        const T0 = cfg().T;
+        B = { state: 'idle', y: 0, target: 0, conv: 0, spawned: 0, t: 0, rAcc: 0, nR: 0, T: T0, tLive: T0, dT: 0, noise: 0, tfSum: 0, tSum: 0 };
+        setStatus('Siap'); $('st-y').textContent = '-'; updateCounters(); setPlayIcon();
+        clearHist(); updateProfitChart(); updateTempCharts(); updateSummary();
+    }
+
+    function setSubstance(key) {
+        SK = key;
+        const s = S(), d = s.def;
+        $('berat-emas').value = d.M; $('rendemen').value = d.y;
+        $('sd').value = d.sd; $('lbl-sd').textContent = d.sd;
+        $('inc').value = d.inc; $('lbl-inc').textContent = d.inc;
+        $('fixed-cost').value = d.fc; $('harga-jual').value = d.price; $('variable-cost').value = d.vc;
+        $('plan-q').value = d.plan; $('pen').value = d.pen; $('thr').value = d.thr;
+        $('eper').value = s.temp.eper;
+        $('suhu-r').min = s.temp.min; $('suhu-r').max = s.temp.max;
+        $('suhu').value = s.temp.opt; $('suhu-r').value = s.temp.opt;
+        $('fluk').value = s.temp.fluk; $('lbl-fluk').textContent = s.temp.fluk.toFixed(1);
+        $('air').value = 0.5; $('lbl-air').textContent = '0.5';
+        applyLabels();
+        resetAll();
+    }
+
     /* ---------- KONTROL ---------- */
-    $('btn-batch').onclick = startBatch;
+    $('pilihan-zat').onchange = e => setSubstance(e.target.value);
+    $('btn-play').onclick = () => {
+        if (B.state === 'idle') startBatch();
+        else if (B.state === 'running') paused = !paused;
+        setPlayIcon();
+    };
+    $('btn-step').onclick = () => {
+        if (B.state === 'idle') { startBatch(); paused = true; }
+        else paused = true;
+        stepReq++;
+        setPlayIcon();
+    };
+    $('btn-pump').onclick = () => {
+        if (B.state !== 'running') return;
+        for (let i = 0; i < 30; i++) P.push({ k: 'R', x: LEFT + 2, y: TOP + 20 + Math.random() * (BOT - TOP - 60), dead: false });
+    };
     $('btn-auto').onclick = () => {
         auto = !auto;
         const b = $('btn-auto');
-        b.className = 'btn fw-bold ' + (auto ? 'btn-success' : 'btn-outline-secondary');
+        b.className = 'btn btn-sm fw-bold ' + (auto ? 'btn-success' : 'btn-outline-secondary');
         b.innerHTML = '<i class="bi bi-arrow-repeat"></i> Auto-run: ' + (auto ? 'Nyala' : 'Mati');
-        if (auto) startBatch();
+        if (auto && B.state === 'idle') startBatch();
     };
     $('btn-mc').onclick = runMC;
-    $('btn-reset').onclick = () => {
-        auto = false; $('btn-auto').className = 'btn fw-bold btn-outline-secondary';
-        $('btn-auto').innerHTML = '<i class="bi bi-arrow-repeat"></i> Auto-run: Mati';
-        history = []; cumOut = cumCost = cumRev = 0; trajectory = [{ x: 0, y: 0 }]; mc = null; P = [];
-        B = { state: 'idle', y: 0, target: 0, conv: 0, spawned: 0, t: 0, rxn: 0, c: null };
-        setStatus('Siap'); $('st-y').textContent = '-'; updateCounters();
-        histChart.data.labels = []; histChart.data.datasets[0].data = []; histChart.update();
-        updateProfitChart(); updateSummary();
-    };
+    $('btn-reset').onclick = resetAll;
 
-    const labels = { sd: 'lbl-sd', inc: 'lbl-inc', speed: 'lbl-speed', flow: 'lbl-flow' };
+    $('mode-suhu').addEventListener('change', () => {
+        $('box-fluk').classList.toggle('d-none', $('mode-suhu').value !== 'tidak');
+    });
+    $('chk-graf').addEventListener('change', () => { $('wrap-graf').classList.toggle('d-none', !$('chk-graf').checked); });
+    $('suhu').addEventListener('input', () => { $('suhu-r').value = $('suhu').value; });
+    $('suhu-r').addEventListener('input', () => { $('suhu').value = $('suhu-r').value; });
+
+    const labels = { sd: 'lbl-sd', inc: 'lbl-inc', flow: 'lbl-flow', air: 'lbl-air', fluk: 'lbl-fluk' };
     Object.keys(labels).forEach(id => {
-        $(id).addEventListener('input', () => { $(labels[id]).textContent = id === 'flow' ? parseFloat($(id).value).toFixed(1) : $(id).value; });
+        $(id).addEventListener('input', () => {
+            const v = parseFloat($(id).value);
+            $(labels[id]).textContent = (id === 'flow' || id === 'air' || id === 'fluk') ? v.toFixed(1) : v;
+        });
     });
-    ['berat-emas', 'rendemen', 'acak', 'sd', 'inc', 'fixed-cost', 'harga-jual', 'variable-cost', 'plan-q'].forEach(id => {
-        $(id).addEventListener('input', () => { mc = null; updateProfitChart(); updateSummary(); });
+    const refresh = () => {
+        if (mc) { mc = null; clearHist(); }
+        updateProfitChart(); updateTempCharts(); updateSummary();
+    };
+    ['berat-emas', 'rendemen', 'acak', 'sd', 'inc', 'fixed-cost', 'harga-jual', 'variable-cost', 'plan-q', 'eper', 'pen', 'thr', 'air', 'suhu', 'suhu-r', 'fluk', 'mode-suhu'].forEach(id => {
+        $(id).addEventListener('input', refresh);
+        $(id).addEventListener('change', refresh);
     });
 
-    updateProfitChart();
-    updateSummary();
+    // grafik Chart.js yang dibuat di tab tersembunyi perlu diukur ulang saat tab dibuka
+    document.querySelectorAll('button[data-bs-toggle="pill"]').forEach(b => {
+        b.addEventListener('shown.bs.tab', () => {
+            [profitChart, histChart, batchChart, curveChart].forEach(ch => ch.resize());
+        });
+    });
+
+    setSubstance('emas');
     loop();
 })();
 </script>
