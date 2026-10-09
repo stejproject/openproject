@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>STEJ Project - Techno Economics Simulator</title>
+    <meta name="description" content="Simulator interaktif reaksi kimia dan analisis tekno-ekonomi (BEP, titik tutup, Monte Carlo) untuk emas, palladium, aspirin, dan biodiesel.">
+    <link rel="shortcut icon" href="https://stejproject.github.io/favicon-128.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <style>
@@ -48,14 +50,24 @@
 <div class="container-xl my-3">
 
     <ul class="nav nav-pills" id="tabs" role="tablist">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-sim" type="button"><i class="bi bi-flask"></i> Simulasi Reaktor</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-eko" type="button"><i class="bi bi-graph-up-arrow"></i> Ekonomi &amp; BEP</button></li>
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-katalog" type="button"><i class="bi bi-grid-3x3-gap"></i> 1. Katalog</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-sim" type="button"><i class="bi bi-flask"></i> 2. Sandbox Reaktor</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-eko" type="button"><i class="bi bi-graph-up-arrow"></i> 3. Hasil &amp; BEP</button></li>
     </ul>
 
     <div class="tab-content">
 
     <!-- ===================== TAB 1: SIMULASI ===================== -->
-    <div class="tab-pane fade show active" id="tab-sim">
+    <div class="tab-pane fade show active" id="tab-katalog">
+        <div class="phet-panel mt-3">
+            <h6><i class="bi bi-grid-3x3-gap"></i> Langkah 1 dari 3: pilih zat / industri</h6>
+            <p class="small mb-1">Pilih satu reaksi untuk dicoba. Di <strong>Sandbox</strong> Anda menjalankan reaksi partikel, menggeser suhu, dan mengatur kondisi lab. Di <strong>Hasil &amp; BEP</strong> Anda melihat dampaknya pada laba, titik impas (BEP), dan titik tutup (SDP).</p>
+            <p class="small text-muted mb-0">Semua angka bawaan (harga, biaya, kurva suhu) hanya ilustrasi edukasi. Ganti dengan data riil Anda sendiri.</p>
+        </div>
+        <div class="row g-3" id="katalog-grid"></div>
+    </div>
+
+    <div class="tab-pane fade" id="tab-sim">
         <div class="row g-3 mt-0">
             <div class="col-lg-8">
                 <div class="phet-screen">
@@ -93,6 +105,8 @@
                         <button class="btn btn-sm btn-outline-secondary fw-bold" id="btn-auto"><i class="bi bi-arrow-repeat"></i> Auto-run: Mati</button>
                     </div>
                 </div>
+
+                <div id="hasil-batch" class="alert d-none mt-3 mb-0 small" role="status"></div>
 
                 <div class="phet-screen mt-3" id="wrap-graf">
                     <div class="fw-semibold small mb-1" style="color:#7c4a03">Grafik jumlah partikel terhadap waktu</div>
@@ -210,6 +224,9 @@
                 <div class="col-6 col-md-3 d-flex align-items-end">
                     <button class="btn btn-primary btn-sm fw-bold w-100" id="btn-mc"><i class="bi bi-dice-5"></i> Monte Carlo 2.000 batch</button>
                 </div>
+                <div class="col-6 col-md-3 d-flex align-items-end">
+                    <button class="btn btn-outline-success btn-sm fw-bold w-100" id="btn-csv"><i class="bi bi-download"></i> Unduh hasil (CSV)</button>
+                </div>
             </div>
             <div class="form-text">Rendemen, suhu, dan zat diatur di tab Simulasi. Jalankan batch di sana, hasilnya otomatis muncul di grafik tab ini.</div>
         </div>
@@ -264,7 +281,7 @@
 
 <footer class="text-center">
     <p class="mb-1">&copy; 2020 - 2026 STEJ Project. Dilindungi di bawah ketentuan payung utama STEJ-LICENSE.</p>
-    <p class="small text-secondary mb-0">Aplikasi buatan manusia murni berbasis logika terstruktur, bebas halusinasi AI.</p>
+    <p class="small text-secondary mb-0">Dirancang oleh STEJ Project dengan bantuan AI (Claude). Model dan angka bawaan bersifat ilustrasi edukasi, bukan data industri riil atau nasihat bisnis.</p>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -436,6 +453,7 @@
             P.push({ k: 'A', x: LEFT + 10 + Math.random() * (RIGHT - LEFT - 20), y: TOP + 6 + Math.random() * (BOT - TOP - 30), dead: false });
         }
         paused = false; setPlayIcon();
+        hideResult();
         setStatus('Bereaksi');
         $('st-y').textContent = '...';
         updateCounters();
@@ -558,6 +576,8 @@
         $('st-y').textContent = num(B.y * 100, 1) + '%';
         updateCounters();
         setPlayIcon();
+        showResult(c, cb);
+        ujiZ = [randn(), randn(), randn()];
         updateProfitChart();
         updateTempCharts();
         updateSummary();
@@ -566,6 +586,28 @@
             if (auto) startBatch(); else { setStatus('Siap'); setPlayIcon(); }
         }, 900);
     }
+
+    // Simpul keputusan: rendemen di bawah ambang -> pemurnian ulang (boncos), selain itu sukses
+    function showResult(c, cb) {
+        const el = $('hasil-batch');
+        const low = B.y < c.thr;
+        const out = c.M * B.y;
+        const batchProfit = out * c.price - c.M * vcEff(B.y, cb);
+        const lc = cumRev - cumCost - c.fc;
+        const u = S().unit;
+        el.className = 'alert mt-3 mb-0 small ' + (low ? 'alert-warning' : 'alert-success');
+        if (low) {
+            el.innerHTML = `<strong><i class="bi bi-exclamation-triangle-fill"></i> Rendemen ${num(B.y * 100, 1)}% di bawah ambang ${num(c.thr * 100, 0)}%.</strong> ` +
+                (c.pen > 0
+                    ? `Pemurnian ulang diperlukan: tambahan biaya ${rp(c.M * c.pen)} untuk batch ini (${rp(c.pen)}/${u}). `
+                    : `Pemurnian ulang diperlukan, tetapi biaya pemurnian di tab Ekonomi masih Rp 0. `) +
+                `Laba batch (di luar biaya tetap): <strong>${rp(batchProfit)}</strong>. Laba kumulatif aktual: <strong>${rp(lc)}</strong>.`;
+        } else {
+            el.innerHTML = `<strong><i class="bi bi-check-circle-fill"></i> Batch sukses.</strong> Rendemen ${num(B.y * 100, 1)}% (ambang ${num(c.thr * 100, 0)}%). ` +
+                `Laba batch (di luar biaya tetap): <strong>${rp(batchProfit)}</strong>. Laba kumulatif aktual: <strong>${rp(lc)}</strong>.`;
+        }
+    }
+    function hideResult() { $('hasil-batch').className = 'alert d-none mt-3 mb-0 small'; }
 
     function setStatus(t) { $('st-status').textContent = t; }
     function updateCounters() {
@@ -909,6 +951,7 @@
             h += box('Total terjual', num(cumOut) + ' ' + u);
         }
         $('ringkasan').innerHTML = h;
+        if (typeof renderUji === 'function') renderUji();
     }
 
     /* ---------- GANTI ZAT ---------- */
@@ -939,6 +982,7 @@
         gA = []; gR = []; gG = [];
         const T0 = cfg().T;
         B = { state: 'idle', y: 0, target: 0, conv: 0, spawned: 0, t: 0, rAcc: 0, nR: 0, T: T0, tLive: T0, dT: 0, noise: 0, tfSum: 0, tSum: 0 };
+        hideResult();
         setStatus('Siap'); $('st-y').textContent = '-'; updateCounters(); setPlayIcon();
         clearHist(); updateProfitChart(); updateTempCharts(); updateSummary();
     }
@@ -1017,6 +1061,157 @@
         });
     });
 
+    /* ---------- KATALOG (langkah 1) ---------- */
+    const KAT = {
+        emas:      { sektor: 'Logam mulia & pemurnian', icon: 'bi-gem',       warna: '#b45309' },
+        palladium: { sektor: 'Daur ulang e-waste',      icon: 'bi-cpu',       warna: '#475569' },
+        aspirin:   { sektor: 'Industri farmasi',        icon: 'bi-capsule',   warna: '#0f766e' },
+        biodiesel: { sektor: 'Energi hijau',            icon: 'bi-fuel-pump', warna: '#a16207' }
+    };
+    function renderKatalog() {
+        $('katalog-grid').innerHTML = Object.keys(SUB).map(k => {
+            const s = SUB[k], m = KAT[k], d = s.def;
+            return `<div class="col-md-6 col-xl-3"><div class="card h-100" style="border-top:5px solid ${m.warna}">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center gap-2 mb-1"><i class="bi ${m.icon} fs-3" style="color:${m.warna}"></i><div><div class="fw-bold">${s.nama}</div><div class="small text-muted">${m.sektor}</div></div></div>
+                    <div class="small mt-2" style="min-height:3.2em">${s.catatan}</div>
+                    <div class="small text-muted mt-2" style="font-family:monospace">${s.eq}</div>
+                    <ul class="small mt-2 mb-3 ps-3">
+                        <li>Suhu optimum: ${s.temp.opt} °C</li>
+                        <li>Rendemen dasar: ${d.y}%</li>
+                        <li>Satuan: ${s.unit}</li>
+                    </ul>
+                    <button class="btn btn-gold btn-sm fw-bold mt-auto btn-pilih" data-key="${k}" style="background:#d97706;color:#fff"><i class="bi bi-play-fill"></i> Coba di sandbox</button>
+                </div></div></div>`;
+        }).join('');
+        document.querySelectorAll('.btn-pilih').forEach(b => b.addEventListener('click', () => {
+            const k = b.dataset.key;
+            $('pilihan-zat').value = k;
+            setSubstance(k);
+            bootstrap.Tab.getOrCreateInstance(document.querySelector('[data-bs-target="#tab-sim"]')).show();
+        }));
+    }
+
+    /* ---------- UNDUH CSV ---------- */
+    function csvEsc(v) {
+        const s = String(v);
+        return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    }
+    $('btn-csv').onclick = () => {
+        const c = cfg(), s = S(), u = s.unit;
+        const rows = [
+            ['STEJ Project - Techno-Economics Simulator'],
+            ['Zat', s.nama], ['Satuan', u],
+            ['Bahan diproses per batch', c.M], ['Rendemen dasar (%)', (c.base * 100).toFixed(1)],
+            ['Setpoint suhu (C)', c.T], ['Mode suhu', c.unstable ? 'Tidak stabil (SD ' + c.fluk + ' C)' : 'Konstan'],
+            ['Rendemen acak', c.random ? 'Ya (SD ' + (c.sd * 100).toFixed(1) + '%, insiden ' + (c.pInc * 100).toFixed(0) + '%)' : 'Tidak'],
+            ['Biaya tetap (Rp)', c.fc], ['Harga jual per unit (Rp)', c.price], ['Biaya bahan per unit diproses (Rp)', c.vc],
+            ['Biaya energi per unit per C (Rp)', c.eper], ['Biaya pemurnian ulang per unit (Rp)', c.pen], ['Ambang pemurnian (%)', (c.thr * 100).toFixed(0)],
+            ['Volume penjualan rencana', c.planQ],
+            ['BEP rendemen rata-rata', bepFor(c.ymean, c).toFixed(2)],
+            [],
+            ['Batch', 'Suhu rata-rata (C)', 'Rendemen (%)', 'Volume (' + u + ')', 'BEP batch (' + u + ')']
+        ];
+        history.forEach((h, i) => {
+            const b = bepFor(h.y, Object.assign({}, c, { T: h.T }));
+            rows.push([i + 1, h.T.toFixed(2), (h.y * 100).toFixed(2), h.out.toFixed(3), isFinite(b) ? b.toFixed(2) : 'tidak layak']);
+        });
+        if (mc) {
+            rows.push([], ['Monte Carlo 2000 batch'],
+                ['BEP rata-rata', mc.bepSorted.length ? (mc.bepSorted.reduce((a, v) => a + v, 0) / mc.bepSorted.length).toFixed(2) : 'tidak layak'],
+                ['BEP P5', pct(mc.bepSorted, 0.05).toFixed(2)], ['BEP P95', pct(mc.bepSorted, 0.95).toFixed(2)],
+                ['Peluang rugi di volume rencana (%)', (mc.pLoss * 100).toFixed(1)],
+                ['Laba rata-rata di volume rencana (Rp)', Math.round(mc.meanProfit)]);
+        }
+        const csv = '\ufeff' + rows.map(r => r.map(csvEsc).join(',')).join('\n');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+        a.download = 'stej-hasil-simulasi-' + SK + '.csv';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    };
+
+    /* ---------- UJI MUTU PRODUK PER ERA ---------- */
+    let ujiZ = [randn(), randn(), randn()];
+    // Parameter ilustrasi (bukan data historis): ukuran sampel per uji (gram), galat 1 uji (poin persen rendemen), biaya per uji (Rp)
+    const ERA = [
+        { nama: 'Era Islam (abad 8-13)',            metode: 'Distilasi, cawan lebur, uji fisik (warna, bau, massa jenis)', skala: 'gram',                 sampelG: 2,     sd: 5.0,  biaya: 50000 },
+        { nama: 'Era awal modern (abad 16-19)',     metode: 'Gravimetri, titrasi, uji nyala',                              skala: 'miligram',             sampelG: 0.5,   sd: 0.5,  biaya: 150000 },
+        { nama: 'Era instrumen & AI (abad 20-21)',  metode: 'GC/HPLC, spektrometri massa, sensor + AI',                    skala: 'nanogram - mikrogram', sampelG: 0.001, sd: 0.05, biaya: 1500000 }
+    ];
+    function erf(x) {
+        const sg = x < 0 ? -1 : 1; x = Math.abs(x);
+        const t = 1 / (1 + 0.3275911 * x);
+        const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+        return sg * y;
+    }
+    const Phi = z => 0.5 * (1 + erf(z / Math.SQRT2));
+
+    $('ringkasan').closest('.card').insertAdjacentHTML('beforebegin',
+        `<div class="card mt-3" id="card-uji">
+            <div class="card-header card-header-mipa py-2"><i class="bi bi-clipboard2-pulse"></i> Uji Mutu Produk: tiga era, dihitung dari hasil sandbox</div>
+            <div class="card-body">
+                <div class="row g-2 align-items-end mb-2">
+                    <div class="col-6 col-md-3"><label class="form-label small mb-0">Ulangan uji per batch</label>
+                        <input type="number" id="uji-n" class="form-control form-control-sm" value="3" min="1" max="20"></div>
+                    <div class="col-6 col-md-3"><button class="btn btn-sm btn-outline-primary fw-bold w-100" id="btn-uji"><i class="bi bi-arrow-repeat"></i> Ukur ulang</button></div>
+                    <div class="col-12 col-md-6 small text-muted" id="uji-sumber"></div>
+                </div>
+                <div class="table-responsive"><table class="table table-sm align-middle small mb-1" id="uji-tabel"></table></div>
+                <div class="small" id="uji-simpulan"></div>
+                <div class="small text-muted mt-1">Ukuran sampel, galat, dan biaya uji tiap era adalah asumsi ilustrasi, bukan data historis. Era Islam sebenarnya juga sudah mengukur secara kuantitatif (misalnya massa jenis logam dan permata oleh al-Biruni), jadi label "kualitatif" hanyalah penyederhanaan.</div>
+            </div>
+        </div>`);
+
+    function renderUji() {
+        const tb = $('uji-tabel');
+        if (!tb) return;
+        const c = cfg(), s = S(), u = s.unit;
+        const n = clamp(Math.round(parseFloat($('uji-n').value) || 1), 1, 20);
+        const uf = u === 'kg' ? 1000 : 1;                 // gram per satuan produk
+        let y, out, sumber;
+        if (history.length) {
+            const h = history[history.length - 1];
+            y = h.y; out = h.out;
+            sumber = 'Sumber: batch ke-' + history.length + ' di sandbox, rendemen ' + num(y * 100, 1) + '%, produk jadi ' + num(out, 2) + ' ' + u + '.';
+        } else {
+            y = c.ymean; out = c.M * y;
+            sumber = 'Belum ada batch. Memakai perkiraan: rendemen rata-rata ' + num(y * 100, 1) + '%, produk jadi ' + num(out, 2) + ' ' + u + '. Jalankan batch di Sandbox untuk hasil nyata.';
+        }
+        $('uji-sumber').textContent = sumber;
+        const rows = ERA.map((e, i) => {
+            const usedG = e.sampelG * n, usedU = usedG / uf;
+            const over = usedU >= out;
+            const sellable = Math.max(0, out - usedU);
+            const se = e.sd / Math.sqrt(n);
+            const measured = clamp(y * 100 + ujiZ[i] * se, 0, 100);
+            const d = Math.abs(y * 100 - c.thr * 100);
+            const pWrong = 1 - Phi(d / se);
+            const lost = Math.min(usedU, out) * c.price, cost = n * e.biaya;
+            return { e, usedG, usedU, over, sellable, se, measured, pWrong, lost, cost, total: lost + cost };
+        });
+        tb.innerHTML = '<thead><tr><th>Era / metode</th><th>Skala</th><th>Sampel terpakai</th><th>Rendemen terukur (±CI 95%)</th>' +
+            '<th>Peluang salah putusan vs ambang ' + num(c.thr * 100, 0) + '%</th><th>Biaya uji + produk terpakai</th><th>Produk layak jual</th></tr></thead><tbody>' +
+            rows.map(r => `<tr class="${r.over ? 'table-danger' : ''}">
+                <td><strong>${r.e.nama}</strong><br><span class="text-muted">${r.e.metode}</span></td>
+                <td>${r.e.skala}</td>
+                <td>${num(r.usedG, 3)} g<br>${r.over ? '<strong class="text-danger">melebihi seluruh produk</strong>' : num(r.usedU / out * 100, 2) + '% dari produk'}</td>
+                <td>${num(r.measured, 2)}% (±${num(1.96 * r.se, 2)})<br><span class="text-muted">selisih ${num(r.measured - y * 100, 2)} poin</span></td>
+                <td>${r.pWrong < 0.0001 ? '< 0,01%' : num(r.pWrong * 100, 2) + '%'}</td>
+                <td>${rp(r.total)}<br><span class="text-muted">uji ${rp(r.cost)} + produk ${rp(r.lost)}</span></td>
+                <td>${num(r.sellable, 3)} ${u}</td></tr>`).join('') + '</tbody>';
+        const feas = rows.filter(r => !r.over);
+        const cheap = feas.length ? feas.reduce((a, b) => (b.total < a.total ? b : a)) : null;
+        const prec = rows.reduce((a, b) => (b.se < a.se ? b : a));
+        $('uji-simpulan').innerHTML = cheap
+            ? `<strong>Total biaya mutu terendah:</strong> ${cheap.e.nama} (${rp(cheap.total)}). <strong>Paling teliti:</strong> ${prec.e.nama} (±${num(1.96 * prec.se, 2)} poin). ` +
+              (cheap === prec ? '' : 'Yang paling teliti belum tentu yang paling murah: pada produk bernilai tinggi dan jumlah kecil, sampel yang terpakai bisa lebih mahal daripada biaya alatnya, sedangkan pada produk bernilai rendah dan jumlah besar biaya alat yang mendominasi.')
+            : 'Semua metode memakai sampel melebihi produk yang jadi. Naikkan bahan per batch atau kurangi ulangan uji.';
+    }
+    $('uji-n').addEventListener('input', renderUji);
+    $('btn-uji').addEventListener('click', () => { ujiZ = [randn(), randn(), randn()]; renderUji(); });
+
+    renderKatalog();
     setSubstance('emas');
     loop();
 })();
