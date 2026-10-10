@@ -53,6 +53,7 @@
         <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-katalog" type="button"><i class="bi bi-grid-3x3-gap"></i> 1. Katalog</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-sim" type="button"><i class="bi bi-flask"></i> 2. Sandbox Reaktor</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-eko" type="button"><i class="bi bi-graph-up-arrow"></i> 3. Hasil &amp; BEP</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-uji" type="button"><i class="bi bi-eyedropper"></i> 4. Lab Uji Mutu</button></li>
     </ul>
 
     <div class="tab-content">
@@ -60,7 +61,7 @@
     <!-- ===================== TAB 1: SIMULASI ===================== -->
     <div class="tab-pane fade show active" id="tab-katalog">
         <div class="phet-panel mt-3">
-            <h6><i class="bi bi-grid-3x3-gap"></i> Langkah 1 dari 3: pilih zat / industri</h6>
+            <h6><i class="bi bi-grid-3x3-gap"></i> Langkah 1 dari 4: pilih zat / industri</h6>
             <p class="small mb-1">Pilih satu reaksi untuk dicoba. Di <strong>Sandbox</strong> Anda menjalankan reaksi partikel, menggeser suhu, dan mengatur kondisi lab. Di <strong>Hasil &amp; BEP</strong> Anda melihat dampaknya pada laba, titik impas (BEP), dan titik tutup (SDP).</p>
             <p class="small text-muted mb-0">Semua angka bawaan (harga, biaya, kurva suhu) hanya ilustrasi edukasi. Ganti dengan data riil Anda sendiri.</p>
         </div>
@@ -272,6 +273,86 @@
             <div class="card-body">
                 <div class="row g-2" id="ringkasan"></div>
                 <div class="small text-muted mt-2">SDP (Shut-Down Point): kondisi saat harga jual tidak lagi menutup biaya variabel efektif, sehingga produksi sebaiknya dihentikan. Angka bawaan, kurva suhu, dan biaya energi tiap zat hanya ilustrasi, silakan sesuaikan dengan data riil.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== TAB 4: LAB UJI MUTU (sandbox tiga era) ===================== -->
+    <div class="tab-pane fade" id="tab-uji">
+        <div class="row g-3 mt-0">
+            <div class="col-lg-8">
+                <div class="phet-screen">
+                    <canvas id="lab-cv" width="640" height="360" style="width:100%;height:auto;border-radius:10px;background:#0f172a;display:block"></canvas>
+                    <div class="playbar mt-2">
+                        <button class="pbtn pbtn-reset" id="lab-reset" title="Atur ulang uji ini"><i class="bi bi-arrow-counterclockwise"></i></button>
+                        <button class="pbtn pbtn-play" id="lab-play" title="Mulai / Jeda"><i class="bi bi-play-fill" id="lab-ico"></i></button>
+                        <button class="pbtn pbtn-step" id="lab-step" title="Maju satu langkah"><i class="bi bi-skip-forward-fill"></i></button>
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Kecepatan uji">
+                            <input type="radio" class="btn-check" name="lspd" id="lspd-slow" value="0.7" autocomplete="off">
+                            <label class="btn btn-outline-secondary" for="lspd-slow">Lambat</label>
+                            <input type="radio" class="btn-check" name="lspd" id="lspd-norm" value="2" autocomplete="off" checked>
+                            <label class="btn btn-outline-secondary" for="lspd-norm">Normal</label>
+                            <input type="radio" class="btn-check" name="lspd" id="lspd-fast" value="6" autocomplete="off">
+                            <label class="btn btn-outline-secondary" for="lspd-fast">Cepat</label>
+                        </div>
+                        <button class="btn btn-sm btn-danger fw-bold ms-auto" id="lab-lift"><i class="bi bi-box-arrow-up"></i> Angkat &amp; timbang</button>
+                        <button class="btn btn-sm btn-danger fw-bold ms-auto d-none" id="lab-close"><i class="bi bi-x-octagon"></i> Tutup keran</button>
+                        <button class="btn btn-sm btn-primary fw-bold d-none" id="lab-read"><i class="bi bi-eye"></i> Baca buret &amp; selesai</button>
+                    </div>
+                    <div id="lab-hasil" class="alert d-none mt-3 mb-0 small" role="status"></div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="phet-panel">
+                    <h6><i class="bi bi-box-seam"></i> Sampel dari sandbox reaktor</h6>
+                    <div class="small" id="lab-sumber"></div>
+                    <div class="small text-muted mt-1">Komposisi sebenarnya disembunyikan sampai uji selesai, seperti di laboratorium sungguhan.</div>
+                </div>
+
+                <div class="phet-panel">
+                    <h6><i class="bi bi-clock-history"></i> Pilih era</h6>
+                    <div class="btn-group-vertical w-100" role="group" aria-label="Era">
+                        <input type="radio" class="btn-check" name="lera" id="lera-0" value="0" autocomplete="off" checked>
+                        <label class="btn btn-outline-warning text-start text-dark" for="lera-0"><strong>Era Islam</strong> <small>(abad 8-13)</small><br><small>cawan lebur, tanur, neraca lengan</small></label>
+                        <input type="radio" class="btn-check" name="lera" id="lera-1" value="1" autocomplete="off">
+                        <label class="btn btn-outline-warning text-start text-dark" for="lera-1"><strong>Era awal modern</strong> <small>(abad 16-19)</small><br><small>buret, indikator, titrasi</small></label>
+                        <input type="radio" class="btn-check" name="lera" id="lera-2" value="2" autocomplete="off">
+                        <label class="btn btn-outline-warning text-start text-dark" for="lera-2"><strong>Era instrumen &amp; AI</strong> <small>(abad 20-21)</small><br><small>kromatograf, detektor, integrasi otomatis</small></label>
+                    </div>
+                </div>
+
+                <div class="phet-panel">
+                    <h6><i class="bi bi-sliders2"></i> Alat &amp; pengaturan</h6>
+                    <label class="form-label small mb-0">Ukuran sampel: <strong id="lab-m-lbl">5 g</strong></label>
+                    <input type="range" class="form-range" id="lab-m" min="1" max="20" step="0.5" value="5">
+                    <div id="g-heat">
+                        <label class="form-label small mb-0">Api tanur: <strong id="lab-heat-lbl">45</strong>%</label>
+                        <input type="range" class="heat-range my-2" id="lab-heat" min="0" max="100" step="1" value="45">
+                    </div>
+                    <div id="g-flow" class="d-none">
+                        <label class="form-label small mb-0">Laju tetes titran: <strong id="lab-flow-lbl">1.5</strong> tetes/langkah</label>
+                        <input type="range" class="form-range" id="lab-flow" min="0" max="10" step="0.1" value="1.5">
+                    </div>
+                    <div class="form-text" id="lab-info"></div>
+                </div>
+
+                <div class="phet-panel">
+                    <h6><i class="bi bi-cash-stack"></i> Stok produk &amp; biaya uji</h6>
+                    <div class="small" id="lab-stok"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header card-header-mipa py-2 d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-journal-text"></i> Riwayat uji &amp; perbandingan era</span>
+                <button class="btn btn-sm btn-outline-light" id="lab-clear"><i class="bi bi-trash"></i> Hapus riwayat</button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive"><table class="table table-sm align-middle small mb-2" id="lab-log"></table></div>
+                <div class="row g-2" id="lab-ringkas"></div>
+                <div class="small text-muted mt-2">Alat, galat, dan biaya tiap era adalah model ilustrasi (bukan data historis). Era Islam sebenarnya juga sudah mengukur secara kuantitatif, misalnya massa jenis logam dan permata, jadi pembagian "kualitatif / kuantitatif / otomatis" hanyalah penyederhanaan. Sampel dianggap homogen.</div>
             </div>
         </div>
     </div>
@@ -577,7 +658,6 @@
         updateCounters();
         setPlayIcon();
         showResult(c, cb);
-        ujiZ = [randn(), randn(), randn()];
         updateProfitChart();
         updateTempCharts();
         updateSummary();
@@ -983,6 +1063,7 @@
         const T0 = cfg().T;
         B = { state: 'idle', y: 0, target: 0, conv: 0, spawned: 0, t: 0, rAcc: 0, nR: 0, T: T0, tLive: T0, dT: 0, noise: 0, tfSum: 0, tSum: 0 };
         hideResult();
+        if (typeof labReset === 'function') labReset();
         setStatus('Siap'); $('st-y').textContent = '-'; updateCounters(); setPlayIcon();
         clearHist(); updateProfitChart(); updateTempCharts(); updateSummary();
     }
@@ -1123,6 +1204,10 @@
                 ['Peluang rugi di volume rencana (%)', (mc.pLoss * 100).toFixed(1)],
                 ['Laba rata-rata di volume rencana (Rp)', Math.round(mc.meanProfit)]);
         }
+        if (L.log.length) {
+            rows.push([], ['Uji mutu produk (Lab Uji Mutu)'], ['#', 'Era', 'Sampel (g)', 'Terukur (%)', 'Sebenarnya (%)', 'Galat (poin)', 'Keputusan QC', 'Biaya uji (Rp)', 'Nilai sampel (Rp)']);
+            L.log.forEach((r, i) => rows.push([i + 1, LERA[r.era].pendek, r.mG, r.meas.toFixed(2), r.tru.toFixed(2), r.err.toFixed(2), (r.decM ? 'pemurnian ulang' : 'lulus') + (r.decM !== r.decT ? ' (salah)' : ''), r.cost, Math.round(r.sampleCost)]));
+        }
         const csv = '\ufeff' + rows.map(r => r.map(csvEsc).join(',')).join('\n');
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
@@ -1131,85 +1216,396 @@
         setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     };
 
-    /* ---------- UJI MUTU PRODUK PER ERA ---------- */
-    let ujiZ = [randn(), randn(), randn()];
-    // Parameter ilustrasi (bukan data historis): ukuran sampel per uji (gram), galat 1 uji (poin persen rendemen), biaya per uji (Rp)
-    const ERA = [
-        { nama: 'Era Islam (abad 8-13)',            metode: 'Distilasi, cawan lebur, uji fisik (warna, bau, massa jenis)', skala: 'gram',                 sampelG: 2,     sd: 5.0,  biaya: 50000 },
-        { nama: 'Era awal modern (abad 16-19)',     metode: 'Gravimetri, titrasi, uji nyala',                              skala: 'miligram',             sampelG: 0.5,   sd: 0.5,  biaya: 150000 },
-        { nama: 'Era instrumen & AI (abad 20-21)',  metode: 'GC/HPLC, spektrometri massa, sensor + AI',                    skala: 'nanogram - mikrogram', sampelG: 0.001, sd: 0.05, biaya: 1500000 }
+    /* ---------- LAB UJI MUTU: SANDBOX TIGA ERA (ala PhET) ---------- */
+    const LERA = [
+        { nama: 'Era Islam (abad 8-13)', pendek: 'Islam', alat: 'Cawan lebur + tanur + neraca lengan', unit: 'g', mult: 1, smin: 1, smax: 20, sstep: 0.5, sdef: 5, cost: 50000, res: 0.1,
+          info: 'Pengotor menguap/terserap saat dipanaskan, lalu sisa ditimbang di neraca lengan (resolusi 0,1 g). Api terlalu kecil: pengotor tersisa dan kadar terbaca terlalu tinggi. Api terlalu besar: produk ikut hilang dan kadar terbaca terlalu rendah. Sampel kecil: pembulatan neraca terasa besar.' },
+        { nama: 'Era awal modern (abad 16-19)', pendek: 'Awal modern', alat: 'Buret + indikator + pH', unit: 'g', mult: 1, smin: 0.1, smax: 1, sstep: 0.05, sdef: 0.4, cost: 150000, k: 40,
+          info: 'Titrasi: tetesi titran sampai indikator berubah warna, tutup keran, lalu baca buret (resolusi 0,05 mL). Indikator telat berubah warna, jadi aliran deras melewati titik akhir dan kadar terbaca terlalu tinggi. Sampel sangat kecil membuat selisih 0,05 mL berarti besar. Titrasi menghabiskan seluruh sampel.' },
+        { nama: 'Era instrumen & AI (abad 20-21)', pendek: 'Instrumen', alat: 'Kromatograf + detektor + integrasi otomatis', unit: 'µg', mult: 1e-6, smin: 1, smax: 200, sstep: 1, sdef: 30, cost: 1500000,
+          info: 'Sampel mikro disuntik, tiap komponen keluar sebagai puncak, perangkat lunak menghitung luasnya. Terlalu sedikit: puncak tenggelam di derau. Terlalu banyak (di atas sekitar 100 µg): detektor jenuh dan puncak produk terpotong sehingga kadar terbaca terlalu rendah.' }
     ];
-    function erf(x) {
-        const sg = x < 0 ? -1 : 1; x = Math.abs(x);
-        const t = 1 / (1 + 0.3275911 * x);
-        const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
-        return sg * y;
+    const LW = 640, LH = 360;
+    const lcv = $('lab-cv'), lctx = lcv.getContext('2d');
+    const L = { era: 0, st: null, paused: false, stepReq: 0, acc: 0, log: [], used: 0, srcN: -1, ytrue: 0 };
+    const frac = v => v - Math.floor(v);
+    const gauss = (x, mu, w) => Math.exp(-0.5 * Math.pow((x - mu) / w, 2));
+    const lrate = () => parseFloat(document.querySelector('input[name=lspd]:checked').value) * (L.era === 1 ? 0.5 : 1);
+
+    function labSource() {
+        const c = cfg(), s = S(), uf = s.unit === 'kg' ? 1000 : 1;
+        if (history.length) { const h = history[history.length - 1]; return { y: h.y, outG: h.out * uf, est: false, n: history.length, uf }; }
+        return { y: c.ymean, outG: c.M * c.ymean * uf, est: true, n: 0, uf };
     }
-    const Phi = z => 0.5 * (1 + erf(z / Math.SQRT2));
+    function labSync() { const src = labSource(); if (src.n !== L.srcN) { L.srcN = src.n; L.used = 0; } return src; }
+    function labMsg(type, html) { const el = $('lab-hasil'); el.className = 'alert alert-' + type + ' mt-3 mb-0 small'; el.innerHTML = html; }
+    function labClearMsg() { $('lab-hasil').className = 'alert d-none mt-3 mb-0 small'; }
+    function labPlayIcon() {
+        const running = L.st && !L.st.done && !L.paused;
+        $('lab-ico').className = 'bi ' + (running ? 'bi-pause-fill' : 'bi-play-fill');
+    }
+    const fmtSample = (mG, e) => e.mult === 1 ? num(mG, 2) + ' g' : num(mG * 1e6, 0) + ' µg';
 
-    $('ringkasan').closest('.card').insertAdjacentHTML('beforebegin',
-        `<div class="card mt-3" id="card-uji">
-            <div class="card-header card-header-mipa py-2"><i class="bi bi-clipboard2-pulse"></i> Uji Mutu Produk: tiga era, dihitung dari hasil sandbox</div>
-            <div class="card-body">
-                <div class="row g-2 align-items-end mb-2">
-                    <div class="col-6 col-md-3"><label class="form-label small mb-0">Ulangan uji per batch</label>
-                        <input type="number" id="uji-n" class="form-control form-control-sm" value="3" min="1" max="20"></div>
-                    <div class="col-6 col-md-3"><button class="btn btn-sm btn-outline-primary fw-bold w-100" id="btn-uji"><i class="bi bi-arrow-repeat"></i> Ukur ulang</button></div>
-                    <div class="col-12 col-md-6 small text-muted" id="uji-sumber"></div>
-                </div>
-                <div class="table-responsive"><table class="table table-sm align-middle small mb-1" id="uji-tabel"></table></div>
-                <div class="small" id="uji-simpulan"></div>
-                <div class="small text-muted mt-1">Ukuran sampel, galat, dan biaya uji tiap era adalah asumsi ilustrasi, bukan data historis. Era Islam sebenarnya juga sudah mengukur secara kuantitatif (misalnya massa jenis logam dan permata oleh al-Biruni), jadi label "kualitatif" hanyalah penyederhanaan.</div>
-            </div>
-        </div>`);
-
-    function renderUji() {
-        const tb = $('uji-tabel');
-        if (!tb) return;
-        const c = cfg(), s = S(), u = s.unit;
-        const n = clamp(Math.round(parseFloat($('uji-n').value) || 1), 1, 20);
-        const uf = u === 'kg' ? 1000 : 1;                 // gram per satuan produk
-        let y, out, sumber;
-        if (history.length) {
-            const h = history[history.length - 1];
-            y = h.y; out = h.out;
-            sumber = 'Sumber: batch ke-' + history.length + ' di sandbox, rendemen ' + num(y * 100, 1) + '%, produk jadi ' + num(out, 2) + ' ' + u + '.';
-        } else {
-            y = c.ymean; out = c.M * y;
-            sumber = 'Belum ada batch. Memakai perkiraan: rendemen rata-rata ' + num(y * 100, 1) + '%, produk jadi ' + num(out, 2) + ' ' + u + '. Jalankan batch di Sandbox untuk hasil nyata.';
+    /* ----- mulai uji ----- */
+    function labStart() {
+        if (L.st && !L.st.done) return;
+        const e = LERA[L.era], src = labSync();
+        const mG = parseFloat($('lab-m').value) * e.mult;
+        if (mG > src.outG - L.used + 1e-12) {
+            labMsg('warning', '<strong>Produk tidak cukup.</strong> Sampel ' + fmtSample(mG, e) + ' melebihi sisa produk batch ini (' + num(src.outG - L.used, 3) + ' g). Kecilkan sampel atau jalankan batch baru di Sandbox Reaktor.');
+            return;
         }
-        $('uji-sumber').textContent = sumber;
-        const rows = ERA.map((e, i) => {
-            const usedG = e.sampelG * n, usedU = usedG / uf;
-            const over = usedU >= out;
-            const sellable = Math.max(0, out - usedU);
-            const se = e.sd / Math.sqrt(n);
-            const measured = clamp(y * 100 + ujiZ[i] * se, 0, 100);
-            const d = Math.abs(y * 100 - c.thr * 100);
-            const pWrong = 1 - Phi(d / se);
-            const lost = Math.min(usedU, out) * c.price, cost = n * e.biaya;
-            return { e, usedG, usedU, over, sellable, se, measured, pWrong, lost, cost, total: lost + cost };
-        });
-        tb.innerHTML = '<thead><tr><th>Era / metode</th><th>Skala</th><th>Sampel terpakai</th><th>Rendemen terukur (±CI 95%)</th>' +
-            '<th>Peluang salah putusan vs ambang ' + num(c.thr * 100, 0) + '%</th><th>Biaya uji + produk terpakai</th><th>Produk layak jual</th></tr></thead><tbody>' +
-            rows.map(r => `<tr class="${r.over ? 'table-danger' : ''}">
-                <td><strong>${r.e.nama}</strong><br><span class="text-muted">${r.e.metode}</span></td>
-                <td>${r.e.skala}</td>
-                <td>${num(r.usedG, 3)} g<br>${r.over ? '<strong class="text-danger">melebihi seluruh produk</strong>' : num(r.usedU / out * 100, 2) + '% dari produk'}</td>
-                <td>${num(r.measured, 2)}% (±${num(1.96 * r.se, 2)})<br><span class="text-muted">selisih ${num(r.measured - y * 100, 2)} poin</span></td>
-                <td>${r.pWrong < 0.0001 ? '< 0,01%' : num(r.pWrong * 100, 2) + '%'}</td>
-                <td>${rp(r.total)}<br><span class="text-muted">uji ${rp(r.cost)} + produk ${rp(r.lost)}</span></td>
-                <td>${num(r.sellable, 3)} ${u}</td></tr>`).join('') + '</tbody>';
-        const feas = rows.filter(r => !r.over);
-        const cheap = feas.length ? feas.reduce((a, b) => (b.total < a.total ? b : a)) : null;
-        const prec = rows.reduce((a, b) => (b.se < a.se ? b : a));
-        $('uji-simpulan').innerHTML = cheap
-            ? `<strong>Total biaya mutu terendah:</strong> ${cheap.e.nama} (${rp(cheap.total)}). <strong>Paling teliti:</strong> ${prec.e.nama} (±${num(1.96 * prec.se, 2)} poin). ` +
-              (cheap === prec ? '' : 'Yang paling teliti belum tentu yang paling murah: pada produk bernilai tinggi dan jumlah kecil, sampel yang terpakai bisa lebih mahal daripada biaya alatnya, sedangkan pada produk bernilai rendah dan jumlah besar biaya alat yang mendominasi.')
-            : 'Semua metode memakai sampel melebihi produk yang jadi. Naikkan bahan per batch atau kurangi ulangan uji.';
+        labClearMsg();
+        L.ytrue = src.y; L.paused = false; L.acc = 0;
+        if (L.era === 0) {
+            const N = 80, nP = Math.round(src.y * N), parts = [];
+            for (let i = 0; i < N; i++) parts.push({ k: i < nP ? 'P' : 'I', u: Math.random(), v: Math.random(), alive: true });
+            L.st = { t: 0, T: 500, N, nP0: nP, mG, parts, fumes: [], done: false, read: null };
+        } else if (L.era === 1) {
+            L.st = { t: 0, mG, V: 0, Veff: 0, eq: e.k * mG * src.y, pts: [], drops: [], closed: 0, done: false, colorSeen: false };
+        } else {
+            const mUg = mG * 1e6;
+            L.st = { t: 0, i: 0, n: 300, mUg, data: [], hp: mUg * src.y, hi: mUg * (1 - src.y), ph: Math.random() * 6.28, done: false, areas: null };
+        }
+        labPlayIcon();
     }
-    $('uji-n').addEventListener('input', renderUji);
-    $('btn-uji').addEventListener('click', () => { ujiZ = [randn(), randn(), randn()]; renderUji(); });
+
+    /* ----- selesai & catat ----- */
+    function labFinish(measFrac, mG, detail) {
+        const e = LERA[L.era], c = cfg(), s = S(), uf = s.unit === 'kg' ? 1000 : 1;
+        const st = L.st; st.done = true;
+        L.used += mG;
+        const meas = clamp(measFrac, 0, 1.2);
+        const sampleCost = mG / uf * c.price;
+        const rec = { era: L.era, mG, meas: meas * 100, tru: L.ytrue * 100, err: meas * 100 - L.ytrue * 100, cost: e.cost, sampleCost, decM: meas < c.thr, decT: L.ytrue < c.thr };
+        L.log.push(rec);
+        const wrong = rec.decM !== rec.decT;
+        labMsg(wrong ? 'danger' : 'success',
+            `<strong>Kadar produk terukur ${num(rec.meas, 2)}%</strong> (sebenarnya ${num(rec.tru, 2)}%, galat ${rec.err >= 0 ? '+' : ''}${num(rec.err, 2)} poin). ${detail || ''}<br>` +
+            `Keputusan QC (ambang ${num(c.thr * 100, 0)}%): <strong>${rec.decM ? 'di bawah ambang, perlu pemurnian ulang' : 'lulus'}</strong>` +
+            (wrong ? ' <strong>- KEPUTUSAN SALAH</strong>, nilai sebenarnya ' + (rec.decT ? 'di bawah' : 'di atas') + ' ambang.' : ', sesuai nilai sebenarnya.') +
+            `<br>Biaya uji ${rp(e.cost)} + sampel terpakai ${fmtSample(mG, e)} senilai ${rp(sampleCost)} = <strong>${rp(e.cost + sampleCost)}</strong>.`);
+        labPlayIcon();
+        renderUji();
+    }
+
+    /* ----- Era 1: tanur ----- */
+    function p0xy(u, v) {
+        const y = 214 + v * 66, xl = 156 + (y - 200) * 0.2222, xr = 264 - (y - 200) * 0.2222;
+        return [xl + u * (xr - xl), y];
+    }
+    function step0(st) {
+        const h = parseFloat($('lab-heat').value) / 100;
+        const pI = 0.0006 + 0.009 * h;
+        const x = Math.max(0, h - 0.6) / 0.4;
+        const pP = 0.00002 + 0.0012 * x * x;
+        const jit = 0.01 + 0.03 * h;
+        for (const p of st.parts) {
+            if (!p.alive) continue;
+            p.u = clamp(p.u + (Math.random() - 0.5) * jit * 2, 0, 1);
+            p.v = clamp(p.v + (Math.random() - 0.5) * jit * 2, 0, 1);
+            if (Math.random() < (p.k === 'I' ? pI : pP)) {
+                p.alive = false;
+                const [fx, fy] = p0xy(p.u, p.v);
+                st.fumes.push({ x: fx, y: fy, k: p.k, a: 1 });
+            }
+        }
+        for (const f of st.fumes) { f.y -= 1.2; f.x += (Math.random() - 0.5) * 0.8; f.a -= 0.012; }
+        st.fumes = st.fumes.filter(f => f.a > 0);
+        if (st.t >= st.T) weigh0(st);
+    }
+    function weigh0(st) {
+        if (st.done) return;
+        const e = LERA[0];
+        let nP = 0, nI = 0;
+        for (const p of st.parts) if (p.alive) { if (p.k === 'P') nP++; else nI++; }
+        const mass = (nP + nI) * st.mG / st.N;
+        const read = Math.max(0, Math.round((mass + randn() * 0.03) / e.res) * e.res);
+        st.read = read;
+        const early = st.t < st.T;
+        labFinish(read / st.mG, st.mG,
+            `Neraca membaca ${num(read, 1)} g dari sampel ${num(st.mG, 2)} g. Pengotor yang masih tersisa: ${nI} partikel; produk yang ikut hilang: ${st.nP0 - nP} partikel.` +
+            (early ? ' Diangkat sebelum waktu pemanasan selesai.' : ''));
+    }
+
+    /* ----- Era 2: titrasi ----- */
+    function step1(st) {
+        const d = parseFloat($('lab-flow').value);
+        const n = Math.floor(d) + (Math.random() < d - Math.floor(d) ? 1 : 0);
+        if (n > 0 && st.V < 50) {
+            st.V = Math.min(50, st.V + n * 0.05);
+            for (let i = 0; i < Math.min(n, 3); i++) st.drops.push({ y: 224 - i * 9 });
+            st.pts.push({ v: st.V, ph: 7 + 5 * Math.tanh((st.Veff - st.eq) / 0.25) });
+            if (st.pts.length > 900) st.pts.shift();
+        }
+        st.Veff += (st.V - st.Veff) / 10;
+        for (const dr of st.drops) dr.y += 6;
+        st.drops = st.drops.filter(dr => dr.y < 282);
+        if (st.Veff >= st.eq) st.colorSeen = true;
+        if (st.colorSeen && d === 0) st.closed++; else st.closed = 0;
+        if (st.closed >= 15) readBuret(st, '');
+        else if (st.V >= 50) readBuret(st, 'Buret habis sebelum indikator berubah warna. ');
+    }
+    function readBuret(st, note) {
+        if (st.done) return;
+        const e = LERA[1];
+        const Vread = Math.max(0, Math.round((st.V + randn() * 0.02) / 0.05) * 0.05);
+        const diff = st.V - st.eq;
+        labFinish(Vread / (e.k * st.mG), st.mG,
+            `${note}Volume terbaca ${num(Vread, 2)} mL; titik akhir sebenarnya ${num(st.eq, 2)} mL, jadi ${diff >= 0 ? 'melewati ' + num(diff, 2) + ' mL' : 'belum sampai, kurang ' + num(-diff, 2) + ' mL'}.`);
+    }
+
+    /* ----- Era 3: kromatografi ----- */
+    function step2(st) {
+        for (let j = 0; j < 2 && st.i < st.n; j++, st.i++) {
+            const t = st.i * 0.02;
+            let sig = st.hp * gauss(t, 2.2, 0.12) + st.hi * gauss(t, 3.9, 0.15);
+            sig = Math.min(sig, 100);                       // detektor jenuh
+            sig += 0.05 * Math.sin(t * 0.9 + st.ph) + randn() * 0.2;
+            st.data.push(sig);
+        }
+        if (st.i >= st.n) integrate2(st);
+    }
+    function integrate2(st) {
+        if (st.done) return;
+        let base = 0; for (let i = 0; i < 20; i++) base += st.data[i]; base /= 20;
+        const area = (a, b) => { let s = 0; for (let i = a; i < b; i++) s += (st.data[i] - base) * 0.02; return s; };
+        const Ap = area(85, 135), Ai = area(170, 220);
+        st.areas = { Ap, Ai };
+        const tot = Ap + Ai;
+        const sat = st.hp > 100;
+        labFinish(tot > 0 ? Ap / tot : 0, st.mUg * 1e-6,
+            `Luas puncak produk ${num(Ap, 2)}, pengotor ${num(Ai, 2)}.` +
+            (sat ? ' Puncak produk terpotong karena detektor jenuh (sampel terlalu banyak).' : '') +
+            (st.mUg < 8 ? ' Sampel sangat kecil: puncak hampir tenggelam di derau.' : ''));
+    }
+
+    function labStep() {
+        const st = L.st; if (!st || st.done) return;
+        st.t++;
+        if (L.era === 0) step0(st); else if (L.era === 1) step1(st); else step2(st);
+    }
+
+    /* ----- gambar ----- */
+    function txt(s, x, y, col, font, al) { lctx.fillStyle = col || '#e2e8f0'; lctx.font = font || '12px sans-serif'; lctx.textAlign = al || 'start'; lctx.fillText(s, x, y); lctx.textAlign = 'start'; }
+    function drawEra0(st) {
+        const h = parseFloat($('lab-heat').value) / 100, s = S(), src = labSource();
+        lctx.fillStyle = '#374151'; lctx.fillRect(50, 110, 320, 220);
+        const g = lctx.createLinearGradient(0, 330, 0, 110);
+        g.addColorStop(0, `rgba(255,${Math.round(150 - 100 * h)},20,${0.15 + 0.75 * h})`); g.addColorStop(1, 'rgba(255,120,0,0)');
+        lctx.fillStyle = g; lctx.fillRect(56, 116, 308, 208);
+        txt('Tanur · api ' + Math.round(h * 100) + '%', 60, 128, '#fde68a', 'bold 12px sans-serif');
+        lctx.fillStyle = '#a8a29e'; lctx.beginPath(); lctx.moveTo(150, 200); lctx.lineTo(270, 200); lctx.lineTo(250, 292); lctx.lineTo(170, 292); lctx.closePath(); lctx.fill();
+        lctx.fillStyle = '#44403c'; lctx.beginPath(); lctx.moveTo(156, 204); lctx.lineTo(264, 204); lctx.lineTo(246, 286); lctx.lineTo(174, 286); lctx.closePath(); lctx.fill();
+        const list = st ? st.parts : Array.from({ length: 80 }, (_, i) => ({ k: frac(i * 0.7548776662) < src.y ? 'P' : 'I', u: frac(i * 0.6180339887), v: frac(i * 0.3247179572 + 0.17), alive: true }));
+        for (const p of list) {
+            if (!p.alive) continue;
+            const [x, y] = p0xy(p.u, p.v);
+            lctx.beginPath(); lctx.fillStyle = p.k === 'P' ? s.col.G : '#c084fc'; lctx.arc(x, y, 3.2, 0, 7); lctx.fill();
+            lctx.strokeStyle = 'rgba(0,0,0,.55)'; lctx.lineWidth = 0.8; lctx.stroke();
+        }
+        if (st) for (const f of st.fumes) {
+            lctx.globalAlpha = clamp(f.a, 0, 1); lctx.beginPath(); lctx.fillStyle = f.k === 'P' ? s.col.G : '#c084fc'; lctx.arc(f.x, f.y, 3, 0, 7); lctx.fill(); lctx.globalAlpha = 1;
+        }
+        lctx.fillStyle = s.col.G; lctx.beginPath(); lctx.arc(62, 316, 4, 0, 7); lctx.fill(); txt('produk', 70, 320, '#e2e8f0', '11px sans-serif');
+        lctx.fillStyle = '#c084fc'; lctx.beginPath(); lctx.arc(120, 316, 4, 0, 7); lctx.fill(); txt('pengotor', 128, 320, '#e2e8f0', '11px sans-serif');
+        // neraca lengan
+        lctx.fillStyle = '#1f2937'; lctx.fillRect(400, 130, 220, 200);
+        txt('Neraca lengan (resolusi 0,1 g)', 410, 150, '#cbd5e1', 'bold 12px sans-serif');
+        lctx.fillStyle = '#052e16'; lctx.fillRect(415, 170, 190, 54);
+        txt(st && st.read !== null ? num(st.read, 1) + ' g' : '--.- g', 510, 208, '#4ade80', 'bold 30px monospace', 'center');
+        const mG = st ? st.mG : parseFloat($('lab-m').value);
+        txt('Sampel dimasukkan: ' + num(mG, 2) + ' g', 410, 252, '#e2e8f0');
+        txt('Setelah api padam, sisa ditimbang.', 410, 272, '#94a3b8', '11px sans-serif');
+        txt('Pengotor menguap, produk bisa ikut.', 410, 288, '#94a3b8', '11px sans-serif');
+        // progres
+        lctx.fillStyle = '#1f2937'; lctx.fillRect(50, 338, 320, 10);
+        lctx.fillStyle = '#f59e0b'; lctx.fillRect(50, 338, 320 * (st ? Math.min(1, st.t / st.T) : 0), 10);
+        txt(st ? (st.done ? 'selesai' : 'memanaskan...') : 'siap', 380, 347, '#94a3b8', '11px sans-serif');
+    }
+    function drawEra1(st) {
+        const V = st ? st.V : 0, Veff = st ? st.Veff : 0, eq = st ? st.eq : 1e9;
+        const bx = 100, by = 30, bh = 170, bw = 22, d = parseFloat($('lab-flow').value);
+        lctx.fillStyle = '#e2e8f0'; lctx.fillRect(bx, by, bw, bh);
+        const ly = by + bh * (V / 50);
+        lctx.fillStyle = '#38bdf8'; lctx.fillRect(bx + 2, ly, bw - 4, by + bh - ly);
+        lctx.strokeStyle = '#cbd5e1'; lctx.lineWidth = 1;
+        for (let m = 0; m <= 50; m += 10) {
+            const y = by + bh * (m / 50);
+            lctx.beginPath(); lctx.moveTo(bx + bw, y); lctx.lineTo(bx + bw + 8, y); lctx.stroke();
+            txt(String(m), bx + bw + 11, y + 3, '#cbd5e1', '10px sans-serif');
+        }
+        lctx.fillStyle = (st && !st.done && d > 0) ? '#ef4444' : '#64748b'; lctx.fillRect(bx - 4, 204, bw + 8, 8);
+        lctx.fillStyle = '#e2e8f0'; lctx.fillRect(bx + 8, 212, 6, 12);
+        // erlenmeyer
+        const hw = y => 10 + (y - 262) * (29 / 78);
+        const cx = bx + bw / 2;
+        const pink = st ? clamp((Veff - eq) / 0.3, 0, 1) : 0;
+        lctx.beginPath(); lctx.moveTo(cx - hw(300), 300); lctx.lineTo(cx + hw(300), 300); lctx.lineTo(cx + 39, 340); lctx.lineTo(cx - 39, 340); lctx.closePath();
+        lctx.fillStyle = 'rgba(186,230,253,0.55)'; lctx.fill();
+        if (pink > 0) { lctx.fillStyle = `rgba(236,72,153,${0.85 * pink})`; lctx.fill(); }
+        lctx.beginPath(); lctx.moveTo(cx - 10, 262); lctx.lineTo(cx - 39, 340); lctx.lineTo(cx + 39, 340); lctx.lineTo(cx + 10, 262); lctx.strokeStyle = '#e2e8f0'; lctx.lineWidth = 2; lctx.stroke();
+        if (st) for (const dr of st.drops) { lctx.beginPath(); lctx.fillStyle = '#7dd3fc'; lctx.arc(cx, dr.y, 2.5, 0, 7); lctx.fill(); }
+        txt('Buret ' + num(V, 2) + ' mL', 200, 60, '#f8fafc', 'bold 22px sans-serif');
+        txt('Indikator: ' + (pink > 0.05 ? 'BERUBAH (merah muda)' : 'belum berubah'), 200, 88, pink > 0.05 ? '#f472b6' : '#94a3b8', 'bold 13px sans-serif');
+        txt('Sampel: ' + num(st ? st.mG : parseFloat($('lab-m').value), 2) + ' g (dilarutkan di labu)', 200, 112, '#cbd5e1', '12px sans-serif');
+        txt(st && !st.done ? 'Pelan-pelan saat mendekati titik akhir, lalu tutup keran.' : 'Atur laju tetes, lalu tekan ▶.', 200, 134, '#94a3b8', '11px sans-serif');
+        // inset pH
+        const x0 = 340, y0 = 166, w = 270, h = 148;
+        lctx.fillStyle = '#111827'; lctx.fillRect(x0 - 28, y0 - 14, w + 40, h + 36);
+        lctx.strokeStyle = '#64748b'; lctx.lineWidth = 1; lctx.strokeRect(x0, y0, w, h);
+        txt('pH sensor', x0 - 24, y0 - 2, '#94a3b8', '10px sans-serif');
+        txt('Volume titran (mL)', x0 + 80, y0 + h + 27, '#94a3b8', '10px sans-serif');
+        for (let m = 0; m <= 50; m += 10) txt(String(m), x0 + w * m / 50 - 6, y0 + h + 12 - 0, '#64748b', '9px sans-serif');
+        for (let p = 0; p <= 14; p += 7) txt(String(p), x0 - 14, y0 + h - h * p / 14 + 3, '#64748b', '9px sans-serif');
+        if (st && st.pts.length) {
+            lctx.beginPath(); lctx.strokeStyle = '#34d399'; lctx.lineWidth = 2;
+            st.pts.forEach((p, i) => { const x = x0 + w * p.v / 50, y = y0 + h - h * clamp(p.ph, 0, 14) / 14; if (i === 0) lctx.moveTo(x, y); else lctx.lineTo(x, y); });
+            lctx.stroke();
+        }
+    }
+    function drawEra2(st) {
+        const x0 = 50, y0 = 140, w = 560, h = 190, ymax = 110, tmax = 6;
+        // skema alat
+        lctx.fillStyle = '#e2e8f0'; lctx.fillRect(40, 48, 22, 40); lctx.fillStyle = S().col.G; lctx.fillRect(42, 66, 18, 20);
+        txt('sampel', 34, 100, '#94a3b8', '10px sans-serif');
+        lctx.fillStyle = '#475569'; lctx.fillRect(95, 55, 34, 30); txt('injektor', 92, 100, '#94a3b8', '10px sans-serif');
+        lctx.strokeStyle = '#64748b'; lctx.lineWidth = 2;
+        lctx.beginPath(); lctx.moveTo(62, 70); lctx.lineTo(95, 70); lctx.moveTo(129, 70); lctx.lineTo(140, 70); lctx.stroke();
+        lctx.beginPath(); for (let x = 140; x <= 400; x += 2) { const y = 70 + 16 * Math.sin((x - 140) / 9); if (x === 140) lctx.moveTo(x, y); else lctx.lineTo(x, y); } lctx.stroke();
+        lctx.beginPath(); lctx.moveTo(400, 70); lctx.lineTo(430, 70); lctx.stroke();
+        txt('kolom pemisah', 230, 106, '#94a3b8', '10px sans-serif');
+        lctx.fillStyle = '#1e293b'; lctx.fillRect(430, 50, 90, 40); lctx.strokeStyle = '#94a3b8'; lctx.strokeRect(430, 50, 90, 40); txt('detektor', 452, 74, '#e2e8f0', '11px sans-serif');
+        lctx.fillStyle = '#312e81'; lctx.fillRect(540, 50, 70, 40); txt('AI / luas', 551, 74, '#e0e7ff', '11px sans-serif');
+        lctx.strokeStyle = '#64748b'; lctx.beginPath(); lctx.moveTo(520, 70); lctx.lineTo(540, 70); lctx.stroke();
+        if (st && !st.done) {
+            const t = st.i * 0.02;
+            const bands = [[S().col.G, 2.2, 12], ['#c084fc', 3.9, 3]];
+            for (const [col, tp, cnt] of bands) {
+                if (t > tp + 0.35) continue;
+                const xc = 140 + 290 * Math.min(1, t / tp);
+                for (let i = 0; i < cnt; i++) {
+                    const x = xc + (frac(i * 0.618) - 0.5) * 14, y = 70 + 16 * Math.sin((xc - 140) / 9) + (frac(i * 0.331) - 0.5) * 8;
+                    lctx.beginPath(); lctx.fillStyle = col; lctx.arc(x, y, 2.6, 0, 7); lctx.fill();
+                }
+            }
+        }
+        // kromatogram
+        lctx.fillStyle = '#111827'; lctx.fillRect(x0 - 30, y0 - 12, w + 44, h + 38);
+        lctx.strokeStyle = '#64748b'; lctx.lineWidth = 1; lctx.strokeRect(x0, y0, w, h);
+        const X = i => x0 + w * (i * 0.02) / tmax, Y = v => y0 + h - h * clamp(v, -5, ymax) / ymax;
+        const satY = Y(100);
+        lctx.setLineDash([5, 4]); lctx.strokeStyle = '#ef4444'; lctx.beginPath(); lctx.moveTo(x0, satY); lctx.lineTo(x0 + w, satY); lctx.stroke(); lctx.setLineDash([]);
+        txt('batas detektor', x0 + w - 78, satY - 3, '#f87171', '10px sans-serif');
+        for (let m = 0; m <= 6; m++) txt(String(m), x0 + w * m / tmax - 3, y0 + h + 12, '#94a3b8', '10px sans-serif');
+        txt('waktu (menit)', x0 + w / 2 - 28, y0 + h + 26, '#94a3b8', '10px sans-serif');
+        txt('sinyal', x0 - 28, y0 + 8, '#94a3b8', '10px sans-serif');
+        if (st && st.areas) {
+            lctx.fillStyle = 'rgba(250,204,21,0.18)'; lctx.fillRect(X(85), y0, X(135) - X(85), h);
+            lctx.fillStyle = 'rgba(192,132,252,0.18)'; lctx.fillRect(X(170), y0, X(220) - X(170), h);
+            txt('produk', X(85) + 2, y0 + 12, '#fde68a', '10px sans-serif'); txt('pengotor', X(170) + 2, y0 + 12, '#d8b4fe', '10px sans-serif');
+        }
+        if (st && st.data.length) {
+            lctx.beginPath(); lctx.strokeStyle = '#38bdf8'; lctx.lineWidth = 1.6;
+            st.data.forEach((v, i) => { if (i === 0) lctx.moveTo(X(i), Y(v)); else lctx.lineTo(X(i), Y(v)); });
+            lctx.stroke();
+            if (Math.max(...st.data) >= 99.9) txt('puncak terpotong (jenuh)', X(95), satY + 14, '#f87171', 'bold 11px sans-serif');
+        } else {
+            txt('Tekan ▶ untuk menyuntik sampel ' + num(parseFloat($('lab-m').value), 0) + ' µg', x0 + 150, y0 + h / 2, '#94a3b8', '13px sans-serif');
+        }
+    }
+    function labDraw() {
+        const e = LERA[L.era];
+        lctx.clearRect(0, 0, LW, LH);
+        lctx.fillStyle = '#0f172a'; lctx.fillRect(0, 0, LW, LH);
+        if (L.era === 0) drawEra0(L.st); else if (L.era === 1) drawEra1(L.st); else drawEra2(L.st);
+        txt(e.nama + ' · ' + e.alat, 12, 18, '#fde68a', 'bold 13px sans-serif');
+    }
+
+    function labLoop() {
+        const pane = $('tab-uji');
+        if (pane && pane.classList.contains('active')) {
+            const st = L.st;
+            if (st && !st.done) {
+                let n = 0;
+                if (!L.paused) { L.acc += lrate(); n = Math.floor(L.acc); L.acc -= n; }
+                else if (L.stepReq > 0) { n = 3; L.stepReq--; }
+                for (let i = 0; i < n && !st.done; i++) labStep();
+            }
+            labDraw();
+        }
+        requestAnimationFrame(labLoop);
+    }
+
+    /* ----- panel & riwayat ----- */
+    function labRenderLog(c) {
+        const tb = $('lab-log');
+        if (!L.log.length) {
+            tb.innerHTML = '<tbody><tr><td class="text-muted">Belum ada uji. Jalankan uji, lalu ulangi dengan era lain dan bandingkan hasilnya.</td></tr></tbody>';
+            $('lab-ringkas').innerHTML = '';
+            return;
+        }
+        tb.innerHTML = '<thead><tr><th>#</th><th>Era</th><th>Sampel</th><th>Terukur</th><th>Sebenarnya</th><th>Galat (poin)</th><th>Keputusan QC</th><th>Biaya uji + sampel</th></tr></thead><tbody>' +
+            L.log.map((r, i) => {
+                const e = LERA[r.era], wrong = r.decM !== r.decT;
+                return `<tr class="${wrong ? 'table-danger' : ''}"><td>${i + 1}</td><td>${e.pendek}</td><td>${fmtSample(r.mG, e)}</td><td>${num(r.meas, 2)}%</td><td>${num(r.tru, 2)}%</td>` +
+                    `<td>${r.err >= 0 ? '+' : ''}${num(r.err, 2)}</td><td>${r.decM ? 'pemurnian ulang' : 'lulus'}${wrong ? ' (salah)' : ''}</td><td>${rp(r.cost + r.sampleCost)}</td></tr>`;
+            }).join('') + '</tbody>';
+        $('lab-ringkas').innerHTML = LERA.map((e, k) => {
+            const rs = L.log.filter(r => r.era === k);
+            if (!rs.length) return `<div class="col-md-4"><div class="stat"><div class="v">${e.pendek}</div><div class="l">belum diuji</div></div></div>`;
+            const mae = rs.reduce((a, r) => a + Math.abs(r.err), 0) / rs.length;
+            const avgCost = rs.reduce((a, r) => a + r.cost + r.sampleCost, 0) / rs.length;
+            const wrong = rs.filter(r => r.decM !== r.decT).length;
+            return `<div class="col-md-4"><div class="stat"><div class="v">${e.pendek}: rata-rata |galat| ${num(mae, 2)} poin</div><div class="l">${rs.length} uji · biaya rata-rata ${rp(avgCost)} · keputusan salah ${wrong}</div></div></div>`;
+        }).join('');
+    }
+    function renderUji() {
+        if (!$('lab-sumber')) return;
+        const src = labSync(), s = S(), u = s.unit, c = cfg(), e = LERA[L.era];
+        const outU = src.outG / src.uf;
+        $('lab-sumber').innerHTML = src.est
+            ? `Belum ada batch. Memakai perkiraan: rendemen <strong>${num(src.y * 100, 1)}%</strong>, produk jadi <strong>${num(outU, 2)} ${u}</strong>. Jalankan batch di Sandbox Reaktor untuk sampel nyata.`
+            : `Sampel diambil dari <strong>batch ke-${src.n}</strong> di Sandbox Reaktor: produk jadi <strong>${num(outU, 2)} ${u}</strong> (${s.nama}).`;
+        const left = Math.max(0, src.outG - L.used);
+        $('lab-stok').innerHTML = `Terpakai uji: <strong>${num(L.used, 4)} g</strong> (${num(L.used / src.outG * 100, 2)}% dari produk)<br>` +
+            `Sisa layak jual: <strong>${num(left / src.uf, 3)} ${u}</strong><br>Nilai sampel terpakai: <strong>${rp(L.used / src.uf * c.price)}</strong><br>` +
+            `<span class="text-muted">Biaya per uji era ini: ${rp(e.cost)}</span>`;
+        labRenderLog(c);
+    }
+
+    function labSetEra(i) {
+        L.era = i; L.st = null; L.paused = false; labClearMsg();
+        const e = LERA[i], m = $('lab-m');
+        m.min = e.smin; m.max = e.smax; m.step = e.sstep; m.value = e.sdef;
+        $('lab-m-lbl').textContent = e.sdef + ' ' + e.unit;
+        $('lab-info').textContent = e.info;
+        $('g-heat').classList.toggle('d-none', i !== 0);
+        $('g-flow').classList.toggle('d-none', i !== 1);
+        $('lab-lift').classList.toggle('d-none', i !== 0);
+        $('lab-close').classList.toggle('d-none', i !== 1);
+        $('lab-read').classList.toggle('d-none', i !== 1);
+        labPlayIcon();
+        renderUji();
+    }
+    document.querySelectorAll('input[name=lera]').forEach(r => r.addEventListener('change', () => labSetEra(parseInt(r.value))));
+    $('lab-m').addEventListener('input', () => { $('lab-m-lbl').textContent = $('lab-m').value + ' ' + LERA[L.era].unit; });
+    $('lab-heat').addEventListener('input', () => { $('lab-heat-lbl').textContent = $('lab-heat').value; });
+    $('lab-flow').addEventListener('input', () => { $('lab-flow-lbl').textContent = parseFloat($('lab-flow').value).toFixed(1); });
+    $('lab-play').onclick = () => { if (!L.st || L.st.done) labStart(); else L.paused = !L.paused; labPlayIcon(); };
+    $('lab-step').onclick = () => {
+        if (!L.st || L.st.done) { labStart(); if (L.st && !L.st.done) L.paused = true; } else L.paused = true;
+        L.stepReq++; labPlayIcon();
+    };
+    $('lab-reset').onclick = () => { L.st = null; L.paused = false; labClearMsg(); labPlayIcon(); };
+    $('lab-lift').onclick = () => { const st = L.st; if (L.era === 0 && st && !st.done) weigh0(st); };
+    $('lab-close').onclick = () => { $('lab-flow').value = 0; $('lab-flow-lbl').textContent = '0.0'; };
+    $('lab-read').onclick = () => { const st = L.st; if (L.era === 1 && st && !st.done) readBuret(st, 'Dihentikan manual. '); };
+    $('lab-clear').onclick = () => { L.log = []; L.used = 0; renderUji(); };
+    function labReset() { L.st = null; L.paused = false; L.log = []; L.used = 0; L.srcN = -1; labClearMsg(); labPlayIcon(); }
+
+    labSetEra(0);
+    labLoop();
 
     renderKatalog();
     setSubstance('emas');
