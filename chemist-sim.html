@@ -52,15 +52,14 @@
         <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-katalog" type="button"><i class="bi bi-grid-3x3-gap"></i> 1. Katalog Proses</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-sim" type="button"><i class="bi bi-funnel"></i> 2. Sandbox Pemisahan</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-eko" type="button"><i class="bi bi-graph-up-arrow"></i> 3. Hasil &amp; BEP</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-uji" type="button"><i class="bi bi-eyedropper"></i> 4. Lab Uji Mutu (QC)</button></li>
-    </ul>
+            </ul>
 
     <div class="tab-content">
 
     <!-- ===================== TAB 1: KATALOG ===================== -->
     <div class="tab-pane fade show active" id="tab-katalog">
         <div class="phet-panel mt-3">
-            <h6><i class="bi bi-grid-3x3-gap"></i> Langkah 1 dari 4: pilih proses pemisahan</h6>
+            <h6><i class="bi bi-grid-3x3-gap"></i> Langkah 1 dari 3: pilih proses pemisahan</h6>
             <p class="small mb-1">Pilih satu <strong>alat pemisahan</strong> beserta bahan baku &amp; reagennya. Di <strong>Sandbox Pemisahan</strong> Anda mengatur parameter fisik alat (suhu, laju alir, rasio pelarut, RPM). Di <strong>Hasil &amp; BEP</strong>, titik impas dihitung <strong>langsung dari volume dan nilai jual produk jadi hasil pemisahan</strong> — bukan dari skala lab.</p>
             <p class="small text-muted mb-0">Semua angka bawaan hanya ilustrasi edukasi. Ganti dengan data riil Anda sendiri.</p>
         </div>
@@ -263,76 +262,7 @@
         </div>
     </div>
 
-    <!-- ===================== TAB 4: LAB UJI MUTU (QC mandiri) ===================== -->
-    <div class="tab-pane fade" id="tab-uji">
-        <div class="phet-panel mt-3">
-            <h6><i class="bi bi-info-circle"></i> Lab Uji Mutu = verifikasi QC, terpisah dari BEP</h6>
-            <p class="small mb-0">Hasil uji di sini <strong>tidak mengubah perhitungan BEP</strong>. BEP di tab 3 dihitung langsung dari volume &amp; nilai jual produk jadi hasil pemisahan. Lab ini menjawab pertanyaan lain: <em>"apakah produk benar-benar memenuhi standar?"</em> — lengkap dengan biaya uji dan galat tiap era.</p>
         </div>
-        <div class="row g-3">
-            <div class="col-lg-8">
-                <div class="phet-screen">
-                    <canvas id="lab-cv" width="640" height="300" style="width:100%;height:auto;border-radius:10px;background:#0f172a;display:block"></canvas>
-                    <div class="playbar mt-2">
-                        <button class="pbtn pbtn-reset" id="lab-reset"><i class="bi bi-arrow-counterclockwise"></i></button>
-                        <button class="pbtn pbtn-play" id="lab-play"><i class="bi bi-play-fill" id="lab-ico"></i></button>
-                        <button class="pbtn pbtn-step" id="lab-step"><i class="bi bi-skip-forward-fill"></i></button>
-                        <button class="btn btn-sm btn-danger fw-bold ms-auto d-none" id="lab-lift"><i class="bi bi-box-arrow-up"></i> Angkat &amp; timbang</button>
-                        <button class="btn btn-sm btn-danger fw-bold ms-auto d-none" id="lab-close"><i class="bi bi-x-octagon"></i> Tutup keran</button>
-                    </div>
-                    <div id="lab-hasil" class="alert d-none mt-3 mb-0 small"></div>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="phet-panel">
-                    <h6><i class="bi bi-box-seam"></i> Sampel produk jadi</h6>
-                    <div class="small" id="lab-sumber"></div>
-                </div>
-                <div class="phet-panel">
-                    <h6><i class="bi bi-clock-history"></i> Pilih era</h6>
-                    <div class="btn-group-vertical w-100" role="group">
-                        <input type="radio" class="btn-check" name="lera" id="lera-0" value="0" checked>
-                        <label class="btn btn-outline-warning text-start text-dark" for="lera-0"><strong>Era Islam</strong> <small>(cawan lebur, tanur, neraca)</small></label>
-                        <input type="radio" class="btn-check" name="lera" id="lera-1" value="1">
-                        <label class="btn btn-outline-warning text-start text-dark" for="lera-1"><strong>Era awal modern</strong> <small>(buret, indikator, titrasi)</small></label>
-                        <input type="radio" class="btn-check" name="lera" id="lera-2" value="2">
-                        <label class="btn btn-outline-warning text-start text-dark" for="lera-2"><strong>Era instrumen &amp; AI</strong> <small>(kromatograf, integrasi otomatis)</small></label>
-                    </div>
-                </div>
-                <div class="phet-panel">
-                    <h6><i class="bi bi-sliders2"></i> Alat &amp; pengaturan</h6>
-                    <label class="form-label small mb-0">Ukuran sampel: <strong id="lab-m-lbl">5 g</strong></label>
-                    <input type="range" class="form-range" id="lab-m" min="1" max="20" step="0.5" value="5">
-                    <div id="g-heat">
-                        <label class="form-label small mb-0">Api tanur: <strong id="lab-heat-lbl">45</strong>%</label>
-                        <input type="range" class="heat-range my-2" id="lab-heat" min="0" max="100" value="45">
-                    </div>
-                    <div id="g-flow" class="d-none">
-                        <label class="form-label small mb-0">Laju tetes titran: <strong id="lab-flow-lbl">1.5</strong> tetes/langkah</label>
-                        <input type="range" class="form-range" id="lab-flow" min="0" max="10" step="0.1" value="1.5">
-                    </div>
-                    <div class="form-text" id="lab-info"></div>
-                </div>
-                <div class="phet-panel">
-                    <h6><i class="bi bi-cash-stack"></i> Biaya uji (tidak masuk BEP)</h6>
-                    <div class="small" id="lab-stok"></div>
-                </div>
-            </div>
-        </div>
-        <div class="card mt-3">
-            <div class="card-header card-header-mipa py-2 d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-journal-text"></i> Riwayat uji QC &amp; perbandingan era</span>
-                <button class="btn btn-sm btn-outline-light" id="lab-clear"><i class="bi bi-trash"></i> Hapus</button>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive"><table class="table table-sm align-middle small mb-2" id="lab-log"></table></div>
-                <div class="row g-2" id="lab-ringkas"></div>
-                <div class="small text-muted mt-2">Model alat &amp; galat tiap era bersifat ilustrasi. Sampel dianggap homogen. Keputusan QC di tabel ini bersifat informatif — perhitungan BEP tetap memakai nilai jual produk hasil pemisahan.</div>
-            </div>
-        </div>
-    </div>
-
-    </div>
 </div>
 
 <footer class="text-center">
@@ -616,7 +546,7 @@
         updateCounters();
         setPlayIcon();
         showResult(c, o);
-        updateProfitChart(); updateTempCharts(); updateSummary(); renderUji();
+        updateProfitChart(); updateTempCharts(); updateSummary();
         setTimeout(() => {
             B.state = 'idle';
             if (auto) startBatch(); else { setStatus('Siap'); setPlayIcon(); }
@@ -924,7 +854,6 @@
             h += box('BEP batch terakhir', last.marginPerKg > 0 ? num(c.fc / last.marginPerKg) + ' kg' : 'Tak layak');
         }
         $('ringkasan').innerHTML = h;
-        if (typeof renderUji === 'function') renderUji();
     }
 
     /* ---------- PARAMETER UI ---------- */
@@ -968,7 +897,6 @@
         B = { state: 'idle', t: 0, spawned: 0, quota: 0, conv: 0, rec: 0, nV: 0, Rtarget: 0, carry: 0 };
         membrane = 100;
         hideResult();
-        if (typeof labReset === 'function') labReset();
         setStatus('Siap'); $('st-y').textContent = '-'; updateCounters(); setPlayIcon();
         clearHist(); updateProfitChart(); updateTempCharts(); updateSummary();
     }
@@ -1066,217 +994,6 @@
         setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     };
 
-    /* ---------- LAB UJI MUTU (QC mandiri, tidak memengaruhi BEP) ---------- */
-    const LERA = [
-        { nama: 'Era Islam (cawan lebur + tanur + neraca)', pendek: 'Islam', cost: 50000, res: 0.1,
-          info: 'Pengotor dibakar hingga menguap, sisa produk ditimbang. Api terlalu kecil: pengotor tersisa, kadar terbaca terlalu rendah. Api terlalu besar: produk ikut hilang, kadar terbaca terlalu tinggi.' },
-        { nama: 'Era awal modern (buret + indikator)', pendek: 'Awal modern', cost: 150000, res: 0.05, k: 40,
-          info: 'Tetesi titran sampai indikator berubah warna, tutup keran, baca buret. Aliran deras melewati titik akhir: kadar terbaca terlalu tinggi.' },
-        { nama: 'Era instrumen & AI (kromatograf)', pendek: 'Instrumen', cost: 1500000,
-          info: 'Suntik sampel mikro; puncak diintegrasi otomatis. Sampel terlalu sedikit tenggelam di derau; terlalu banyak mendistorsi hasil.' }
-    ];
-    const lcv = $('lab-cv'), lctx = lcv.getContext('2d');
-    const LW = 640, LH = 300;
-    const L = { era: 0, st: null, paused: false, stepReq: 0, acc: 0, log: [], costTotal: 0 };
-
-    function labSample() {
-        if (history.length) { const h = history[history.length - 1]; return { purity: h.purity, mass: h.productMass, est: false }; }
-        const c = cfg(); const o = outcomeFor(c, baseRecovery(c));
-        return { purity: o.purity, mass: o.productMass, est: true };
-    }
-    function labMsg(type, html) { const el = $('lab-hasil'); el.className = 'alert alert-' + type + ' mt-3 mb-0 small'; el.innerHTML = html; }
-    function labClearMsg() { $('lab-hasil').className = 'alert d-none mt-3 mb-0 small'; }
-    function labPlayIcon() { $('lab-ico').className = 'bi ' + (L.st && !L.st.done && !L.paused ? 'bi-pause-fill' : 'bi-play-fill'); }
-
-    function labStart() {
-        if (L.st && !L.st.done) return;
-        const smp = labSample(), e = LERA[L.era];
-        const mG = parseFloat($('lab-m').value);
-        if (mG > smp.mass) { labMsg('warning', 'Sampel ' + mG + ' g melebihi produk batch terakhir (' + num(smp.mass, 3) + ' g). Kecilkan sampel atau jalankan batch baru.'); return; }
-        labClearMsg();
-        L.paused = false;
-        const p = smp.purity;
-        if (L.era === 0) {
-            const N = 80, nP = Math.round(p * N), parts = [];
-            for (let i = 0; i < N; i++) parts.push({ k: i < nP ? 'P' : 'I', u: Math.random(), v: Math.random(), alive: true });
-            L.st = { t: 0, T: 500, N, nP0: nP, mG, parts, fumes: [], done: false, read: null };
-        } else if (L.era === 1) {
-            L.st = { t: 0, mG, V: 0, Veff: 0, eq: e.k * mG * p, colorSeen: false, closed: 0, done: false };
-        } else {
-            const mUg = mG * 1e6;
-            L.st = { t: 0, i: 0, n: 300, mUg, data: [], hp: mUg * p, hi: mUg * (1 - p), done: false };
-        }
-        labPlayIcon();
-    }
-    function labFinish(measFrac, mG, detail) {
-        const e = LERA[L.era], st = L.st;
-        st.done = true;
-        const smp = labSample();
-        const meas = clamp(measFrac, 0, 1.2) * 100;
-        L.log.push({ era: L.era, mG, meas, tru: smp.purity * 100, err: meas - smp.purity * 100, cost: e.cost });
-        L.costTotal += e.cost;
-        labMsg('info', `<strong>Kadar terukur ${num(meas, 2)}%</strong> (sebenarnya ${num(smp.purity * 100, 2)}%, galat ${num(meas - smp.purity * 100, 2)} poin). ${detail}<br>` +
-            `Biaya uji ${rp(e.cost)} — <strong>dicatat terpisah, tidak masuk perhitungan BEP.</strong>`);
-        labPlayIcon(); renderUji();
-    }
-    function labStep() {
-        const st = L.st; if (!st || st.done) return;
-        st.t++;
-        if (L.era === 0) {
-            const h = parseFloat($('lab-heat').value) / 100;
-            const pI = 0.0006 + 0.009 * h, pP = 0.00002 + 0.0012 * Math.pow(Math.max(0, h - 0.6) / 0.4, 2);
-            for (const pt of st.parts) {
-                if (!pt.alive) continue;
-                pt.u = clamp(pt.u + (Math.random() - 0.5) * 0.06, 0, 1);
-                pt.v = clamp(pt.v + (Math.random() - 0.5) * 0.06, 0, 1);
-                if (Math.random() < (pt.k === 'I' ? pI : pP)) { pt.alive = false; st.fumes.push({ a: 1 }); }
-            }
-            st.fumes = st.fumes.filter(f => (f.a -= 0.012) > 0);
-            if (st.t >= st.T) labWeigh(st);
-        } else if (L.era === 1) {
-            const d = parseFloat($('lab-flow').value);
-            const n = Math.floor(d) + (Math.random() < d - Math.floor(d) ? 1 : 0);
-            if (n > 0 && st.V < 50) st.V = Math.min(50, st.V + n * 0.05);
-            st.Veff += (st.V - st.Veff) / 10;
-            if (st.Veff >= st.eq) st.colorSeen = true;
-            st.closed = (st.colorSeen && d === 0) ? st.closed + 1 : 0;
-            if (st.closed >= 12) {
-                const Vread = Math.round((st.V + randn() * 0.02) / 0.05) * 0.05;
-                labFinish(Vread / (LERA[1].k * st.mG), st.mG, `Buret terbaca ${num(Vread, 2)} mL; titik akhir sebenarnya ${num(st.eq, 2)} mL.`);
-            } else if (st.V >= 50) labFinish(1.2, st.mG, 'Buret habis sebelum indikator berubah warna.');
-        } else {
-            for (let j = 0; j < 2 && st.i < st.n; j++, st.i++) {
-                const t = st.i * 0.02;
-                let sig = Math.min(st.hp * gauss(t, 2.2, 0.12) + st.hi * gauss(t, 3.9, 0.15), 100);
-                st.data.push(sig + randn() * 0.2);
-            }
-            if (st.i >= st.n) {
-                let base = 0; for (let i = 0; i < 20; i++) base += st.data[i]; base /= 20;
-                const area = (a, b) => { let s = 0; for (let i = a; i < b; i++) s += (st.data[i] - base) * 0.02; return s; };
-                const Ap = area(85, 135), Ai = area(170, 220);
-                labFinish(Ap + Ai > 0 ? Ap / (Ap + Ai) : 0, st.mUg * 1e-6, 'Puncak diintegrasi otomatis.');
-            }
-        }
-    }
-    function labWeigh(st) {
-        if (st.done) return;
-        let nP = 0, nI = 0;
-        for (const pt of st.parts) if (pt.alive) { if (pt.k === 'P') nP++; else nI++; }
-        const mass = (nP + nI) * st.mG / st.N;
-        st.read = Math.max(0, Math.round((mass + randn() * 0.03) / 0.1) * 0.1);
-        labFinish(st.read / st.mG, st.mG, `Neraca membaca ${num(st.read, 1)} g dari sampel ${num(st.mG, 2)} g.`);
-    }
-    function txt(s, x, y, col, font, al) { lctx.fillStyle = col || '#e2e8f0'; lctx.font = font || '12px sans-serif'; lctx.textAlign = al || 'start'; lctx.fillText(s, x, y); lctx.textAlign = 'start'; }
-    function labDraw() {
-        const st = L.st, e = LERA[L.era], smp = labSample();
-        lctx.clearRect(0, 0, LW, LH);
-        lctx.fillStyle = '#0f172a'; lctx.fillRect(0, 0, LW, LH);
-        txt(e.nama, 12, 20, '#fde68a', 'bold 13px sans-serif');
-        if (L.era === 0) {
-            const h = parseFloat($('lab-heat').value) / 100;
-            lctx.fillStyle = '#374151'; lctx.fillRect(60, 90, 260, 180);
-            const g = lctx.createLinearGradient(0, 260, 0, 90);
-            g.addColorStop(0, `rgba(255,${Math.round(150 - 100 * h)},20,${0.2 + 0.7 * h})`); g.addColorStop(1, 'rgba(255,120,0,0)');
-            lctx.fillStyle = g; lctx.fillRect(66, 96, 248, 168);
-            txt('Tanur · api ' + Math.round(h * 100) + '%', 70, 112, '#fde68a', 'bold 12px sans-serif');
-            lctx.fillStyle = '#44403c'; lctx.fillRect(130, 150, 120, 90);
-            if (st) for (const pt of st.parts) {
-                if (!pt.alive) continue;
-                lctx.beginPath(); lctx.fillStyle = pt.k === 'P' ? S().colV : '#c084fc';
-                lctx.arc(140 + pt.u * 100, 160 + pt.v * 70, 3, 0, 7); lctx.fill();
-            }
-            lctx.fillStyle = '#1f2937'; lctx.fillRect(380, 100, 230, 140);
-            txt('Neraca (resolusi 0,1 g)', 392, 124, '#cbd5e1', 'bold 12px sans-serif');
-            lctx.fillStyle = '#052e16'; lctx.fillRect(392, 140, 206, 50);
-            txt(st && st.read !== null ? num(st.read, 1) + ' g' : '--.- g', 495, 174, '#4ade80', 'bold 28px monospace', 'center');
-            txt('Sampel: ' + num(st ? st.mG : $('lab-m').value, 1) + ' g', 392, 216, '#e2e8f0');
-            lctx.fillStyle = '#1f2937'; lctx.fillRect(60, 280, 260, 8);
-            lctx.fillStyle = '#f59e0b'; lctx.fillRect(60, 280, 260 * (st ? Math.min(1, st.t / st.T) : 0), 8);
-        } else if (L.era === 1) {
-            const bx = 110, by = 40, bh = 150;
-            lctx.fillStyle = '#e2e8f0'; lctx.fillRect(bx, by, 22, bh);
-            const V = st ? st.V : 0, eq = st ? st.eq : 1e9, Veff = st ? st.Veff : 0;
-            lctx.fillStyle = '#38bdf8'; lctx.fillRect(bx + 2, by + bh * (V / 50), 18, bh * (1 - V / 50));
-            lctx.fillStyle = (st && !st.done && parseFloat($('lab-flow').value) > 0) ? '#ef4444' : '#64748b';
-            lctx.fillRect(bx - 4, 194, 30, 7);
-            lctx.beginPath(); lctx.moveTo(bx - 10, 201); lctx.lineTo(bx + 32, 260); lctx.lineTo(bx - 52, 260); lctx.closePath();
-            lctx.strokeStyle = '#e2e8f0'; lctx.lineWidth = 2; lctx.stroke();
-            const pink = st ? clamp((Veff - eq) / 0.3, 0, 1) : 0;
-            if (pink > 0) { lctx.fillStyle = `rgba(236,72,153,${0.85 * pink})`; lctx.fill(); }
-            txt('Buret ' + num(V, 2) + ' mL', 190, 70, '#f8fafc', 'bold 22px sans-serif');
-            txt('Indikator: ' + (pink > 0.05 ? 'BERUBAH' : 'belum'), 190, 96, pink > 0.05 ? '#f472b6' : '#94a3b8', 'bold 13px sans-serif');
-            txt(st && !st.done ? 'Pelankan tetesan menjelang titik akhir, lalu tutup keran.' : 'Atur laju tetes lalu tekan ▶.', 190, 120, '#94a3b8', '11px sans-serif');
-        } else {
-            const x0 = 50, y0 = 80, w = 560, h = 160, ymax = 110;
-            lctx.fillStyle = '#111827'; lctx.fillRect(x0 - 30, y0 - 12, w + 44, h + 36);
-            lctx.strokeStyle = '#64748b'; lctx.strokeRect(x0, y0, w, h);
-            const X = i => x0 + w * (i * 0.02) / 6, Y = v => y0 + h - h * clamp(v, -5, ymax) / ymax;
-            lctx.setLineDash([5, 4]); lctx.strokeStyle = '#ef4444';
-            lctx.beginPath(); lctx.moveTo(x0, Y(100)); lctx.lineTo(x0 + w, Y(100)); lctx.stroke(); lctx.setLineDash([]);
-            if (st && st.data.length) {
-                lctx.beginPath(); lctx.strokeStyle = '#38bdf8'; lctx.lineWidth = 1.6;
-                st.data.forEach((v, i) => { if (i === 0) lctx.moveTo(X(i), Y(v)); else lctx.lineTo(X(i), Y(v)); });
-                lctx.stroke();
-            } else txt('Tekan ▶ untuk menyuntik sampel ' + $('lab-m').value + ' g', x0 + 140, y0 + 80, '#94a3b8', '13px sans-serif');
-            txt('waktu (menit) →', x0 + w - 90, y0 + h + 24, '#94a3b8', '10px sans-serif');
-        }
-    }
-    function labLoop() {
-        const pane = $('tab-uji');
-        if (pane && pane.classList.contains('active')) {
-            const st = L.st;
-            if (st && !st.done) {
-                let n = 0;
-                if (!L.paused) { L.acc += 2; n = Math.floor(L.acc); L.acc -= n; }
-                else if (L.stepReq > 0) { n = 3; L.stepReq--; }
-                for (let i = 0; i < n && !st.done; i++) labStep();
-            }
-            labDraw();
-        }
-        requestAnimationFrame(labLoop);
-    }
-    function renderUji() {
-        if (!$('lab-sumber')) return;
-        const smp = labSample(), e = LERA[L.era];
-        $('lab-sumber').innerHTML = smp.est
-            ? `Belum ada batch. Perkiraan: kemurnian <strong>${num(smp.purity * 100, 2)}%</strong>, produk <strong>${num(smp.mass, 3)}</strong>. Jalankan batch di Sandbox untuk sampel nyata.`
-            : `Dari <strong>batch terakhir</strong>: kemurnian sebenarnya <strong>${num(smp.purity * 100, 2)}%</strong>, produk jadi <strong>${num(smp.mass, 3)}</strong>.`;
-        $('lab-stok').innerHTML = `Biaya per uji era ini: <strong>${rp(e.cost)}</strong><br>Total biaya uji terkumpul: <strong>${rp(L.costTotal)}</strong><br><span class="text-muted">Dicatat terpisah dari BEP.</span>`;
-        const tb = $('lab-log');
-        if (!L.log.length) { tb.innerHTML = '<tbody><tr><td class="text-muted">Belum ada uji.</td></tr></tbody>'; $('lab-ringkas').innerHTML = ''; return; }
-        tb.innerHTML = '<thead><tr><th>#</th><th>Era</th><th>Sampel</th><th>Terukur</th><th>Sebenarnya</th><th>Galat</th><th>Biaya</th></tr></thead><tbody>' +
-            L.log.map((r, i) => `<tr><td>${i + 1}</td><td>${LERA[r.era].pendek}</td><td>${num(r.mG, 2)} g</td><td>${num(r.meas, 2)}%</td><td>${num(r.tru, 2)}%</td><td>${r.err >= 0 ? '+' : ''}${num(r.err, 2)}</td><td>${rp(r.cost)}</td></tr>`).join('') + '</tbody>';
-        $('lab-ringkas').innerHTML = LERA.map((e2, k) => {
-            const rs = L.log.filter(r => r.era === k);
-            if (!rs.length) return `<div class="col-md-4"><div class="stat"><div class="v">${e2.pendek}</div><div class="l">belum diuji</div></div></div>`;
-            const mae = rs.reduce((a, r) => a + Math.abs(r.err), 0) / rs.length;
-            return `<div class="col-md-4"><div class="stat"><div class="v">${e2.pendek}: |galat| ${num(mae, 2)} poin</div><div class="l">${rs.length} uji</div></div></div>`;
-        }).join('');
-    }
-    function labSetEra(i) {
-        L.era = i; L.st = null; L.paused = false; labClearMsg();
-        const e = LERA[i];
-        $('lab-info').textContent = e.info;
-        $('g-heat').classList.toggle('d-none', i !== 0);
-        $('g-flow').classList.toggle('d-none', i !== 1);
-        $('lab-lift').classList.toggle('d-none', i !== 0);
-        $('lab-close').classList.toggle('d-none', i !== 1);
-        labPlayIcon(); renderUji();
-    }
-    document.querySelectorAll('input[name=lera]').forEach(r => r.addEventListener('change', () => labSetEra(parseInt(r.value))));
-    $('lab-m').addEventListener('input', () => { $('lab-m-lbl').textContent = $('lab-m').value + ' g'; });
-    $('lab-heat').addEventListener('input', () => { $('lab-heat-lbl').textContent = $('lab-heat').value; });
-    $('lab-flow').addEventListener('input', () => { $('lab-flow-lbl').textContent = parseFloat($('lab-flow').value).toFixed(1); });
-    $('lab-play').onclick = () => { if (!L.st || L.st.done) labStart(); else L.paused = !L.paused; labPlayIcon(); };
-    $('lab-step').onclick = () => { if (!L.st || L.st.done) { labStart(); if (L.st && !L.st.done) L.paused = true; } else L.paused = true; L.stepReq++; labPlayIcon(); };
-    $('lab-reset').onclick = () => { L.st = null; L.paused = false; labClearMsg(); labPlayIcon(); };
-    $('lab-lift').onclick = () => { if (L.era === 0 && L.st && !L.st.done) labWeigh(L.st); };
-    $('lab-close').onclick = () => { $('lab-flow').value = 0; $('lab-flow-lbl').textContent = '0.0'; };
-    $('lab-clear').onclick = () => { L.log = []; L.costTotal = 0; renderUji(); };
-    function labReset() { L.st = null; L.paused = false; L.log = []; L.costTotal = 0; labClearMsg(); labPlayIcon(); }
-
-    labSetEra(0);
-    labLoop();
     renderKatalog();
     setProcess('distilasi');
     loop();
