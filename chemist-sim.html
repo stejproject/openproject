@@ -54,6 +54,7 @@
         <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-sim" type="button"><i class="bi bi-flask"></i> 2. Sandbox Reaktor</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-sep" type="button"><i class="bi bi-funnel"></i> 3. Pemisahan &amp; Recovery</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-eko" type="button"><i class="bi bi-graph-up-arrow"></i> 4. Hasil &amp; BEP</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-hys" type="button"><i class="bi bi-file-earmark-arrow-up"></i> 5. Impor HYSYS</button></li>
     </ul>
 
     <div class="tab-content">
@@ -61,8 +62,8 @@
     <!-- ===================== TAB 1: SIMULASI ===================== -->
     <div class="tab-pane fade show active" id="tab-katalog">
         <div class="phet-panel mt-3">
-            <h6><i class="bi bi-grid-3x3-gap"></i> Langkah 1 dari 4: pilih zat / industri</h6>
-            <p class="small mb-1">Pilih satu reaksi untuk dicoba. Di <strong>Sandbox</strong> Anda menjalankan reaksi partikel, menggeser suhu, dan mengatur kondisi lab. Di <strong>Pemisahan &amp; Recovery</strong> Anda memisahkan zat berharga dari pengotor (distilasi atau sentrifugasi membran) dan melihat berapa yang lolos ke limbah. Di <strong>Hasil &amp; BEP</strong> Anda melihat dampaknya pada laba, titik impas (BEP), dan titik tutup (SDP).</p>
+            <h6><i class="bi bi-grid-3x3-gap"></i> Langkah 1 dari 5: pilih zat / industri</h6>
+            <p class="small mb-1">Pilih satu reaksi untuk dicoba. Di <strong>Sandbox</strong> Anda menjalankan reaksi partikel, menggeser suhu, dan mengatur kondisi lab. Di <strong>Pemisahan &amp; Recovery</strong> Anda memisahkan zat berharga dari pengotor (distilasi atau sentrifugasi membran) dan melihat berapa yang lolos ke limbah. Di <strong>Hasil &amp; BEP</strong> Anda melihat dampaknya pada laba, titik impas (BEP), dan titik tutup (SDP). Punya hasil simulasi proses di HYSYS? Di <strong>Impor HYSYS</strong> Anda bisa memuat tabel stream hasil ekspornya dan menganalisis keuangannya.</p>
             <p class="small text-muted mb-0">Semua angka bawaan (harga, biaya, kurva suhu) hanya ilustrasi edukasi. Ganti dengan data riil Anda sendiri.</p>
             <a href="https://thumb.wikimedia.org/wikipedia/commons/thumb/9/98/Periodic_table_%28polyatomic%29.svg/500px-Periodic_table_%28polyatomic%29.svg.png" target="_blank">
                 <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/9/98/Periodic_table_%28polyatomic%29.svg/500px-Periodic_table_%28polyatomic%29.svg.png" alt="Tabel Periodik Unsur Kimia" style="width: 100%;">
@@ -193,6 +194,95 @@
     </div>
 
     <!-- ===================== TAB 2: EKONOMI ===================== -->
+    <!-- ===================== TAB 5: IMPOR HYSYS ===================== -->
+    <div class="tab-pane fade" id="tab-hys">
+        <div class="phet-panel mt-3">
+            <h6><i class="bi bi-file-earmark-arrow-up"></i> Impor data HYSYS untuk analisis keuangan</h6>
+            <p class="small mb-2">Alur: ekspor tabel stream dari HYSYS (<em>Workbook → Material Streams</em>, lalu salin atau Export ke Excel/CSV) → unggah atau tempel di sini → tentukan peran dan harga tiap stream → lihat BEP, payback, sensitivitas, dan efek variasi recovery.</p>
+            <div class="alert alert-secondary small py-2 mb-2"><i class="bi bi-info-circle"></i> File simulasi asli HYSYS (<strong>.hsc</strong>) berformat biner milik Aspen dan <strong>tidak bisa dibaca langsung di browser</strong>. Ekspor dulu tabel stream-nya. Format yang didukung: <strong>.csv, .tsv, .txt, .xlsx, .xls</strong>, atau tempel langsung (salinan dari grid Workbook berpemisah tab).</div>
+            <div class="row g-2 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label small mb-0" for="hy-file">Unggah file ekspor</label>
+                    <input type="file" class="form-control form-control-sm" id="hy-file" accept=".csv,.tsv,.txt,.xlsx,.xls,.hsc">
+                </div>
+                <div class="col-md-7 d-flex gap-2 flex-wrap">
+                    <button class="btn btn-sm btn-gold fw-bold" id="hy-sample" style="background:#d97706;color:#fff"><i class="bi bi-magic"></i> Muat data contoh (distilasi etanol)</button>
+                    <button class="btn btn-sm btn-outline-secondary" id="hy-clear"><i class="bi bi-x-circle"></i> Bersihkan</button>
+                </div>
+                <div class="col-12">
+                    <label class="form-label small mb-0" for="hy-paste">Atau tempel tabel di sini</label>
+                    <textarea class="form-control form-control-sm" id="hy-paste" rows="5" placeholder="Contoh: baris pertama berisi nama stream, kolom pertama berisi nama properti (Mass Flow [kg/h], Temperature [C], Comp Mass Frac (Ethanol), ...)" style="font-family:monospace"></textarea>
+                    <button class="btn btn-sm btn-primary fw-bold mt-2" id="hy-read"><i class="bi bi-table"></i> Baca tabel yang ditempel</button>
+                </div>
+            </div>
+            <div id="hy-msg" class="small mt-2"></div>
+        </div>
+
+        <div id="hy-main" class="d-none">
+            <div class="phet-panel">
+                <h6><i class="bi bi-diagram-3"></i> Stream terdeteksi: tentukan peran dan harga</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle small mb-2">
+                        <thead><tr><th>Stream</th><th>Aliran massa (kg/h)</th><th>Suhu (°C)</th><th>Tekanan (kPa)</th><th>Daya (kW)</th><th id="hy-th-key">Fraksi massa kunci</th><th>Peran</th><th>Harga</th></tr></thead>
+                        <tbody id="hy-body"></tbody>
+                    </table>
+                </div>
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <label class="form-label small mb-0">Komponen kunci (zat berharga)</label>
+                        <select id="hy-key" class="form-select form-select-sm"></select>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <label class="form-label small mb-0">Jam operasi / tahun</label>
+                        <input type="number" class="form-control form-control-sm" id="hy-hrs" value="8000" min="1" max="8760">
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label small mb-0">Investasi / CAPEX (Rp)</label>
+                        <input type="number" class="form-control form-control-sm" id="hy-capex" value="0" min="0">
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label small mb-0">Biaya tetap / tahun (Rp)</label>
+                        <input type="number" class="form-control form-control-sm" id="hy-opex" value="0" min="0">
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label small mb-0">Simpangan baku recovery (%)</label>
+                        <input type="number" class="form-control form-control-sm" id="hy-sd" value="3" min="0" max="30" step="0.5">
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label small mb-0">1 batch simulator = ... jam umpan</label>
+                        <input type="number" class="form-control form-control-sm" id="hy-batchh" value="1" min="0.01" step="0.5">
+                    </div>
+                </div>
+                <div class="form-text">Aliran energi (stream tanpa aliran massa, hanya daya) dihitung sebagai biaya listrik/uap per kWh. Panas stream material (Heat Flow) tidak dihitung sebagai biaya.</div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-lg-7">
+                    <div class="card h-100">
+                        <div class="card-header card-header-gold py-2"><i class="bi bi-graph-up-arrow"></i> Laba tahunan vs utilisasi kapasitas</div>
+                        <div class="card-body">
+                            <div class="chart-box" style="height:300px"><canvas id="hy-chart"></canvas></div>
+                            <div class="small text-muted mt-2">Utilisasi 100% = laju umpan sesuai data HYSYS. Titik potong garis dengan nol adalah BEP kapasitas.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="card h-100">
+                        <div class="card-header card-header-bisnis py-2"><i class="bi bi-calculator"></i> Hasil analisis keuangan</div>
+                        <div class="card-body">
+                            <div class="row g-2" id="hy-res"></div>
+                            <div class="d-grid gap-2 mt-3">
+                                <button class="btn btn-gold fw-bold" id="hy-apply" style="background:#d97706;color:#fff"><i class="bi bi-box-arrow-in-right"></i> Terapkan ke simulator (zat, pemisahan, ekonomi)</button>
+                                <button class="btn btn-outline-success btn-sm fw-bold" id="hy-csv"><i class="bi bi-download"></i> Unduh ringkasan (CSV)</button>
+                            </div>
+                            <div id="hy-apply-msg" class="small mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ===================== TAB 3: PEMISAHAN & RECOVERY ===================== -->
     <div class="tab-pane fade" id="tab-sep">
         <div class="row g-3 mt-0">
@@ -1844,6 +1934,399 @@
     };
     document.querySelectorAll('button[data-bs-toggle="pill"]').forEach(b => {
         b.addEventListener('shown.bs.tab', () => { sepChart.resize(); sepUpdateUI(); });
+    });
+
+    /* ================= MODUL IMPOR HYSYS ================= */
+    const hyEsc = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    const HY = { streams: [], key: '', comps: [], R: null };
+    const HY_SAMPLE = [
+        ['', 'Feed', 'Product', 'Waste', 'Q-Reboiler'],
+        ['Vapour Fraction', '0.0000', '0.0000', '0.0000', ''],
+        ['Temperature [C]', '30.00', '78.40', '102.10', ''],
+        ['Pressure [kPa]', '101.3', '101.3', '105.0', ''],
+        ['Mass Flow [kg/h]', '1000.0', '420.0', '580.0', ''],
+        ['Molar Flow [kgmole/h]', '38.5', '16.2', '22.3', ''],
+        ['Comp Mass Frac (Ethanol)', '0.4000', '0.9400', '0.0070', ''],
+        ['Comp Mass Frac (Water)', '0.6000', '0.0600', '0.9930', ''],
+        ['Heat Flow [kW]', '-3200', '-1100', '-2000', '350']
+    ].map(r => r.join('\t')).join('\n');
+    const HY_SAMPLE_PRICE = { Feed: 4000, Product: 15000, Waste: 500, 'Q-Reboiler': 1500 };
+    const HY_SAMPLE_ROLE = { Feed: 'umpan', Product: 'produk', Waste: 'limbah', 'Q-Reboiler': 'energi' };
+
+    function hyNum(s) {
+        if (s == null) return NaN;
+        let t = String(s).trim().replace(/ /g, '').replace(/\s/g, '');
+        const m = t.match(/^[-+]?[\d.,]*\d(?:[eE][-+]?\d+)?/);
+        if (!m) return NaN;
+        t = m[0];
+        const hasC = t.includes(','), hasD = t.includes('.');
+        if (hasC && hasD) {
+            if (t.lastIndexOf(',') > t.lastIndexOf('.')) t = t.replace(/\./g, '').replace(',', '.');
+            else t = t.replace(/,/g, '');
+        } else if (hasC) {
+            if (/^[-+]?[1-9]\d{0,2}(,\d{3})+$/.test(t)) t = t.replace(/,/g, '');
+            else t = t.replace(',', '.');
+        }
+        return parseFloat(t);
+    }
+    function hySplit(line, d) {
+        const out = []; let cur = '', q = false;
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (ch === '"') { if (q && line[i + 1] === '"') { cur += '"'; i++; } else q = !q; }
+            else if (ch === d && !q) { out.push(cur); cur = ''; }
+            else cur += ch;
+        }
+        out.push(cur);
+        return out.map(x => x.trim());
+    }
+    const hyTranspose = g => g[0].map((_, j) => g.map(r => r[j]));
+
+    function hyLabel(raw) {
+        let label = String(raw).trim(), unit = '', comp = '';
+        const m = label.match(/^(.*?)\s*[\(\[]\s*([^\)\]]+?)\s*[\)\]]\s*$/);
+        const isFrac = /frac|comp/i.test(label);
+        if (m) { if (isFrac) { comp = m[2]; label = m[1]; } else { label = m[1]; unit = m[2]; } }
+        return { label, unit, comp };
+    }
+    function hyUnitMass(u) {
+        const x = (u || 'kg/h').toLowerCase().replace(/\s/g, '');
+        if (/^(t|tonne|tonnes|mt|ton)\/h/.test(x)) return 1000;
+        if (/^kg\/s/.test(x)) return 3600;
+        if (/^kg\/min/.test(x)) return 60;
+        if (/^kg\/(d|day)/.test(x)) return 1 / 24;
+        if (/^lb\/h/.test(x)) return 0.45359237;
+        if (/^g\/h/.test(x)) return 0.001;
+        return 1;
+    }
+    function hyConvT(v, u) { const x = (u || 'C').toLowerCase().replace(/[°\s]/g, ''); if (x === 'k') return v - 273.15; if (x === 'f') return (v - 32) / 1.8; return v; }
+    function hyConvP(v, u) {
+        const x = (u || 'kPa').toLowerCase().replace(/\s/g, '');
+        if (x.startsWith('mpa')) return v * 1000; if (x.startsWith('bar')) return v * 100;
+        if (x.startsWith('psi')) return v * 6.894757; if (x.startsWith('atm')) return v * 101.325;
+        if (x === 'pa') return v / 1000; return v;
+    }
+    function hyUnitQ(u) {
+        const x = (u || 'kW').toLowerCase().replace(/\s/g, '');
+        if (x === 'w') return 0.001; if (x === 'mw') return 1000; if (x === 'kw' || x === 'kj/s') return 1;
+        if (x.startsWith('kj/h')) return 1 / 3600; if (x.startsWith('mj/h')) return 1000 / 3600; if (x.startsWith('gj/h')) return 1e6 / 3600;
+        if (x.startsWith('kcal/h')) return 0.0011628; if (x.startsWith('btu/h')) return 0.000293071; if (x === 'hp') return 0.7457;
+        return 1;
+    }
+
+    function hyParse(text) {
+        const warn = [];
+        const lines = String(text).replace(/\r/g, '').split('\n').filter(l => l.trim());
+        if (lines.length < 2) throw new Error('Data terlalu pendek: butuh baris nama stream dan minimal satu baris properti.');
+        let d = null;
+        if (lines.some(l => l.includes('\t'))) d = '\t';
+        else {
+            const sc = lines.reduce((a, l) => a + (l.match(/;/g) || []).length, 0), cm = lines.reduce((a, l) => a + (l.match(/,/g) || []).length, 0);
+            if (sc || cm) d = sc >= cm ? ';' : ',';
+        }
+        let g = lines.map(l => d ? hySplit(l, d) : l.trim().split(/\s{2,}/));
+        const Wd = Math.max(...g.map(r => r.length));
+        g = g.map(r => { const c = r.slice(); while (c.length < Wd) c.push(''); return c; });
+        const kw = /flow|temperature|pressure|fraction|duty|heat|vapou?r|enthalpy|density|molecular|comp/i;
+        const colHits = g.slice(1).filter(r => kw.test(r[0])).length;
+        const rowHits = g[0].slice(1).filter(c => kw.test(c)).length;
+        if (rowHits > colHits) { g = hyTranspose(g); warn.push('Tabel dibaca dengan stream sebagai baris (ditranspos otomatis).'); }
+        const rows = g.slice(1);
+        const nA = rows.filter(r => r[1] !== '' && isNaN(hyNum(r[1])) && !isNaN(hyNum(r[2] || ''))).length;
+        const nB = rows.filter(r => !isNaN(hyNum(r[1]))).length;
+        const unitCol = (nA > nB && g[0].length > 2) ? 1 : -1;
+        const start = unitCol === 1 ? 2 : 1;
+        if (unitCol === 1) warn.push('Kolom satuan terdeteksi.');
+        const streams = [];
+        for (let j = start; j < g[0].length; j++) {
+            const hasNum = rows.some(r => !isNaN(hyNum(r[j])));
+            if (!hasNum) continue;
+            const s = { name: g[0][j] || ('Stream ' + (streams.length + 1)), m: null, T: null, P: null, Q: null, vf: null, mol: null, mw: null, w: {}, x: {} };
+            rows.forEach(r => {
+                const v = hyNum(r[j]);
+                if (isNaN(v) || !r[0]) return;
+                const p = hyLabel(r[0]);
+                const unit = p.unit || (unitCol === 1 ? r[1] : '');
+                const L = p.label.toLowerCase();
+                if (p.comp && /mass/.test(L)) s.w[p.comp] = v;
+                else if (p.comp && /mol/.test(L)) s.x[p.comp] = v;
+                else if (/mass\s*flow/.test(L) && !/comp/.test(L)) { if (s.m == null) s.m = v * hyUnitMass(unit); }
+                else if (/molar\s*flow/.test(L) && !/comp/.test(L)) { if (s.mol == null) s.mol = v; }
+                else if (/molecular\s*weight|mol\.?\s*wt|^mw$/.test(L)) { if (s.mw == null) s.mw = v; }
+                else if (/^temperature/.test(L)) { if (s.T == null) s.T = hyConvT(v, unit); }
+                else if (/^pressure/.test(L)) { if (s.P == null) s.P = hyConvP(v, unit); }
+                else if (/vapou?r\s*frac/.test(L)) { if (s.vf == null) s.vf = v; }
+                else if (/heat\s*flow|duty|^power|energy\s*flow|^q$/.test(L)) { if (s.Q == null) s.Q = v * hyUnitQ(unit); }
+            });
+            if (s.m == null && s.mol != null && s.mw != null) { s.m = s.mol * s.mw; warn.push('Aliran massa "' + s.name + '" dihitung dari aliran molar × berat molekul.'); }
+            const sw = Object.values(s.w).reduce((a, b) => a + b, 0);
+            if (sw > 1.5) { Object.keys(s.w).forEach(k => { s.w[k] /= 100; }); warn.push('Fraksi massa "' + s.name + '" terbaca dalam persen, dikonversi ke fraksi.'); }
+            s.kind = s.m != null ? 'material' : (s.Q != null ? 'energy' : 'none');
+            if (s.kind !== 'none') streams.push(s);
+        }
+        if (!streams.length) throw new Error('Tidak ada stream yang bisa dibaca. Pastikan ada baris "Mass Flow" (atau "Molar Flow" + "Molecular Weight") atau "Heat Flow/Duty" untuk aliran energi.');
+        return { streams, warn };
+    }
+
+    function hyGuessRole(s, idx, n) {
+        if (s.kind === 'energy') return 'energi';
+        const nm = s.name.toLowerCase();
+        if (/feed|umpan|raw|inlet|^in\b|crude/.test(nm)) return 'umpan';
+        if (/waste|limbah|bottom|purge|resid|tail|vent/.test(nm)) return 'limbah';
+        if (/prod|dist|overhead|top|out|clean/.test(nm)) return 'produk';
+        return idx === 0 ? 'umpan' : 'abaikan';
+    }
+    function hyDefPrice(role, kind) {
+        const cc = cfg(), f = S().unit === 'g' ? 1000 : 1;
+        if (kind === 'energy') return 1500;
+        if (role === 'produk' || role === 'samping') return Math.round(cc.price * f);
+        if (role === 'umpan') return Math.round(cc.vc * f * 0.5);
+        if (role === 'limbah') return Math.round((parseFloat($('sep-w').value) || 0) * f);
+        return 0;
+    }
+
+    function hyLoad(streams, warn, opts) {
+        opts = opts || {};
+        HY.streams = streams;
+        const compSet = [];
+        streams.forEach(s => Object.keys(s.w).forEach(k => { if (!compSet.includes(k)) compSet.push(k); }));
+        HY.comps = compSet;
+        streams.forEach((s, i) => {
+            s.role = opts.roles && opts.roles[s.name] ? opts.roles[s.name] : hyGuessRole(s, i, streams.length);
+            s.price = opts.prices && opts.prices[s.name] != null ? opts.prices[s.name] : hyDefPrice(s.role, s.kind);
+        });
+        const firstProd = streams.find(s => s.role === 'produk' && Object.keys(s.w).length);
+        if (compSet.length) {
+            let best = compSet[0];
+            if (firstProd) best = compSet.slice().sort((a, b) => (firstProd.w[b] || 0) - (firstProd.w[a] || 0))[0];
+            HY.key = best;
+        } else HY.key = '';
+        $('hy-key').innerHTML = compSet.length ? compSet.map(k => `<option value="${hyEsc(k)}">${hyEsc(k)}</option>`).join('') : '<option value="">(tidak ada data komposisi)</option>';
+        $('hy-key').value = HY.key;
+        if (!$('hy-opex').dataset.touched) $('hy-opex').value = Math.round(cfg().fc);
+        $('hy-main').classList.remove('d-none');
+        $('hy-apply-msg').textContent = '';
+        hyMsg(`<div class="alert alert-success py-2 mb-0"><i class="bi bi-check-circle-fill"></i> ${streams.length} stream terbaca (${streams.filter(s => s.kind === 'material').length} material, ${streams.filter(s => s.kind === 'energy').length} energi).` +
+            (warn && warn.length ? '<br><span class="text-muted">' + warn.map(hyEsc).join(' ') + '</span>' : '') + '</div>');
+        hyRenderTable();
+        hyUpdate();
+    }
+    function hyMsg(html) { $('hy-msg').innerHTML = html; }
+    function hyErr(text) { hyMsg(`<div class="alert alert-danger py-2 mb-0"><i class="bi bi-exclamation-octagon-fill"></i> ${hyEsc(text)}</div>`); }
+
+    function hyRenderTable() {
+        const roleOpts = k => (k === 'energy' ? ['abaikan', 'energi'] : ['abaikan', 'umpan', 'produk', 'samping', 'limbah']);
+        const roleName = { abaikan: 'Abaikan', umpan: 'Umpan (biaya bahan)', produk: 'Produk (pendapatan)', samping: 'Produk samping (pendapatan)', limbah: 'Limbah (biaya olah)', energi: 'Energi (biaya listrik/uap)' };
+        $('hy-th-key').textContent = 'Fraksi massa' + (HY.key ? ' ' + HY.key : ' kunci');
+        $('hy-body').innerHTML = HY.streams.map((s, i) => `<tr>
+            <td class="fw-semibold">${hyEsc(s.name)}</td>
+            <td>${s.m != null ? num(s.m, 2) : '-'}</td><td>${s.T != null ? num(s.T, 1) : '-'}</td><td>${s.P != null ? num(s.P, 1) : '-'}</td>
+            <td>${s.Q != null ? num(s.Q, 1) : '-'}</td>
+            <td>${HY.key && s.w[HY.key] != null ? num(s.w[HY.key] * 100, 2) + '%' : '-'}</td>
+            <td><select class="form-select form-select-sm hy-role" data-i="${i}">${roleOpts(s.kind).map(r => `<option value="${r}"${s.role === r ? ' selected' : ''}>${roleName[r]}</option>`).join('')}</select></td>
+            <td><div class="input-group input-group-sm" style="min-width:150px"><input type="number" class="form-control hy-price" data-i="${i}" value="${s.price}" min="0" step="any"><span class="input-group-text">${s.kind === 'energy' ? 'Rp/kWh' : 'Rp/kg'}</span></div></td>
+        </tr>`).join('');
+        document.querySelectorAll('.hy-role').forEach(el => el.addEventListener('change', () => {
+            const s = HY.streams[+el.dataset.i]; s.role = el.value;
+            if (!s.priceTouched) { s.price = hyDefPrice(s.role, s.kind); hyRenderTable(); }
+            hyUpdate();
+        }));
+        document.querySelectorAll('.hy-price').forEach(el => el.addEventListener('input', () => {
+            const s = HY.streams[+el.dataset.i]; s.price = parseFloat(el.value) || 0; s.priceTouched = true; hyUpdate();
+        }));
+    }
+
+    function hyCompute() {
+        const hrs = clamp(parseFloat($('hy-hrs').value) || 8000, 1, 8760);
+        const capex = Math.max(0, parseFloat($('hy-capex').value) || 0);
+        const opex = Math.max(0, parseFloat($('hy-opex').value) || 0);
+        const key = HY.key;
+        const R = { hrs, capex, opex, rev: 0, feedC: 0, wasteC: 0, energyC: 0, feedKg: 0, prodKg: 0, wasteKg: 0, sideKg: 0, kW: 0, keyFeed: 0, keyProd: 0, keyWaste: 0, revProd: 0, prodPriceNum: 0 };
+        HY.streams.forEach(s => {
+            const p = s.price || 0;
+            if (s.kind === 'energy') { if (s.role === 'energi') { R.energyC += Math.abs(s.Q) * p * hrs; R.kW += Math.abs(s.Q); } return; }
+            const wk = key && s.w[key] != null ? s.w[key] : null;
+            if (s.role === 'umpan') { R.feedC += s.m * p * hrs; R.feedKg += s.m; if (wk != null) R.keyFeed += s.m * wk; }
+            else if (s.role === 'produk') { R.revProd += s.m * p * hrs; R.prodKg += s.m; R.prodPriceNum += s.m * p; if (wk != null) R.keyProd += s.m * wk; }
+            else if (s.role === 'samping') { R.rev += s.m * p * hrs; R.sideKg += s.m; }
+            else if (s.role === 'limbah') { R.wasteC += s.m * p * hrs; R.wasteKg += s.m; if (wk != null) R.keyWaste += s.m * wk; }
+        });
+        R.rev += R.revProd;
+        R.varC = R.feedC + R.wasteC + R.energyC;
+        R.contrib = R.rev - R.varC;
+        R.ebitda = R.contrib - opex;
+        R.payback = capex > 0 && R.ebitda > 0 ? capex / R.ebitda : null;
+        R.bepCap = R.contrib > 0 ? opex / R.contrib : Infinity;
+        R.prodPriceAvg = R.prodKg > 0 ? R.prodPriceNum / R.prodKg : 0;
+        R.unitMargin = R.prodKg > 0 ? R.contrib / (R.prodKg * hrs) : NaN;
+        R.rec = R.keyFeed > 0 ? R.keyProd / R.keyFeed : null;
+        R.pur = R.prodKg > 0 && key ? R.keyProd / R.prodKg : null;
+        const out = R.prodKg + R.sideKg + R.wasteKg;
+        R.closure = R.feedKg > 0 ? (out - R.feedKg) / R.feedKg : null;
+        R.bepKg = isFinite(R.bepCap) ? R.bepCap * R.prodKg * hrs : Infinity;
+
+        // Monte Carlo: variasi recovery produk (pendapatan produk turun, produk "pindah" ke limbah)
+        const sd = (parseFloat($('hy-sd').value) || 0) / 100, N = 2000, eb = [], bp = [];
+        const wPrice = R.wasteKg > 0 ? R.wasteC / (R.wasteKg * hrs) : 0;
+        for (let i = 0; i < N; i++) {
+            const r = clamp(1 + randn() * sd, 0.3, 1.05);
+            const rev = R.rev - R.revProd * (1 - r);
+            const extra = r < 1 ? (1 - r) * R.prodKg * hrs * wPrice : 0;
+            const c = rev - R.varC - extra;
+            eb.push(c - opex); bp.push(c > 0 ? opex / c : Infinity);
+        }
+        eb.sort((a, b) => a - b);
+        const fin = bp.filter(isFinite).sort((a, b) => a - b);
+        R.mc = { pLoss: eb.filter(v => v < 0).length / N, p5: pct(eb, 0.05), p50: pct(eb, 0.5), p95: pct(eb, 0.95), bep5: pct(fin, 0.05), bep95: pct(fin, 0.95), nInv: (N - fin.length) / N };
+        return R;
+    }
+
+    const hyChart = new Chart($('hy-chart'), {
+        type: 'line',
+        data: { datasets: [
+            { label: 'Nominal', data: [], borderColor: '#1e3a8a', pointRadius: 0, borderWidth: 2.5 },
+            { label: 'Recovery produk -10%', data: [], borderColor: '#d97706', pointRadius: 0, borderWidth: 2, borderDash: [6, 4] },
+            { label: 'Harga produk -10%', data: [], borderColor: '#dc2626', pointRadius: 0, borderWidth: 2, borderDash: [2, 3] },
+            { label: 'BEP kapasitas', data: [], borderColor: '#16a34a', backgroundColor: '#16a34a', pointRadius: 6, showLine: false }
+        ] },
+        options: {
+            parsing: false, animation: false, responsive: true, maintainAspectRatio: false,
+            scales: {
+                x: { type: 'linear', min: 0, max: 120, title: { display: true, text: 'Utilisasi kapasitas (%)' } },
+                y: { title: { display: true, text: 'Laba tahunan / EBITDA (juta Rp)' }, grid: gridZero, ticks: { callback: v => (v / 1e6).toLocaleString('id-ID', { maximumFractionDigits: 0 }) } }
+            },
+            plugins: { legend: { labels: { boxWidth: 12, font: { size: 11 } } },
+                tooltip: { callbacks: { label: t => t.dataset.label + ': ' + rp(t.parsed.y) + ' @ ' + num(t.parsed.x, 0) + '%' } } }
+        }
+    });
+
+    function hybox(l, v, cls) { return `<div class="col-6"><div class="stat"><div class="v ${cls || ''}">${v}</div><div class="l">${l}</div></div></div>`; }
+    function hyUpdate() {
+        if (!HY.streams.length) return;
+        const R = hyCompute(); HY.R = R;
+        const d = hyChart.data.datasets;
+        d[0].data = [{ x: 0, y: -R.opex }, { x: 120, y: 1.2 * (R.rev - R.varC) - R.opex }];
+        // recovery -10%: pendapatan produk turun 10% dan massanya pindah ke limbah (biaya olah naik); harga -10%: hanya pendapatan turun
+        d[1].data = (() => { const wP = R.wasteKg > 0 ? R.wasteC / (R.wasteKg * R.hrs) : 0; const extra = 0.1 * R.prodKg * R.hrs * wP; const c = R.rev - 0.1 * R.revProd - R.varC - extra; return [{ x: 0, y: -R.opex }, { x: 120, y: 1.2 * c - R.opex }]; })();
+        d[2].data = (() => { const c = R.rev - 0.1 * R.revProd - R.varC; return [{ x: 0, y: -R.opex }, { x: 120, y: 1.2 * c - R.opex }]; })();
+        d[3].data = isFinite(R.bepCap) && R.bepCap <= 1.2 ? [{ x: R.bepCap * 100, y: 0 }] : [];
+        hyChart.update();
+
+        const m = R.mc;
+        let h = '';
+        h += hybox('Pendapatan / tahun', rp(R.rev));
+        h += hybox('Biaya variabel / tahun (bahan + limbah + energi)', rp(R.varC));
+        h += hybox('Margin kontribusi / tahun', rp(R.contrib), R.contrib >= 0 ? 'text-success' : 'text-danger');
+        h += hybox('Laba tahunan (EBITDA)', rp(R.ebitda), R.ebitda >= 0 ? 'text-success' : 'text-danger');
+        h += hybox('BEP kapasitas', isFinite(R.bepCap) ? num(R.bepCap * 100, 1) + '%' + (R.bepCap > 1 ? ' (di atas 100%)' : '') : 'Tak tercapai', !isFinite(R.bepCap) || R.bepCap > 1 ? 'text-danger' : 'text-success');
+        h += hybox('BEP volume produk / tahun', isFinite(R.bepKg) ? num(R.bepKg, 0) + ' kg' : '-');
+        h += hybox('Margin kontribusi / kg produk', isFinite(R.unitMargin) ? rp(R.unitMargin) : '-', R.unitMargin >= 0 ? '' : 'text-danger');
+        h += hybox('Payback investasi', R.payback != null ? num(R.payback, 1) + ' tahun' : (R.capex > 0 ? 'Tidak balik modal' : 'CAPEX belum diisi'));
+        if (R.contrib <= 0) h += `<div class="col-12"><div class="alert alert-danger py-2 mb-0 small">Margin kontribusi nol atau negatif: harga produk tidak menutup biaya variabel (di bawah titik tutup). Biaya tetap tidak akan pernah tertutup.</div></div>`;
+        if (HY.key) {
+            h += hybox('Recovery ' + hyEsc(HY.key) + ' (produk / umpan)', R.rec != null ? num(R.rec * 100, 2) + '%' : '-');
+            h += hybox('Kemurnian produk (fraksi massa ' + hyEsc(HY.key) + ')', R.pur != null ? num(R.pur * 100, 2) + '%' : '-');
+        }
+        h += hybox('Neraca massa (keluar - masuk) / masuk', R.closure != null ? num(R.closure * 100, 2) + '%' : '-', R.closure != null && Math.abs(R.closure) > 0.02 ? 'text-warning' : '');
+        h += hybox('Variasi recovery: peluang rugi', num(m.pLoss * 100, 1) + '%', m.pLoss > 0.25 ? 'text-danger' : 'text-success');
+        h += hybox('Laba tahunan P5 / P50 / P95', rp(m.p5) + ' / ' + rp(m.p50) + ' / ' + rp(m.p95));
+        h += hybox('BEP kapasitas P5 - P95', isFinite(m.bep5) ? num(m.bep5 * 100, 1) + '% - ' + num(m.bep95 * 100, 1) + '%' : '-');
+        $('hy-res').innerHTML = h;
+    }
+
+    function hyApply() {
+        const R = HY.R || hyCompute(), u = S().unit, f = u === 'g' ? 1000 : 1;
+        const set = (id, v) => { $(id).value = v; };
+        const ids = [];
+        if (R.prodKg > 0 && R.prodPriceAvg > 0) { set('harga-jual', +(R.prodPriceAvg / f).toFixed(2)); ids.push('harga-jual'); }
+        const denom = R.keyFeed > 0 ? R.keyFeed : R.feedKg;
+        if (denom > 0 && R.feedC > 0) { set('variable-cost', Math.round(R.feedC / (denom * R.hrs) / f)); ids.push('variable-cost'); }
+        set('fixed-cost', Math.round(R.opex)); ids.push('fixed-cost');
+        const kp = R.keyProd > 0 ? R.keyProd : R.prodKg;
+        if (kp > 0) { set('plan-q', Math.max(1, Math.round(kp * R.hrs * f))); ids.push('plan-q'); }
+        const bh = Math.max(0.01, parseFloat($('hy-batchh').value) || 1);
+        if (R.feedKg > 0) { set('sep-m', Math.max(1, Math.round(R.feedKg * bh * f))); ids.push('sep-m'); }
+        if (R.keyFeed > 0 && R.feedKg > 0) { set('sep-content', clamp(Math.round(R.keyFeed / R.feedKg * 100), 5, 99)); ids.push('sep-content'); }
+        if (R.pur != null) { set('sep-spec', clamp(Math.floor(R.pur * 100 - 1), 0, 100)); ids.push('sep-spec'); }
+        ids.forEach(id => $(id).dispatchEvent(new Event('input', { bubbles: true })));
+        $('hy-apply-msg').innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill"></i> Diterapkan: harga jual, biaya bahan, biaya tetap, volume rencana (tab 4), serta massa umpan, kadar zat berharga, dan spesifikasi kemurnian (tab 3). Satuan simulator zat aktif: ' + hyEsc(u) + ' (1 kg = ' + f + ' ' + hyEsc(u) + '). Model reaksi dan pemisahan tetap memakai zat aktif; yang diganti hanya harga, biaya, dan volume. Pilih zat di Katalog yang satuannya sesuai bila perlu.</span>' +
+            (R.rec != null ? '<br><span class="text-muted">Recovery HYSYS ' + num(R.rec * 100, 1) + '% bisa dibandingkan dengan prediksi model pemisahan di tab 3.</span>' : '');
+    }
+
+    function hyCsv() {
+        const R = HY.R || hyCompute();
+        const rows = [['STEJ Project - Analisis keuangan dari data HYSYS'], ['Jam operasi / tahun', R.hrs], ['CAPEX (Rp)', R.capex], ['Biaya tetap / tahun (Rp)', R.opex], ['Komponen kunci', HY.key || '-'], [],
+            ['Stream', 'Aliran massa (kg/h)', 'Suhu (C)', 'Tekanan (kPa)', 'Daya (kW)', 'Peran', 'Harga (Rp/kg atau Rp/kWh)']];
+        HY.streams.forEach(s => rows.push([s.name, s.m != null ? s.m.toFixed(3) : '', s.T != null ? s.T.toFixed(2) : '', s.P != null ? s.P.toFixed(2) : '', s.Q != null ? s.Q.toFixed(2) : '', s.role, s.price]));
+        rows.push([], ['Pendapatan / tahun (Rp)', Math.round(R.rev)], ['Biaya variabel / tahun (Rp)', Math.round(R.varC)], ['Margin kontribusi / tahun (Rp)', Math.round(R.contrib)],
+            ['EBITDA / tahun (Rp)', Math.round(R.ebitda)], ['BEP kapasitas (%)', isFinite(R.bepCap) ? (R.bepCap * 100).toFixed(2) : 'tidak tercapai'],
+            ['Payback (tahun)', R.payback != null ? R.payback.toFixed(2) : '-'], ['Recovery (%)', R.rec != null ? (R.rec * 100).toFixed(2) : '-'],
+            ['Peluang rugi akibat variasi recovery (%)', (R.mc.pLoss * 100).toFixed(1)]);
+        const csv = '﻿' + rows.map(r => r.map(csvEsc).join(',')).join('\n');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+        a.download = 'stej-hysys-analisis.csv';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+
+    function hyLoadXLSX() {
+        if (window.XLSX) return Promise.resolve();
+        return new Promise((res, rej) => {
+            const sc = document.createElement('script');
+            sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+            sc.onload = res; sc.onerror = () => rej(new Error('Pustaka pembaca Excel gagal dimuat (cek koneksi internet). Simpan sheet sebagai .csv lalu unggah ulang.'));
+            document.head.appendChild(sc);
+        });
+    }
+    function hyTryParse(text) { try { return hyParse(text); } catch (e) { return { error: e }; } }
+
+    async function hyHandleFile(f) {
+        try {
+            if (/\.(hsc|hsc\w*|bkp|hyp|hyprj)$/i.test(f.name)) {
+                hyErr('File ' + f.name + ' adalah file simulasi biner HYSYS dan tidak bisa dibaca langsung. Di HYSYS buka Workbook (Material Streams), pilih semua sel lalu salin dan tempel di kotak di bawah, atau Export ke Excel/CSV lalu unggah file itu.');
+                return;
+            }
+            if (/\.(xlsx|xls)$/i.test(f.name)) {
+                await hyLoadXLSX();
+                const wb = XLSX.read(await f.arrayBuffer(), { type: 'array' });
+                let res = null;
+                for (const nm of wb.SheetNames) {
+                    const txt = XLSX.utils.sheet_to_csv(wb.Sheets[nm], { FS: '\t', blankrows: false });
+                    const r = hyTryParse(txt);
+                    if (!r.error) { res = r; res.warn.unshift('Sheet "' + nm + '" dibaca.'); break; }
+                }
+                if (!res) throw new Error('Tidak ada sheet yang berisi tabel stream yang dikenali.');
+                hyLoad(res.streams, res.warn);
+                return;
+            }
+            const r = hyParse(await f.text());
+            hyLoad(r.streams, r.warn);
+        } catch (e) { hyErr(e.message || String(e)); }
+    }
+
+    $('hy-file').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) hyHandleFile(f); });
+    $('hy-read').onclick = () => {
+        try { const r = hyParse($('hy-paste').value); hyLoad(r.streams, r.warn); } catch (e) { hyErr(e.message || String(e)); }
+    };
+    $('hy-sample').onclick = () => {
+        $('hy-paste').value = HY_SAMPLE;
+        const r = hyParse(HY_SAMPLE);
+        hyLoad(r.streams, r.warn.concat(['Data contoh: angka dan harga hanya ilustrasi.']), { roles: HY_SAMPLE_ROLE, prices: HY_SAMPLE_PRICE });
+        $('hy-capex').value = 30000000000; $('hy-opex').value = 3000000000; $('hy-opex').dataset.touched = '1';
+        hyUpdate();
+    };
+    $('hy-clear').onclick = () => {
+        HY.streams = []; HY.R = null; $('hy-paste').value = ''; $('hy-file').value = ''; hyMsg('');
+        $('hy-main').classList.add('d-none'); $('hy-apply-msg').textContent = ''; delete $('hy-opex').dataset.touched;
+    };
+    $('hy-key').addEventListener('change', () => { HY.key = $('hy-key').value; hyRenderTable(); hyUpdate(); });
+    $('hy-opex').addEventListener('input', () => { $('hy-opex').dataset.touched = '1'; });
+    ['hy-hrs', 'hy-capex', 'hy-opex', 'hy-sd'].forEach(id => $(id).addEventListener('input', hyUpdate));
+    $('hy-apply').onclick = hyApply;
+    $('hy-csv').onclick = hyCsv;
+    document.querySelectorAll('button[data-bs-toggle="pill"]').forEach(b => {
+        b.addEventListener('shown.bs.tab', () => hyChart.resize());
     });
 
     renderKatalog();
