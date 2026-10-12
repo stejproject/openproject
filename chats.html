@@ -3,412 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dark Minimalist Chat & Quiz</title>
-    <!--<link rel="stylesheet" href="style.css">-->
-<style>
-:root {
-    --bg-main: #121214;
-    --bg-sidebar: #1a1a1e;
-    --bg-chat: #151518;
-    --bg-bubble-out: #2f62de;
-    --bg-bubble-in: #222226;
-    --text-main: #f5f5f7;
-    --text-muted: #8e8e93;
-    --border-color: #26262b;
-    --accent: #2f62de;
-}
+    <title>Dark Minimalist Realtime Chat</title>
+    <style>
+        :root {
+            --bg-main: #121214;
+            --bg-sidebar: #1a1a1e;
+            --bg-chat: #151518;
+            --bg-bubble-out: #2f62de;
+            --bg-bubble-in: #222226;
+            --text-main: #f5f5f7;
+            --text-muted: #8e8e93;
+            --border-color: #26262b;
+            --accent: #2f62de;
+        }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
 
-body {
-    background-color: #0b0b0c;
-    color: var(--text-main);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
+        body {
+            background-color: #0b0b0c;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
-.chat-container {
-    display: flex;
-    width: 95vw;
-    max-width: 1100px;
-    height: 90vh;
-    background-color: var(--bg-main);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    overflow: hidden;
-}
+        .chat-container {
+            display: flex;
+            width: 95vw;
+            max-width: 1100px;
+            height: 90vh;
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
 
-/* Sidebar */
-.sidebar {
-    width: 30%;
-    background-color: var(--bg-sidebar);
-    border-right: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-}
+        .sidebar {
+            width: 30%;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
 
-.profile-section {
-    padding: 20px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
+        .profile-section {
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
-.section-title {
-    padding: 15px 20px 5px 20px;
-    font-size: 12px;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    letter-spacing: 1px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+        .profile-section input {
+            background-color: #121214;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 6px;
+            outline: none;
+            font-size: 13px;
+        }
 
-.btn-action {
-    background: none;
-    border: none;
-    color: var(--accent);
-    font-size: 12px;
-    cursor: pointer;
-    font-weight: 500;
-}
+        .info-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 15px;
+            line-height: 1.4;
+        }
 
-.btn-action:hover { text-decoration: underline; }
+        .chat-area {
+            width: 70%;
+            background-color: var(--bg-chat);
+            display: flex;
+            flex-direction: column;
+        }
 
-.chat-list { list-style: none; padding: 10px; }
+        .chat-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-main);
+        }
 
-.chat-item {
-    display: flex;
-    align-items: center;
-    padding: 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s;
-    gap: 12px;
-}
+        .chat-header h3 { font-size: 16px; font-weight: 600; }
+        .chat-header p { font-size: 12px; color: var(--text-muted); }
 
-.chat-item.active, .chat-item:hover { background-color: #222226; }
+        .message-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
 
-/* Avatar */
-.avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #3a3a3c;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 14px;
-}
-.active-avatar { background-color: #e5bf00; color: #000; }
-.group-avatar { background-color: #00b0ff; color: #000; }
+        .message { display: flex; flex-direction: column; max-width: 75%; position: relative; }
+        .message .sender-name { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; margin-left: 4px; }
+        .message .bubble { padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.5; }
+        .message .time { font-size: 10px; color: var(--text-muted); margin-top: 4px; align-self: flex-end; }
 
-.chat-info { display: flex; flex-direction: column; }
-.chat-info .name { font-weight: 500; font-size: 14px; }
-.chat-info .subtext { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        .incoming { align-self: flex-start; }
+        .incoming .bubble { background-color: var(--bg-bubble-in); color: var(--text-main); border-top-left-radius: 4px; }
 
-/* Area Utama Obrolan */
-.chat-area {
-    width: 70%;
-    background-color: var(--bg-chat);
-    display: flex;
-    flex-direction: column;
-}
+        .outgoing { align-self: flex-end; }
+        .outgoing .bubble { background-color: var(--bg-bubble-out); color: #ffffff; border-top-right-radius: 4px; }
 
-.chat-header {
-    padding: 15px 20px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background-color: var(--bg-main);
-}
-
-.chat-title h3 { font-size: 16px; font-weight: 600; }
-.chat-title p { font-size: 12px; color: var(--text-muted); }
-
-.message-area {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-/* Pesan Gelembung Chat */
-.message { display: flex; flex-direction: column; max-width: 75%; position: relative; }
-.message .sender-name { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; margin-left: 4px; }
-.message .bubble { padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.5; }
-.message .time { font-size: 10px; color: var(--text-muted); margin-top: 4px; align-self: flex-end; }
-
-.incoming { align-self: flex-start; }
-.incoming .bubble { background-color: var(--bg-bubble-in); color: var(--text-main); border-top-left-radius: 4px; }
-
-.outgoing { align-self: flex-end; }
-.outgoing .bubble { background-color: var(--bg-bubble-out); color: #ffffff; border-top-right-radius: 4px; }
-
-.system { align-self: center; max-width: 90%; }
-.system-text { font-size: 12px; color: var(--text-muted); text-align: center; background: #1a1a1e; padding: 6px 12px; border-radius: 20px; }
-
-/* Kuis / Quiz UI Panel */
-.quiz-card {
-    background-color: #1e1e24;
-    border: 1px solid #3a3a42;
-    border-radius: 12px;
-    padding: 16px;
-    margin: 10px 0;
-    width: 100%;
-}
-.quiz-question { font-weight: 600; margin-bottom: 12px; font-size: 14px; }
-.quiz-options { display: flex; flex-direction: column; gap: 8px; }
-.quiz-opt {
-    background-color: #26262b;
-    border: 1px solid var(--border-color);
-    color: var(--text-main);
-    padding: 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    text-align: left;
-    transition: 0.2s;
-    font-size: 13px;
-}
-.quiz-opt:hover { background-color: #323239; }
-
-/* Form Input */
-.chat-input-container { padding: 15px 20px; background-color: var(--bg-main); border-top: 1px solid var(--border-color); }
-.chat-input-container form { display: flex; gap: 12px; }
-.chat-input-container input {
-    flex: 1;
-    background-color: #1a1a1e;
-    border: 1px solid var(--border-color);
-    color: var(--text-main);
-    padding: 12px 16px;
-    border-radius: 8px;
-    outline: none;
-    font-size: 14px;
-}
-.chat-input-container input:focus { border-color: var(--accent); }
-.chat-input-container button {
-    background-color: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-</style>
+        .chat-input-container { padding: 15px 20px; background-color: var(--bg-main); border-top: 1px solid var(--border-color); }
+        .chat-input-container form { display: flex; gap: 12px; }
+        .chat-input-container input {
+            flex: 1;
+            background-color: #1a1a1e;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+        }
+        .chat-input-container button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 20px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
+
     <div class="chat-container">
-        <!-- Sidebar Kiri -->
         <aside class="sidebar">
             <div class="profile-section">
-                <div class="avatar active-avatar" id="currentAvatar">U1</div>
-                <div class="profile-info">
-                    <span class="user-name" id="currentUserName">User Utama</span>
-                    <button class="btn-action" onclick="tambahAkun()">+ Ganti Akun</button>
-                </div>
+                <label style="font-size: 12px; color: var(--text-muted);">Nama Anda:</label>
+                <input type="text" id="namaInput" value="Pengguna Baru" autocomplete="off">
             </div>
-            
-            <div class="section-title">
-                <span>Daftar Obrolan</span>
-                <button class="btn-action" onclick="buatGrup()">+ Grup Baru</button>
+            <div class="info-text">
+                Ketik pesan di bawah dan klik kirim. Buka file ini di tab atau perangkat berbeda dengan nama berbeda untuk menguji obrolan secara langsung.
             </div>
-            
-            <ul class="chat-list" id="chatList">
-                <li class="chat-item active" onclick="pindahRuang('grup-umum')">
-                    <div class="avatar group-avatar">G</div>
-                    <div class="chat-info">
-                        <span class="name">Grup Umum Belajar</span>
-                        <span class="subtext">Ketik /quiz untuk mulai</span>
-                    </div>
-                </li>
-            </ul>
         </aside>
 
-        <!-- Area Obrolan Kanan -->
         <main class="chat-area">
             <header class="chat-header">
-                <div class="avatar group-avatar">G</div>
-                <div class="chat-title">
-                    <h3 id="roomTitle">Grup Umum Belajar</h3>
-                    <p id="roomStatus">3 Anggota aktif</p>
-                </div>
+                <h3>Ruang Obrolan Publik</h3>
+                <p>Terhubung via Firebase Firestore</p>
             </header>
 
             <section class="message-area" id="messageArea">
-                <div class="message system">
-                    <div class="system-text">Selamat datang di grup! Ketik <strong>/quiz</strong> untuk memicu kuis interaktif.</div>
-                </div>
+                <div style="text-align: center; color: var(--text-muted); font-size: 13px;">Memuat pesan...</div>
             </section>
 
             <footer class="chat-input-container">
                 <form id="chatForm" onsubmit="kirimPesan(event)">
-                    <input type="text" id="msgInput" placeholder="Ketik pesan atau /quiz..." autocomplete="off" required>
-                    <button type="submit">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                    </button>
+                    <input type="text" id="msgInput" placeholder="Ketik pesan..." autocomplete="off" required>
+                    <button type="submit">Kirim</button>
                 </form>
             </footer>
         </main>
     </div>
 
-    <script>
-// Data State Aplikasi
-let currentUser = "User Utama";
-let activeRoom = "grup-umum";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://gstatic.com";
 
-// Logika Fungsi Kirim Pesan
-function kirimPesan(event) {
-    event.preventDefault();
-    const inputElement = document.getElementById('msgInput');
-    const messageArea = document.getElementById('messageArea');
-    const teks = inputElement.value.trim();
+        // Menggunakan konfigurasi resmi proyek Anda
+        const firebaseConfig = {
+            apiKey: "AIzaSyC72eYNR9GvRx3gTsa57KqCC9dHb_UKvBU",
+            authDomain: "belajarrealtime-b613d.firebaseapp.com",
+            projectId: "belajarrealtime-b613d",
+            storageBucket: "belajarrealtime-b613d.firebasestorage.app",
+            messagingSenderId: "262738286595",
+            appId: "1:262738286595:web:e3669a69f7588cffc7d636"
+        };
 
-    if (teks === "") return;
-
-    // Deteksi Fitur Perintah Quiz
-    if (teks.toLowerCase() === "/quiz") {
-        inputElement.value = "";
-        buatKuisLokal();
-        return;
-    }
-
-    buatElemenPesan(currentUser, teks, "outgoing");
-    inputElement.value = "";
-
-    // Simulasi balasan otomatis di dalam grup setelah 1 detik
-    setTimeout(() => {
-        if(activeRoom === "grup-umum") {
-            buatElemenPesan("Budi Bot", "Keren banget tampilannya! Minimalis.", "incoming");
-        }
-    }, 1000);
-}
-
-function buatElemenPesan(sender, text, type) {
-    const messageArea = document.getElementById('messageArea');
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `message ${type}`;
-
-    const waktu = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    msgDiv.innerHTML = `
-        <span class="sender-name">${sender}</span>
-        <div class="bubble">${text}</div>
-        <span class="time">${waktu}</span>
-    `;
-    messageArea.appendChild(msgDiv);
-    messageArea.scrollTop = messageArea.scrollHeight;
-}
-
-// Fitur 1: Tambah / Ganti Akun Lain
-function tambahAkun() {
-    const namaBaru = prompt("Masukkan nama pengguna baru:");
-    if (namaBaru && namaBaru.trim() !== "") {
-        currentUser = namaBaru.trim();
-        document.getElementById('currentUserName').innerText = currentUser;
-        document.getElementById('currentAvatar').innerText = currentUser.substring(0,2).toUpperCase();
-        
-        // Notifikasi sistem ganti akun
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
         const messageArea = document.getElementById('messageArea');
-        const sysDiv = document.createElement('div');
-        sysDiv.className = "message system";
-        sysDiv.innerHTML = `<div class="system-text">Anda beralih profil menjadi <strong>${currentUser}</strong></div>`;
-        messageArea.appendChild(sysDiv);
-    }
-}
 
-// Fitur 2: Membuat Grup Baru
-function buatGrup() {
-    const namaGrup = prompt("Masukkan nama grup baru:");
-    if (namaGrup && namaGrup.trim() !== "") {
-        const idGrup = "grup-" + Date.now();
-        const chatList = document.getElementById('chatList');
-        
-        const li = document.createElement('li');
-        li.className = "chat-item";
-        li.setAttribute("onclick", `pindahRuang('${idGrup}')`);
-        li.innerHTML = `
-            <div class="avatar group-avatar">#</div>
-            <div class="chat-info">
-                <span class="name">${namaGrup}</span>
-                <span class="subtext">Baru saja dibuat</span>
-            </div>
-        `;
-        chatList.appendChild(li);
-    }
-}
 
-function pindahRuang(idRoom) {
-    activeRoom = idRoom;
-    const items = document.querySelectorAll('.chat-item');
-    items.forEach(el => el.classList.remove('active'));
-    
-    // Ganti Header Title secara dinamis
-    const target = event.currentTarget;
-    if(target) {
-        target.classList.add('active');
-        document.getElementById('roomTitle').innerText = target.querySelector('.name').innerText;
-        document.getElementById('roomStatus').innerText = "Grup Percakapan";
-    }
-    
-    document.getElementById('messageArea').innerHTML = `
-        <div class="message system">
-            <div class="system-text">Anda memasuki ruang obrolan baru.</div>
-        </div>
-    `;
-}
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const messageArea = document.getElementById('messageArea');
 
-// Fitur 3: Sistem Kuis Interaktif Bawaan Chat
-function buatKuisLokal() {
-    const messageArea = document.getElementById('messageArea');
-    const quizDiv = document.createElement('div');
-    quizDiv.className = "quiz-card";
-    
-    quizDiv.innerHTML = `
-        <div class="quiz-question">💡 [Kuis] Framework CSS manakah yang menerapkan konsep Utility-First?</div>
-        <div class="quiz-options">
-            <button class="quiz-opt" onclick="jawabKuis(this, false)">A. Bootstrap</button>
-            <button class="quiz-opt" onclick="jawabKuis(this, true)">B. Tailwind CSS</button>
-            <button class="quiz-opt" onclick="jawabKuis(this, false)">C. Bulma</button>
-        </div>
-    `;
-    messageArea.appendChild(quizDiv);
-    messageArea.scrollTop = messageArea.scrollHeight;
-}
+        window.kirimPesan = async function(event) {
+            event.preventDefault();
+            const nama = document.getElementById('namaInput').value.trim() || "Anonim";
+            const input = document.getElementById('msgInput');
+            const teks = input.value.trim();
 
-function jawabKuis(btn, isCorrect) {
-    const parent = btn.parentElement;
-    const opsi = parent.querySelectorAll('.quiz-opt');
-    
-    // Matikan tombol agar tidak bisa diklik lagi setelah menjawab
-    opsi.forEach(opt => opt.disabled = true);
-    
-    if (isCorrect) {
-        btn.style.backgroundColor = "#1b4332";
-        btn.style.borderColor = "#52b788";
-        alert("🎉 Jawaban Anda Benar!");
-    } else {
-        btn.style.backgroundColor = "#4a121a";
-        btn.style.borderColor = "#e63946";
-        alert("❌ Jawaban Salah, coba lagi nanti!");
-    }
-}
+            if (teks === "") return;
+
+            try {
+                await addDoc(collection(db, "messages"), {
+                    sender: nama,
+                    text: teks,
+                    timestamp: serverTimestamp()
+                });
+                input.value = "";
+            } catch (error) {
+                alert("Gagal mengirim pesan. Pastikan konfigurasi Firebase sudah benar.");
+            }
+        };
+
+        const q = query(collection(db, "messages"), orderBy("timestamp", "asc"));
+        onSnapshot(q, (snapshot) => {
+            messageArea.innerHTML = "";
+            if (snapshot.empty) {
+                messageArea.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 13px;">Belum ada pesan di ruang ini.</div>';
+                return;
+            }
+
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const namaUser = document.getElementById('namaInput').value.trim();
+                const tipePesan = data.sender === namaUser ? "outgoing" : "incoming";
+                
+                let waktuFormat = "";
+                if (data.timestamp) {
+                    waktuFormat = data.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `message ${tipePesan}`;
+                msgDiv.innerHTML = `
+                    <span class="sender-name">${escapeHtml(data.sender)}</span>
+                    <div class="bubble">${escapeHtml(data.text)}</div>
+                    <span class="time">${waktuFormat}</span>
+                `;
+                messageArea.appendChild(msgDiv);
+            });
+            messageArea.scrollTop = messageArea.scrollHeight;
+        });
+
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
     </script>
 </body>
 </html>
