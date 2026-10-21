@@ -2897,8 +2897,13 @@ function goToGoogleForm() {
             urlObj.searchParams.set('uid', fbUid);
             url = urlObj.toString();
         }
-        window.open(url, '_blank');
-        showToast('🔗 Halaman pembayaran dibuka di tab baru', 'info');
+        const newWindow = window.open('', '_blank');
+        if (newWindow) {
+            newWindow.location.href = url;
+            showToast('🔗 Halaman pembayaran dibuka di tab baru', 'info');
+        } else {
+            window.location.href = url;
+        }
     }
 
     // Ambil konfigurasi harga & link donasi dari Firestore (dokumen publik, read-only
