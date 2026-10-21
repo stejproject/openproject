@@ -1,0 +1,3170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget-Line</title>
+    <link rel="shortcut icon" href="https://stejproject.github.io/images/favicon-128.ico">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Firebase (compat SDK, cukup untuk Auth Anonymous + Firestore realtime read) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8fafc;
+            height: 100vh;
+            overflow-y: hidden;
+            display: flex;
+            flex-direction: row;
+            color: #1e293b;
+        }
+
+        /* Ribbon Toolbar */
+        .ribbon {
+            background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            overflow-x: auto;
+            height: 18vh;
+            overflow-y: hidden;
+        }
+
+        .ribbon h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-right: 30px;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ribbon-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding: 0 15px;
+            border-right: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .ribbon-group:last-child {
+            border-right: none;
+        }
+
+        .ribbon-btn {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(10px);
+        }
+
+        .ribbon-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .ribbon-btn.primary {
+            background: #ffffff;
+            color: #0f766e;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .ribbon-btn.primary:hover {
+            background: #f0fdfa;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .ribbon-btn.danger {
+            background: rgba(239,68,68,0.2);
+            border-color: rgba(239,68,68,0.4);
+        }
+
+        .ribbon-btn.danger:hover {
+            background: rgba(239,68,68,0.3);
+        }
+
+        /* Formula Bar */
+        .formula-bar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .cell-reference {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border: 1px solid #cbd5e1;
+            padding: 6px 12px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            min-width: 70px;
+            text-align: center;
+            border-radius: 6px;
+            color: #0f766e;
+            font-size: 13px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .formula-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .formula-input {
+            width: 100%;
+            border: 2px solid #e2e8f0;
+            padding: 8px 14px;
+            font-family: 'JetBrains Mono', monospace;
+            border-radius: 6px;
+            outline: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .formula-input:focus {
+            border-color: #0d9488;
+            box-shadow: 0 0 0 3px rgba(13,148,136,0.1);
+        }
+
+        .formula-input.readonly {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        /* Formula Helper */
+        .formula-helper {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #0d9488;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            max-height: 250px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+            margin-top: 5px;
+        }
+
+        .formula-helper.show {
+            display: block;
+        }
+
+        .helper-header {
+            background: #f0fdfa;
+            padding: 8px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #0f766e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #ccfbf1;
+        }
+
+        .helper-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.15s;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .helper-item:hover, .helper-item.active {
+            background: #f0fdfa;
+        }
+
+        .helper-item:last-child {
+            border-bottom: none;
+        }
+
+        .helper-func {
+            color: #0d9488;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            min-width: 80px;
+        }
+
+        .helper-desc {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        /* Spreadsheet Container */
+        .spreadsheet-container {
+            flex: 1;
+            overflow: auto;
+            background: #ffffff;
+            position: relative;
+        }
+
+        /* Grid */
+        .sheet-grid {
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13px;
+            min-width: 100%;
+        }
+
+        .sheet-grid th,
+        .sheet-grid td {
+            border: 1px solid #e2e8f0;
+            padding: 0;
+            min-width: 130px;
+            height: 32px;
+            position: relative;
+        }
+
+        .sheet-grid th {
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            text-align: center;
+            font-weight: 600;
+            color: #475569;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sheet-grid th.row-header {
+            position: sticky;
+            left: 0;
+            z-index: 11;
+            min-width: 90px;
+            white-space: nowrap;
+            background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .row-num {
+            display: inline-block;
+            min-width: 20px;
+            text-align: right;
+            margin-right: 6px;
+        }
+        
+        .row-btn {
+            width: 20px;
+            height: 20px;
+            margin-left: 2px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1;
+            padding: 0;
+            vertical-align: middle;
+        }
+        
+        .row-btn-add { color: #0f766e; }
+        .row-btn-del { color: #dc2626; }
+        
+        .row-btn-add:hover { background: #ccfbf1; border-color: #0d9488; }
+        .row-btn-del:hover { background: #fee2e2; border-color: #dc2626; }
+
+        .sheet-grid th.corner {
+            z-index: 12;
+            top: 0;
+            left: 0;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        .sheet-grid td {
+            background: #ffffff;
+            cursor: cell;
+            transition: background 0.1s;
+        }
+
+        .sheet-grid td:hover {
+            background: #f0fdfa;
+        }
+
+        .sheet-grid td.selected {
+            outline: 3px solid #0d9488;
+            outline-offset: -3px;
+            z-index: 5;
+            background: #f0fdfa;
+        }
+
+        .sheet-grid td.editing {
+            padding: 0;
+        }
+
+        .cell-input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            padding: 6px 10px;
+            font-size: 13px;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .cell-content {
+            padding: 6px 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .cell-number {
+            text-align: right;
+            font-family: 'JetBrains Mono', monospace;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .cell-date {
+            text-align: center;
+            color: #64748b;
+        }
+
+        .cell-formula {
+            color: #0d9488;
+            font-style: italic;
+        }
+
+        /* Status Indicators */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-optimal {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-balanced {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-critical {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-error {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        /* Sheet Tabs (Excel/Google Sheets style) */
+        .sheet-tabs-bar {
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            padding: 6px 10px 0 10px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex-shrink: 0;
+        }
+
+        .sheet-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: #e2e8f0;
+            color: #475569;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            border: 1px solid #cbd5e1;
+            border-bottom: none;
+            position: relative;
+            transition: all 0.15s;
+            user-select: none;
+        }
+
+        .sheet-tab:hover {
+            background: #f8fafc;
+            color: #0f766e;
+        }
+
+        .sheet-tab.active {
+            background: #ffffff;
+            color: #0f766e;
+            font-weight: 700;
+            border-color: #0d9488;
+            box-shadow: 0 -2px 6px rgba(13,148,136,0.1);
+        }
+
+        .sheet-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #ffffff;
+        }
+
+        .sheet-tab-name {
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sheet-tab-close {
+            font-size: 14px;
+            color: #94a3b8;
+            border-radius: 4px;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .sheet-tab-close:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .sheet-tab-add {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            margin-bottom: 2px;
+            border-radius: 6px;
+            background: #e2e8f0;
+            color: #0f766e;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            flex-shrink: 0;
+            transition: all 0.15s;
+        }
+
+        .sheet-tab-add:hover {
+            background: #0d9488;
+            color: white;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background: linear-gradient(90deg, #0f766e 0%, #0d9488 100%);
+            color: white;
+            padding: 8px 20px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .status-left {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        /* Config Panel */
+        .config-panel {
+            position: fixed;
+            right: -420px;
+            top: 0;
+            width: 420px;
+            height: 100vh;
+            background: #ffffff;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .config-panel.open {
+            right: 0;
+        }
+
+        .config-header {
+            background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+            color: white;
+            padding: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .config-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+
+        .config-body {
+            padding: 25px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .config-section {
+            margin-bottom: 30px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .config-section:last-child {
+            border-bottom: none;
+        }
+
+        .config-section h3 {
+            color: #0f766e;
+            font-size: 13px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .config-input {
+            margin-bottom: 18px;
+        }
+
+        .config-input label {
+            font-size: 13px;
+            color: #475569;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .config-input input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .config-input input:focus {
+            border-color: #0d9488;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(13,148,136,0.1);
+        }
+
+        .config-hint {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .config-footer {
+            padding: 20px 25px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-save {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(13,148,136,0.3);
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15,23,42,0.4);
+            backdrop-filter: blur(4px);
+            display: none;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .overlay.show {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Context Menu */
+        .context-menu {
+            position: absolute;
+            background: white;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            display: none;
+            z-index: 100;
+            min-width: 180px;
+            overflow: hidden;
+        }
+
+        .context-menu-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.15s;
+            color: #475569;
+        }
+
+        .context-menu-item:hover {
+            background: #f0fdfa;
+            color: #0f766e;
+        }
+
+        .context-menu-divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 6px 0;
+        }
+
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            bottom: 70px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 2000;
+        }
+
+        .toast {
+            background: #1e293b;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+            font-size: 13px;
+            font-weight: 500;
+            min-width: 250px;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast.success { border-left: 4px solid #22c55e; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.info { border-left: 4px solid #0d9488; }
+
+        /* Quick Stats Panel */
+        .quick-stats {
+            position: fixed;
+            left: 20px;
+            bottom: 70px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 15px;
+            display: none;
+            z-index: 100;
+            min-width: 200px;
+        }
+
+        .quick-stats.show {
+            display: block;
+        }
+
+        .quick-stats h4 {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 13px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: #0f766e;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .sheet-grid tr.row-match td {
+            background: #fef9c3 !important;
+        }
+
+        .sheet-grid tr.row-dim td {
+            opacity: 0.3;
+        }
+
+        .search-box-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 6px;
+            padding: 4px 6px 4px 12px;
+        }
+
+        .search-box-wrapper input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            font-size: 13px;
+            width: 200px;
+        }
+
+        .search-box-wrapper input::placeholder {
+            color: rgba(255,255,255,0.65);
+        }
+
+        .search-box-wrapper button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .search-box-wrapper button:hover {
+            background: rgba(255,255,255,0.35);
+        }
+
+        /* Paywall / Trial Lock Overlay */
+        .paywall-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15,23,42,0.92);
+            backdrop-filter: blur(6px);
+            z-index: 5000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .paywall-overlay.show {
+            display: flex;
+        }
+
+        .paywall-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            width: 440px;
+            max-width: 90vw;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+            text-align: center;
+        }
+
+        .paywall-card h2 {
+            font-size: 22px;
+            color: #0f766e;
+            margin-bottom: 10px;
+        }
+
+        .paywall-card p {
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .paywall-pricing {
+            background: #f0fdfa;
+            border: 1px solid #ccfbf1;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .paywall-pricing .price {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0f766e;
+        }
+
+        .paywall-pricing .price span {
+            font-size: 13px;
+            font-weight: 400;
+            color: #64748b;
+        }
+
+        .btn-pay {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-pay:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(13,148,136,0.35);
+        }
+
+        .paywall-divider {
+            font-size: 11px;
+            color: #94a3b8;
+            margin: 14px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .paywall-license-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .paywall-license-row input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .paywall-license-row input:focus {
+            border-color: #0d9488;
+            outline: none;
+        }
+
+        .paywall-license-row button {
+            padding: 10px 16px;
+            background: #1e293b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .paywall-note {
+            font-size: 10px;
+            color: #cbd5e1;
+            margin-top: 16px;
+        }
+
+        .trial-banner {
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .trial-banner.urgent {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Rekap per Entitas Panel (terinspirasi rekap buku besar per akun a la Zahir) */
+        .rekap-panel {
+            position: fixed;
+            right: 20px;
+            bottom: 70px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            padding: 18px;
+            z-index: 100;
+            width: 420px;
+            max-height: 60vh;
+            display: none;
+            flex-direction: column;
+        }
+
+        .rekap-panel.show {
+            display: flex;
+        }
+
+        .rekap-panel h4 {
+            font-size: 13px;
+            color: #0f766e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rekap-table-wrap {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .rekap-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .rekap-table th {
+            text-align: left;
+            padding: 6px 8px;
+            background: #f0fdfa;
+            color: #0f766e;
+            position: sticky;
+            top: 0;
+            font-weight: 700;
+            border-bottom: 2px solid #ccfbf1;
+        }
+
+        .rekap-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .rekap-table td.num {
+            text-align: right;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .rekap-table tr.rekap-total td {
+            font-weight: 700;
+            background: #f8fafc;
+            border-top: 2px solid #cbd5e1;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .ribbon {
+                padding: 8px 12px;
+                gap: 10px;
+            }
+
+            .ribbon h1 {
+                font-size: 16px;
+                margin-right: 10px;
+            }
+
+            .ribbon-group {
+                padding: 0 8px;
+            }
+
+            .config-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+<div style="height: 100vh;width: 100vw;display: flex;flex-direction: column;">
+<!-- Ribbon Toolbar -->
+<div class="ribbon">
+    <h1>📊 Budget-Line</h1>
+    <div class="ribbon-group">
+        <div class="search-box-wrapper">
+            <span>🔎</span>
+            <input type="text" id="searchBox" placeholder="Cari di sheet ini, Enter = cari di web..." oninput="handleSearchInput(event)" onkeydown="handleSearchKey(event)">
+            <button onclick="searchWeb()">Web</button>
+        </div>
+        <button class="ribbon-btn" onclick="clearAllData()">🧹 Clear Sheet</button>
+    </div>
+
+    <div class="ribbon-group">
+        <button onclick="openInputForm()" class="ribbon-btn">via Google Form</button>
+        <button class="ribbon-btn" onclick="exportExcel()">📊 Excel (Export)</button>
+        <button class="ribbon-btn primary" onclick="exportJSON()">💾 Simpan WorkSheet (JSON)</button>
+        <button class="ribbon-btn" onclick="document.getElementById('importFile').click()">📁 Buka JSON</button>
+        <input type="file" id="importFile" style="display: none" accept=".json" onchange="importJSON(this)">
+    </div>
+
+    <div class="ribbon-group">
+        <button class="ribbon-btn" onclick="toggleConfig()">⚙️ Konfig</button>
+        <button class="ribbon-btn" onclick="toggleQuickStats()">📈 Statistik</button>
+        <button class="ribbon-btn" onclick="toggleRekap()">📑 Rekap Entitas</button>
+    </div>
+
+    <div class="ribbon-group">
+        <button class="ribbon-btn" onclick="window.open('https://pajakku.com', '_blank')" title="Buka layanan PJAP resmi (Pajakku) di tab baru — bukan integrasi otomatis, hanya pintasan">🧾 Buka Pajakku (PJAP)</button>
+        <button class="ribbon-btn" onclick="window.open('https://coretaxdjp.pajak.go.id', '_blank')" title="Buka portal resmi Coretax DJP (coretaxdjp.pajak.go.id) di tab baru — hanya pintasan, bukan integrasi otomatis">🏛️ Buka Coretax DJP</button>
+        <button class="ribbon-btn" onclick="goToDonationPage()" title="Dukung pengembangan Budget-Line">❤️ Donasi</button>
+    </div>
+</div>
+
+<!-- Formula Bar -->
+<div class="formula-bar">
+    <div class="cell-reference" id="cellRef">A1</div>
+    <div class="formula-input-wrapper">
+        <input type="text" class="formula-input" id="formulaBar" placeholder="Masukkan nilai atau formula (=SUM, =IF, =VLOOKUP)..." onkeydown="handleFormulaKey(event)" oninput="handleFormulaInput(event)">
+        <div class="formula-helper" id="formulaHelper"></div>
+    </div>
+</div>
+
+<!-- Sheet Tabs Bar (Excel/Google Sheets style) -->
+<div class="sheet-tabs-bar" id="sheetTabsBar"></div>
+
+<!-- Spreadsheet Grid -->
+<div class="spreadsheet-container" id="spreadsheetContainer">
+    <table class="sheet-grid" id="sheetGrid">
+        <thead>
+            <tr>
+                <th class="corner"></th>
+                <th>Tanggal</th>
+                <th>Waktu</th>
+                <th id="colEntity">Keterangan</th>
+                <th id="colMetricA">Pendapatan</th>
+                <th id="colMetricB">Biaya Operasional</th>
+                <th>Rasio (%)</th>
+                <th>Status</th>
+                <th>Saldo Sebelumnya</th>
+                <th>Saldo</th>
+            </tr>
+        </thead>
+        <tbody id="gridBody">
+            <!-- Dynamic rows -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Status Bar -->
+<div class="status-bar">
+    <div class="status-left">
+        <div class="status-item">📋 <span id="activeSheetLabel">Mitra/Agen 1</span></div>
+        <div class="status-item" id="recordCount">0 records</div>
+        <div class="status-indicator" id="calcStatus"></div>
+        <div class="status-indicator" id="formulaCount">0 formulas</div>
+        <div class="trial-banner" id="trialBanner" onclick="showPaywall()" style="display:none;"></div>
+    </div>
+    <div class="status-right">
+        <div class="status-item">💾 Auto-saved</div>
+        <div class="status-item" id="version"> v3.0</div>
+    </div>
+</div>
+
+<!-- Config Panel -->
+<div class="overlay" id="overlay" onclick="toggleConfig()"></div>
+<div class="config-panel" id="configPanel">
+    <div class="config-header">
+        <h2>⚙️ Konfigurasi</h2>
+        <button class="close-btn" onclick="toggleConfig()">×</button>
+    </div>
+
+    <div class="config-body">
+        <div class="config-section">
+            <h3>🎨 Identitas Aplikasi</h3>
+            <div class="config-input">
+                <label>Judul Aplikasi</label>
+                <input type="text" id="cfgTitle" value="Budget-Line">
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h3>📋 Label Kolom (berlaku untuk semua sheet)</h3>
+            <div class="config-input">
+                <label>Kolom Entitas (Kolom C)</label>
+                <input type="text" id="cfgEntity" value="Keterangan">
+            </div>
+            <div class="config-input">
+                <label>Kolom Metrik A (Kolom D)</label>
+                <input type="text" id="cfgMetricA" value="Pendapatan">
+            </div>
+            <div class="config-input">
+                <label>Kolom Metrik B (Kolom E)</label>
+                <input type="text" id="cfgMetricB" value="Biaya Operasional">
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h3>🎯 Threshold Analisis</h3>
+            <div class="config-input">
+                <label>Threshold Optimal (> %)</label>
+                <input type="number" id="cfgOptimal" value="20" step="0.1">
+            </div>
+            <div class="config-input">
+                <label>Threshold Kritis (< %)</label>
+                <input type="number" id="cfgCritical" value="0" step="0.1">
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h3>📊 Formula Defaults</h3>
+            <div class="config-input">
+                <label>Auto-calculate Rasio</label>
+                <input type="checkbox" id="cfgAutoCalc" checked style="width: auto;">
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h3>🗂️ Sheet</h3>
+            <div class="config-input">
+                <label>Sheet aktif saat ini</label>
+                <input type="text" id="cfgActiveSheetName" placeholder="Nama sheet aktif">
+                <div class="config-hint">Ubah lalu klik Simpan untuk rename sheet yang sedang dibuka.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="config-footer">
+        <button class="btn-save" onclick="applyConfig(); toggleConfig();">💾 Simpan Perubahan</button>
+    </div>
+</div>
+
+<!-- Quick Stats Panel -->
+<div class="quick-stats" id="quickStats">
+    <h4>📊 Statistik Cepat (sheet aktif)</h4>
+    <div class="stat-row">
+        <span>Total Metrik A:</span>
+        <span class="stat-value" id="statTotalA">0</span>
+    </div>
+    <div class="stat-row">
+        <span>Total Metrik B:</span>
+        <span class="stat-value" id="statTotalB">0</span>
+    </div>
+    <div class="stat-row">
+        <span>Rasio Rata-rata:</span>
+        <span class="stat-value" id="statAvgRatio">0%</span>
+    </div>
+    <div class="stat-row">
+        <span>Record Optimal:</span>
+        <span class="stat-value" id="statOptimal">0</span>
+    </div>
+</div>
+
+<!-- Rekap per Entitas Panel (mirip rekap buku besar per akun di Zahir) -->
+<div class="rekap-panel" id="rekapPanel">
+    <h4>
+        <span>📑 Rekap per Entitas — <span id="rekapSheetName">Mitra/Agen 1</span></span>
+        <button class="close-btn" style="width:24px;height:24px;font-size:16px;" onclick="toggleRekap()">×</button>
+    </h4>
+    <div class="rekap-table-wrap">
+        <table class="rekap-table">
+            <thead>
+                <tr>
+                    <th id="rekapColEntity">Entitas</th>
+                    <th id="rekapColA">Pendapatan</th>
+                    <th id="rekapColB">Biaya</th>
+                    <th>Rasio Rata²</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="rekapBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="formModal" class="quick-stats" style="display:none;">
+    <div class="panel-header">
+        <h4>📝 Panduan Koneksi Google Form</h4>
+        <button onclick="closeFormModal()" class="close-btn">&times;</button>
+    </div>
+    <p style="font-size: 0.9em; color: #64748b; margin-bottom: 10px;">
+            Salin skrip di bawah ini ke <b>Script Editor</b> Google Form Anda. Data masuk akan otomatis ditambahkan ke <b>sheet yang sedang aktif</b> saat itu:
+    </p>
+    <pre id="codeArea" style="background: #1e293b; color: #f8fafc; padding: 15px; border-radius: 8px; font-size: 0.8em; overflow-x: auto; max-height: 250px; border: 1px solid #334155;"></pre>
+    <div style="margin-top: 15px; display: flex; gap: 10px;">
+        <button onclick="copyAppScript()"> 📋 Salin Kode</button>
+        <button onclick="goToGoogleForm()">🚀 Edit Formulir</button>
+        <button onclick="closeFormModal()" style="cursor: pointer;font-size: 28px;font-weight: bold;line-height: 1;padding: 10px 15px;background: transparent;border: none;color: #64748b;position: relative;z-index: 10005;margin-top: -10px;margin-right: -10px;" title="Tutup">&times;</button>
+    </div>
+</div>
+
+<!-- Context Menu -->
+<div class="context-menu" id="contextMenu">
+    <div class="context-menu-item" onclick="addRow(); hideContextMenu()">➕ Tambah Baris</div>
+    <div class="context-menu-item" onclick="addRowAbove(); hideContextMenu()">⬆️ Tambah Di Atas</div>
+    <div class="context-menu-item" onclick="addRowBelow(); hideContextMenu()">⬇️ Tambah Di Bawah</div>
+    <div class="context-menu-divider"></div>
+    <div class="context-menu-item" onclick="deleteSelectedRow(); hideContextMenu()">🗑️ Hapus Baris Ini</div>
+    <div class="context-menu-divider"></div>
+    <div class="context-menu-item" onclick="copyRow(); hideContextMenu()">📋 Copy Baris</div>
+    <div class="context-menu-item" onclick="pasteRow(); hideContextMenu()">📄 Paste Baris</div>
+    <div class="context-menu-item" onclick="duplicateRow(); hideContextMenu()">🔁 Duplikat Baris</div>
+</div>
+
+<!-- Paywall / Trial Lock Overlay -->
+<div class="paywall-overlay" id="paywallOverlay">
+    <div class="paywall-card">
+        <h2>⏳ Masa Trial Sudah Berakhir</h2>
+        <p>Trial 14 hari Budget-Line kamu sudah habis. Lanjutkan berlangganan untuk terus pakai semua fitur (multi-sheet, export Excel/JSON, rekap otomatis).</p>
+
+        <div class="paywall-pricing">
+            <div class="price"><span id="paywallPriceAmount">Rp49.000</span> <span id="paywallPricePeriod">/ bulan</span></div>
+        </div>
+
+        <button class="btn-pay" onclick="goToPaymentPage()">💳 Bayar Sekarang</button>
+
+        <div class="paywall-divider">Status akan otomatis terbuka begitu pembayaran terverifikasi server</div>
+
+        <div class="paywall-note" id="paywallUserId">
+            Menghubungkan ke server...
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+</div>
+<script>
+// Konfigurasi Link & Kode
+const googleFormUrl = "https://forms.google.com";
+const appScriptCode = `/**
+ * Budget-Line - Connector v3.0
+ */
+function onFormSubmit(e) {
+  var urlAplikasi = "isi url lokal";
+  var res = e.response.getItemResponses();
+  var payload = {
+    "type": "DATA_INBOUND",
+    "payload": {
+      "nama_item": res[0].getResponse(),
+      "alokasi": res[1].getResponse(),
+      "realisasi": res[2].getResponse()
+    }
+  };
+  UrlFetchApp.fetch(urlAplikasi, {
+    "method" : "post",
+    "contentType": "application/json",
+    "payload" : JSON.stringify(payload)
+  });
+}`;
+
+function openInputForm() {
+    const codeArea = document.getElementById('codeArea');
+    if (codeArea) codeArea.textContent = appScriptCode;
+    document.getElementById('formModal').style.display = 'block';
+}
+
+function closeFormModal() {
+    const modal = document.getElementById('formModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function copyAppScript() {
+    try {
+        const textArea = document.createElement("textarea");
+        textArea.value = appScriptCode;
+        document.body.appendChild(textArea);
+        textArea.select();
+        const success = document.execCommand('copy');
+        document.body.removeChild(textArea);
+
+        if (success) {
+            showToast('✅ Kode Berhasil Disalin!', 'success');
+        } else {
+            throw new Error();
+        }
+    } catch (err) {
+        alert("Gagal salin otomatis. Silakan blok teks kode dan tekan Ctrl+C");
+    }
+}
+
+function goToGoogleForm() {
+    const newWindow = window.open(googleFormUrl, '_blank');
+
+    if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+        alert("⚠️ Browser memblokir Pop-up. Silakan klik 'Izinkan' di pojok kanan atas browser (Address Bar).");
+        window.location.href = googleFormUrl;
+    }
+}
+</script>
+<script>
+    // ============================================
+    // Budget-Line - v3.0
+    // Multi-Sheet Edition (tab per sheet, seperti Excel/Google Sheets)
+    // ============================================
+
+    // ---- Sheet-level state ----
+    // sheets: [{ id, name, data: [...rows], formulaHistory: [...] }]
+    let sheets = [];
+    let activeSheetId = null;
+    let sheetIdCounter = 0;
+
+    // ---- Active-sheet mirrors (kept in sync via syncActiveSheetIntoStore) ----
+    let data = [];
+    let formulaHistory = [];
+
+    let selectedCell = { row: 0, col: 0 };
+    let editingCell = null;
+    let clipboard = null;
+
+    let config = {
+        title: 'Budget-Line',
+        entity: 'Keterangan',
+        metricA: 'Pendapatan',
+        metricB: 'Biaya Operasional',
+        optimal: 20,
+        critical: 0,
+        autoCalc: true,
+        trialDays: 14,
+        priceUrl: 'https://mayar.id/', // TODO: ganti dengan link pembayaran/subscription asli (fallback jika Firestore belum diisi)
+        donationUrl: 'https://stejproject.github.io/Blantik-Gancar/checkout.html?merchant=V8WWAZJ3c1h1HF6J0QXt4TS09Mm2&id=8pMUatf4ij4lo4xb69oF' // TODO: ganti dengan link donasi asli (fallback jika Firestore belum diisi)
+    };
+
+    // Cache DOM elements
+    const DOM = {
+        gridBody: null,
+        formulaBar: null,
+        cellRef: null,
+        formulaHelper: null,
+        toastContainer: null,
+        recordCount: null,
+        calcStatus: null,
+        formulaCount: null,
+        quickStats: null,
+        configPanel: null,
+        overlay: null,
+        contextMenu: null,
+        sheetTabsBar: null,
+        activeSheetLabel: null,
+        rekapPanel: null,
+        paywallOverlay: null,
+        trialBanner: null
+    };
+
+    let isRendering = false;
+    let renderQueued = false;
+    let autoSaveInterval = null;
+
+    const SUPPORTED_FUNCTIONS = [
+        { name: 'SUM', desc: 'Jumlahkan range', example: '=SUM(D1:D5)' },
+        { name: 'AVERAGE', desc: 'Rata-rata nilai', example: '=AVERAGE(D1:D5)' },
+        { name: 'MAX', desc: 'Nilai maksimum', example: '=MAX(D1:D5)' },
+        { name: 'MIN', desc: 'Nilai minimum', example: '=MIN(D1:D5)' },
+        { name: 'COUNT', desc: 'Hitung jumlah data', example: '=COUNT(D1:D5)' },
+        { name: 'IF', desc: 'Logika kondisi', example: '=IF(D1>1000,"OK","NO")' },
+        { name: 'VLOOKUP', desc: 'Cari data vertikal', example: '=VLOOKUP("A",A1:C10,2)' },
+        { name: 'HLOOKUP', desc: 'Cari data horizontal', example: '=HLOOKUP("A",A1:C10,2)' },
+        { name: 'CONCAT', desc: 'Gabungkan teks', example: '=CONCAT(A1,"-",B1)' },
+        { name: 'LEFT', desc: 'Ambil karakter kiri', example: '=LEFT(C1,5)' },
+        { name: 'RIGHT', desc: 'Ambil karakter kanan', example: '=RIGHT(C1,5)' },
+        { name: 'UPPER', desc: 'Huruf besar', example: '=UPPER(C1)' },
+        { name: 'LOWER', desc: 'Huruf kecil', example: '=LOWER(C1)' },
+        { name: 'LEN', desc: 'Panjang teks', example: '=LEN(C1)' },
+        { name: 'ROUND', desc: 'Pembulatan', example: '=ROUND(D1/3,2)' },
+        { name: 'ABS', desc: 'Nilai mutlak', example: '=ABS(D1)' },
+        { name: 'POWER', desc: 'Pangkat', example: '=POWER(D1,2)' }
+    ];
+
+    // ============================================
+    // SHEET MANAGEMENT (baru di v3.0)
+    // ============================================
+
+    function makeEmptyRow() {
+        const now = new Date();
+        return {
+            tanggal: now.toISOString().split('T')[0],
+            waktu: now.toTimeString().slice(0, 8),
+            entity: '',
+            metricA: 0,
+            metricB: 0,
+            rasio: 0,
+            status: 'BALANCED',
+            saldoSebelumnya: 0,
+            saldo: 0,
+            _formulas: {}
+        };
+    }
+
+    function createSheet(name) {
+        sheetIdCounter++;
+        return {
+            id: 'sheet_' + sheetIdCounter,
+            name: name || ('Mitra/Agen ' + sheetIdCounter),
+            data: [makeEmptyRow()],
+            formulaHistory: []
+        };
+    }
+
+    function getActiveSheet() {
+        return sheets.find(s => s.id === activeSheetId) || null;
+    }
+
+    // Simpan mirror global (data/formulaHistory) balik ke object sheet-nya
+    function syncActiveSheetIntoStore() {
+        const s = getActiveSheet();
+        if (s) {
+            s.data = data;
+            s.formulaHistory = formulaHistory;
+        }
+    }
+
+    function switchSheet(id) {
+        syncActiveSheetIntoStore();
+        const target = sheets.find(s => s.id === id);
+        if (!target) return;
+        activeSheetId = id;
+        data = target.data;
+        formulaHistory = target.formulaHistory || [];
+        selectedCell = { row: 0, col: 0 };
+        editingCell = null;
+        clipboard = null;
+        renderSheetTabs();
+        renderGrid();
+        updateCellReference();
+        DOM.formulaBar.value = '';
+        DOM.activeSheetLabel.textContent = target.name;
+        if (DOM.rekapPanel.classList.contains('show')) {
+            updateRekap();
+        }
+    }
+
+    function addSheet() {
+        const newSheet = createSheet();
+        sheets.push(newSheet);
+        switchSheet(newSheet.id);
+        showToast(`🗂️ ${newSheet.name} ditambahkan`, 'success');
+    }
+
+    function renameSheetPrompt(id, evt) {
+        if (evt) evt.stopPropagation();
+        const s = sheets.find(sh => sh.id === id);
+        if (!s) return;
+        const newName = prompt('Nama baru untuk sheet ini:', s.name);
+        if (newName && newName.trim()) {
+            s.name = newName.trim();
+            renderSheetTabs();
+            if (id === activeSheetId) DOM.activeSheetLabel.textContent = s.name;
+            showToast('✏️ Nama sheet diperbarui', 'success');
+        }
+    }
+
+    function deleteSheet(id, evt) {
+        if (evt) evt.stopPropagation();
+        if (sheets.length <= 1) {
+            showToast('⚠️ Minimal satu sheet harus tersisa', 'error');
+            return;
+        }
+        const s = sheets.find(sh => sh.id === id);
+        if (!s) return;
+        if (!confirm(`Hapus sheet "${s.name}"? Semua data di dalamnya akan hilang.`)) return;
+
+        const idx = sheets.findIndex(sh => sh.id === id);
+        sheets.splice(idx, 1);
+
+        if (activeSheetId === id) {
+            const nextIdx = Math.max(0, idx - 1);
+            activeSheetId = null; // biar switchSheet tidak nyoba sync ke sheet yang sudah dihapus
+            switchSheet(sheets[nextIdx].id);
+        } else {
+            renderSheetTabs();
+        }
+        showToast('🗑️ Sheet dihapus', 'info');
+    }
+
+    function renderSheetTabs() {
+        DOM.sheetTabsBar.innerHTML = '';
+        const frag = document.createDocumentFragment();
+
+        sheets.forEach(s => {
+            const tab = document.createElement('div');
+            tab.className = 'sheet-tab' + (s.id === activeSheetId ? ' active' : '');
+            tab.onclick = () => switchSheet(s.id);
+            tab.ondblclick = (e) => renameSheetPrompt(s.id, e);
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'sheet-tab-name';
+            nameSpan.textContent = s.name;
+            tab.appendChild(nameSpan);
+
+            const closeSpan = document.createElement('span');
+            closeSpan.className = 'sheet-tab-close';
+            closeSpan.textContent = '×';
+            closeSpan.title = 'Hapus sheet';
+            closeSpan.onclick = (e) => deleteSheet(s.id, e);
+            tab.appendChild(closeSpan);
+
+            frag.appendChild(tab);
+        });
+
+        const addBtn = document.createElement('div');
+        addBtn.className = 'sheet-tab-add';
+        addBtn.textContent = '+';
+        addBtn.title = 'Tambah sheet baru';
+        addBtn.onclick = addSheet;
+        frag.appendChild(addBtn);
+
+        DOM.sheetTabsBar.appendChild(frag);
+    }
+
+    // Nama file Excel tidak boleh mengandung karakter ini, dan max 31 karakter
+    function sanitizeSheetNameForExcel(name, usedNames) {
+        let clean = (name || 'Sheet').replace(/[\\\/\?\*\[\]:]/g, '-').slice(0, 31);
+        let finalName = clean;
+        let n = 1;
+        while (usedNames.has(finalName)) {
+            const suffix = ' (' + n + ')';
+            finalName = clean.slice(0, 31 - suffix.length) + suffix;
+            n++;
+        }
+        usedNames.add(finalName);
+        return finalName;
+    }
+
+    // Initialization
+    document.addEventListener('DOMContentLoaded', () => {
+        DOM.gridBody = document.getElementById('gridBody');
+        DOM.formulaBar = document.getElementById('formulaBar');
+        DOM.cellRef = document.getElementById('cellRef');
+        DOM.formulaHelper = document.getElementById('formulaHelper');
+        DOM.toastContainer = document.getElementById('toastContainer');
+        DOM.recordCount = document.getElementById('recordCount');
+        DOM.calcStatus = document.getElementById('calcStatus');
+        DOM.formulaCount = document.getElementById('formulaCount');
+        DOM.quickStats = document.getElementById('quickStats');
+        DOM.configPanel = document.getElementById('configPanel');
+        DOM.overlay = document.getElementById('overlay');
+        DOM.contextMenu = document.getElementById('contextMenu');
+        DOM.sheetTabsBar = document.getElementById('sheetTabsBar');
+        DOM.activeSheetLabel = document.getElementById('activeSheetLabel');
+        DOM.rekapPanel = document.getElementById('rekapPanel');
+        DOM.paywallOverlay = document.getElementById('paywallOverlay');
+        DOM.trialBanner = document.getElementById('trialBanner');
+
+        // Mulai dengan satu sheet default (nama otomatis "Mitra/Agen 1")
+        const firstSheet = createSheet();
+        sheets.push(firstSheet);
+        activeSheetId = firstSheet.id;
+        data = firstSheet.data;
+        formulaHistory = firstSheet.formulaHistory;
+
+        renderSheetTabs();
+        renderGrid();
+        setupKeyboardNavigation();
+        setupContextMenu();
+        setupFormulaHelper();
+        setupAutoSave();
+        checkTrialStatus();
+
+        // ============================================
+        // 📥 API RECEIVER MODULE (Direct from Google Forms)
+        // ============================================
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'DATA_INBOUND') {
+                const payload = event.data.payload;
+                const newRow = {
+                    tanggal: new Date().toISOString().split('T')[0],
+                    waktu: new Date().toLocaleTimeString(),
+                    entity: payload.nama_item || "Tanpa Nama",
+                    metricA: parseFloat(payload.alokasi) || 0,
+                    metricB: parseFloat(payload.realisasi) || 0,
+                    rasio: 0,
+                    status: 'PENDING',
+                    _formulas: {}
+                };
+                data.push(newRow);
+                recalculateAll();
+                syncActiveSheetIntoStore();
+                requestRender();
+                showToast(`📥 Data Baru masuk ke "${getActiveSheet().name}": ${newRow.entity}`, 'success');
+                updateQuickStats();
+            }
+        });
+
+        showToast('✅ Budget-Line v3.0 siap digunakan!', 'success');
+    });
+
+    window.addEventListener('beforeunload', () => {
+        if (autoSaveInterval) clearInterval(autoSaveInterval);
+    });
+
+    // ============================================
+    // OPTIMIZED RENDERING (Batch & Throttle)
+    // ============================================
+
+    function requestRender() {
+        if (isRendering) {
+            renderQueued = true;
+            return;
+        }
+
+        isRendering = true;
+        renderQueued = false;
+
+        requestAnimationFrame(() => {
+            performRender();
+            isRendering = false;
+
+            if (renderQueued) {
+                requestRender();
+            }
+        });
+    }
+
+    function performRender() {
+        while (DOM.gridBody.firstChild) {
+            DOM.gridBody.removeChild(DOM.gridBody.firstChild);
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        data.forEach((row, rowIndex) => {
+            const tr = document.createElement('tr');
+            tr.dataset.row = rowIndex;
+
+            const th = document.createElement('th');
+            th.className = 'row-header';
+            
+            const num = document.createElement('span');
+            num.className = 'row-num';
+            num.textContent = rowIndex + 1;
+            
+            const addBtn = document.createElement('button');
+            addBtn.className = 'row-btn row-btn-add';
+            addBtn.textContent = '+';
+            addBtn.title = 'Tambah baris di bawah';
+            addBtn.onclick = (e) => {
+                e.stopPropagation();
+                selectedCell = { row: rowIndex, col: 0 };
+                addRowBelow();
+                recalculateAll();
+                syncActiveSheetIntoStore();
+                renderGrid();
+            };
+            
+            const delBtn = document.createElement('button');
+            delBtn.className = 'row-btn row-btn-del';
+            delBtn.textContent = '−';
+            delBtn.title = 'Hapus baris ini';
+            delBtn.onclick = (e) => {
+                e.stopPropagation();
+                selectedCell = { row: rowIndex, col: 0 };
+                deleteSelectedRow();
+            };
+            
+            th.append(num, addBtn, delBtn);
+            tr.appendChild(th);
+
+            const cells = [
+                { key: 'tanggal', type: 'date', class: 'cell-date' },
+                { key: 'waktu', type: 'text', class: 'cell-date' },
+                { key: 'entity', type: 'text', class: '' },
+                { key: 'metricA', type: 'number', class: 'cell-number' },
+                { key: 'metricB', type: 'number', class: 'cell-number' },
+                { key: 'rasio', type: 'calc', class: 'cell-number', readOnly: true },
+                { key: 'status', type: 'calc', class: '', readOnly: true },
+                { key: 'saldoSebelumnya', type: 'money', class: 'cell-number', readOnly: true },
+                { key: 'saldo', type: 'money', class: 'cell-number', readOnly: true }
+            ];
+
+            cells.forEach((cell, colIndex) => {
+                const td = document.createElement('td');
+                td.dataset.row = rowIndex;
+                td.dataset.col = colIndex;
+                td.className = cell.class;
+
+                if (cell.readOnly) {
+                    td.style.background = '#f8fafc';
+                }
+
+                const value = row[cell.key];
+                let displayValue = formatCellValue(value, cell.type);
+
+                if (cell.key === 'status') {
+                    const badgeClass = value === 'OPTIMAL' ? 'status-optimal' :
+                                      value === 'CRITICAL' ? 'status-critical' :
+                                      value === 'ERROR' ? 'status-error' : 'status-balanced';
+                    displayValue = `<span class="status-badge ${badgeClass}">${value}</span>`;
+                }
+
+                if (cell.key === 'saldo' && typeof value === 'number') {
+                    td.style.color = value < 0 ? '#dc2626' : '#16a34a';
+                    td.style.fontWeight = '600';
+                }
+
+                if (cell.key === 'rasio' && typeof value === 'number') {
+                    td.style.color = value < 0 ? '#dc2626' : '#16a34a';
+                    td.style.fontWeight = '600';
+                }
+
+                const hasFormula = row._formulas && row._formulas[colIndex];
+                if (hasFormula && colIndex < 5) {
+                    td.style.borderLeft = '3px solid #0d9488';
+                }
+
+                const div = document.createElement('div');
+                div.className = 'cell-content';
+                if (cell.key === 'status') {
+                    div.innerHTML = displayValue;
+                } else {
+                    div.textContent = displayValue;
+                }
+                td.appendChild(div);
+
+                td.onclick = () => selectCell(rowIndex, colIndex);
+                td.ondblclick = () => startEdit(rowIndex, colIndex);
+
+                if (selectedCell.row === rowIndex && selectedCell.col === colIndex) {
+                    td.classList.add('selected');
+                }
+
+                tr.appendChild(td);
+            });
+
+            fragment.appendChild(tr);
+        });
+
+        DOM.gridBody.appendChild(fragment);
+        updateStatus();
+        applySearchHighlight();
+
+        if (DOM.quickStats.classList.contains('show')) {
+            updateQuickStats();
+        }
+        if (DOM.rekapPanel.classList.contains('show')) {
+            updateRekap();
+        }
+    }
+
+    function renderGrid() {
+        requestRender();
+    }
+
+    function formatCellValue(value, type) {
+        if (value === undefined || value === null || value === '') return '';
+        if (type === 'money') {
+            const n = parseFloat(value);
+            return isNaN(n) ? '' : n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+        }
+        if (type === 'number' || type === 'calc') {
+            if (typeof value === 'number') {
+                if (Math.abs(value) > 999999) return value.toExponential(2);
+                if (Number.isInteger(value)) return value.toLocaleString();
+                return value.toFixed(2);
+            }
+        }
+        return value;
+    }
+
+    // ============================================
+    // OPTIMIZED FORMULA ENGINE
+    // ============================================
+
+    function processFormula(row, col, formula) {
+        try {
+            const expr = formula.substring(1).trim().toUpperCase();
+
+            if (!formulaHistory.includes(formula)) {
+                formulaHistory.unshift(formula);
+                if (formulaHistory.length > 20) formulaHistory.pop();
+            }
+
+            if (expr.includes('(') && !expr.includes('=')) {
+                return processFunction(row, col, expr);
+            } else {
+                return evaluateExpression(row, col, expr);
+            }
+        } catch (err) {
+            console.error('Formula Error:', err);
+            return '#ERROR!';
+        }
+    }
+
+    function processFunction(row, col, expr) {
+        const funcMatch = expr.match(/^([A-Z]+)\s*\((.*)\)$/);
+        if (!funcMatch) return evaluateExpression(row, col, expr);
+
+        const [, funcName, argsStr] = funcMatch;
+        const args = parseArguments(argsStr);
+
+        switch(funcName) {
+            case 'SUM': return funcSum(args);
+            case 'AVERAGE': return funcAverage(args);
+            case 'MAX': return funcMax(args);
+            case 'MIN': return funcMin(args);
+            case 'COUNT': return funcCount(args);
+            case 'ABS': return Math.abs(parseFloat(evaluateSingle(args[0])) || 0);
+            case 'ROUND':
+                const num = parseFloat(evaluateSingle(args[0])) || 0;
+                const digits = parseInt(args[1]) || 0;
+                return parseFloat(num.toFixed(digits));
+            case 'POWER':
+                const base = parseFloat(evaluateSingle(args[0])) || 0;
+                const exp = parseFloat(evaluateSingle(args[1])) || 0;
+                return Math.pow(base, exp);
+            case 'VLOOKUP': return funcVLookup(args);
+            case 'HLOOKUP': return funcHLookup(args);
+            case 'IF': return funcIf(args);
+            case 'CONCAT':
+            case 'CONCATENATE':
+                return args.map(a => evaluateSingle(a).toString()).join('');
+            case 'LEFT':
+                const strL = evaluateSingle(args[0]).toString();
+                const lenL = parseInt(evaluateSingle(args[1])) || 1;
+                return strL.substring(0, lenL);
+            case 'RIGHT':
+                const strR = evaluateSingle(args[0]).toString();
+                const lenR = parseInt(evaluateSingle(args[1])) || 1;
+                return strR.substring(strR.length - lenR);
+            case 'UPPER': return evaluateSingle(args[0]).toString().toUpperCase();
+            case 'LOWER': return evaluateSingle(args[0]).toString().toLowerCase();
+            case 'LEN': return evaluateSingle(args[0]).toString().length;
+            default: return '#NAME?';
+        }
+    }
+
+    function funcSum(args) {
+        const values = extractValuesFromArgs(args);
+        return values.reduce((a, b) => a + b, 0);
+    }
+
+    function funcAverage(args) {
+        const values = extractValuesFromArgs(args);
+        if (values.length === 0) return '#DIV/0!';
+        return values.reduce((a, b) => a + b, 0) / values.length;
+    }
+
+    function funcMax(args) {
+        const values = extractValuesFromArgs(args);
+        if (values.length === 0) return 0;
+        return Math.max(...values);
+    }
+
+    function funcMin(args) {
+        const values = extractValuesFromArgs(args);
+        if (values.length === 0) return 0;
+        return Math.min(...values);
+    }
+
+    function funcCount(args) {
+        const values = extractValuesFromArgs(args);
+        return values.filter(v => !isNaN(v) && v !== '').length;
+    }
+
+    function funcVLookup(args) {
+        if (args.length < 3) return '#N/A';
+
+        const lookupValue = evaluateSingle(args[0]).toString().toLowerCase();
+        const tableRange = args[1];
+        const colIndex = parseInt(evaluateSingle(args[2])) || 1;
+        const exactMatch = args[3] ? evaluateSingle(args[3]).toString().toUpperCase() === 'FALSE' : true;
+
+        const { startRow, endRow, startCol, endCol } = parseRange(tableRange);
+
+        for (let r = startRow; r <= endRow; r++) {
+            const cellVal = getCellData(r, startCol).toString().toLowerCase();
+            if (exactMatch ? cellVal === lookupValue : cellVal.includes(lookupValue)) {
+                const targetCol = startCol + colIndex - 1;
+                if (targetCol <= endCol) {
+                    const result = getCellData(r, targetCol);
+                    return parseFloat(result) || result;
+                }
+            }
+        }
+        return '#N/A';
+    }
+
+    function funcHLookup(args) {
+        if (args.length < 3) return '#N/A';
+
+        const lookupValue = evaluateSingle(args[0]).toString().toLowerCase();
+        const tableRange = args[1];
+        const rowIndex = parseInt(evaluateSingle(args[2])) || 1;
+
+        const { startRow, endRow, startCol, endCol } = parseRange(tableRange);
+
+        for (let c = startCol; c <= endCol; c++) {
+            const cellVal = getCellData(startRow, c).toString().toLowerCase();
+            if (cellVal === lookupValue) {
+                const targetRow = startRow + rowIndex - 1;
+                if (targetRow <= endRow) {
+                    const result = getCellData(targetRow, c);
+                    return parseFloat(result) || result;
+                }
+            }
+        }
+        return '#N/A';
+    }
+
+    function funcIf(args) {
+        if (args.length < 2) return '#VALUE!';
+
+        const condition = evaluateCondition(args[0]);
+        const trueVal = args[1] || '';
+        const falseVal = args[2] || '';
+
+        return condition ? evaluateSingle(trueVal) : evaluateSingle(falseVal);
+    }
+
+    function evaluateCondition(conditionStr) {
+        const operators = ['>=', '<=', '<>', '>', '<', '='];
+        let operator = '=';
+        let parts = [conditionStr];
+
+        for (let op of operators) {
+            if (conditionStr.includes(op)) {
+                operator = op;
+                parts = conditionStr.split(op);
+                break;
+            }
+        }
+
+        if (parts.length !== 2) return false;
+
+        const left = parseFloat(evaluateSingle(parts[0].trim()));
+        const right = parseFloat(evaluateSingle(parts[1].trim()));
+
+        if (isNaN(left) || isNaN(right)) {
+            const leftStr = evaluateSingle(parts[0].trim()).toString();
+            const rightStr = evaluateSingle(parts[1].trim()).toString();
+            switch(operator) {
+                case '=': return leftStr === rightStr;
+                case '<>': return leftStr !== rightStr;
+                default: return false;
+            }
+        }
+
+        switch(operator) {
+            case '>': return left > right;
+            case '<': return left < right;
+            case '>=': return left >= right;
+            case '<=': return left <= right;
+            case '<>': return left !== right;
+            case '=': return left === right;
+            default: return false;
+        }
+    }
+
+    function parseArguments(argsStr) {
+        const args = [];
+        let current = '';
+        let inQuotes = false;
+        let parenCount = 0;
+
+        for (let char of argsStr) {
+            if (char === '"') inQuotes = !inQuotes;
+            else if (char === '(' && !inQuotes) parenCount++;
+            else if (char === ')' && !inQuotes) parenCount--;
+            else if (char === ',' && !inQuotes && parenCount === 0) {
+                args.push(current.trim());
+                current = '';
+                continue;
+            }
+            current += char;
+        }
+        if (current.trim()) args.push(current.trim());
+        return args;
+    }
+
+    function parseRange(rangeStr) {
+        const colMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6 };
+
+        if (rangeStr.includes(':')) {
+            const [start, end] = rangeStr.split(':');
+            return {
+                startRow: parseInt(start.match(/\d+/)[0]) - 1,
+                endRow: parseInt(end.match(/\d+/)[0]) - 1,
+                startCol: colMap[start[0]],
+                endCol: colMap[end[0]]
+            };
+        } else {
+            const row = parseInt(rangeStr.match(/\d+/)[0]) - 1;
+            const col = colMap[rangeStr[0]];
+            return { startRow: row, endRow: row, startCol: col, endCol: col };
+        }
+    }
+
+    function extractValuesFromArgs(args) {
+        const values = [];
+        args.forEach(arg => {
+            if (arg.includes(':')) {
+                const { startRow, endRow, startCol, endCol } = parseRange(arg);
+                for (let r = startRow; r <= endRow; r++) {
+                    for (let c = startCol; c <= endCol; c++) {
+                        const val = parseFloat(getCellData(r, c));
+                        if (!isNaN(val)) values.push(val);
+                    }
+                }
+            } else {
+                const val = parseFloat(evaluateSingle(arg));
+                if (!isNaN(val)) values.push(val);
+            }
+        });
+        return values;
+    }
+
+    function evaluateSingle(token) {
+        token = token.trim();
+        const colMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6 };
+
+        if (token.startsWith('"') && token.endsWith('"')) {
+            return token.slice(1, -1);
+        }
+
+        if (!isNaN(parseFloat(token)) && !token.match(/[A-G]\d+/)) {
+            return parseFloat(token);
+        }
+
+        if (token.match(/^[A-G]\d+$/)) {
+            const col = colMap[token[0]];
+            const row = parseInt(token.substring(1)) - 1;
+            if (row >= 0 && row < data.length) {
+                const val = getCellData(row, col);
+                return parseFloat(val) || val || 0;
+            }
+            return 0;
+        }
+
+        if (token.includes('(')) {
+            return processFunction(0, 0, token);
+        }
+
+        return token;
+    }
+
+    function evaluateExpression(row, col, expr) {
+        const colMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6 };
+
+        let processedExpr = expr.replace(/([A-G])(\d+)/g, (match, col, r) => {
+            const dataCol = colMap[col];
+            const dataRow = parseInt(r) - 1;
+            if (dataRow >= 0 && dataRow < data.length) {
+                const val = getCellData(dataRow, dataCol);
+                return isNaN(parseFloat(val)) ? 0 : parseFloat(val);
+            }
+            return 0;
+        });
+
+        try {
+            return new Function('return ' + processedExpr)();
+        } catch(e) {
+            return '#ERROR!';
+        }
+    }
+
+    // ============================================
+    // OPTIMIZED FORMULA HELPER
+    // ============================================
+
+    function setupFormulaHelper() {
+        let debounceTimer;
+
+        DOM.formulaBar.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                handleFormulaInput(e);
+            }, 150);
+        });
+
+        DOM.formulaBar.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                selectFirstSuggestion();
+            } else if (e.key === 'Escape') {
+                hideFormulaHelper();
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.formula-input-wrapper')) {
+                hideFormulaHelper();
+            }
+        });
+    }
+
+    function handleFormulaInput(e) {
+        const val = e.target.value;
+        if (val.startsWith('=')) {
+            showFormulaSuggestions(val);
+        } else {
+            hideFormulaHelper();
+        }
+    }
+
+    function showFormulaSuggestions(input) {
+        const search = input.substring(1).toUpperCase();
+
+        let suggestions = [];
+        const funcMatch = search.match(/([A-Z]+)$/);
+
+        if (funcMatch) {
+            const partial = funcMatch[1];
+            suggestions = SUPPORTED_FUNCTIONS.filter(f =>
+                f.name.startsWith(partial)
+            );
+        }
+
+        if (suggestions.length === 0 && formulaHistory.length === 0) {
+            hideFormulaHelper();
+            return;
+        }
+
+        let html = '';
+
+        if (suggestions.length > 0) {
+            html += '<div class="helper-header">FUNGSI YANG TERSEDIA</div>';
+            suggestions.forEach(func => {
+                html += `
+                    <div class="helper-item" onclick="insertFormula('=${func.example.replace('=', '')}')">
+                        <span class="helper-func">${func.name}</span>
+                        <span class="helper-desc">${func.desc}</span>
+                    </div>
+                `;
+            });
+        }
+
+        if (formulaHistory.length > 0 && search.length === 0) {
+            html += '<div class="helper-header">RIWAYAT FORMULA</div>';
+            formulaHistory.slice(0, 5).forEach(formula => {
+                html += `
+                    <div class="helper-item" onclick="insertFormula('${formula}')">
+                        <span style="font-family: monospace; color: #0d9488;">${formula}</span>
+                    </div>
+                `;
+            });
+        }
+
+        DOM.formulaHelper.innerHTML = html;
+        DOM.formulaHelper.classList.add('show');
+    }
+
+    function hideFormulaHelper() {
+        DOM.formulaHelper.classList.remove('show');
+    }
+
+    function insertFormula(formula) {
+        DOM.formulaBar.value = formula;
+        hideFormulaHelper();
+        DOM.formulaBar.focus();
+    }
+
+    function selectFirstSuggestion() {
+        const first = DOM.formulaHelper.querySelector('.helper-item');
+        if (first) first.click();
+    }
+
+    // ============================================
+    // OPTIMIZED CELL OPERATIONS
+    // ============================================
+
+    function selectCell(row, col) {
+        const prevSelected = document.querySelector('td.selected');
+        if (prevSelected) prevSelected.classList.remove('selected');
+
+        const newSelected = document.querySelector(`td[data-row="${row}"][data-col="${col}"]`);
+        if (newSelected) newSelected.classList.add('selected');
+
+        selectedCell = { row, col };
+        updateCellReference();
+
+        const cachedFormula = data[row]?._formulas?.[col];
+        const cellValue = getCellData(row, col);
+
+        DOM.formulaBar.value = cachedFormula || cellValue || '';
+        DOM.formulaBar.classList.toggle('readonly', col >= 5);
+        DOM.formulaBar.readOnly = (col >= 5);
+
+        hideFormulaHelper();
+    }
+
+    function startEdit(row, col) {
+        if (col >= 5) {
+            showToast('⚠️ Kolom ini dihitung otomatis', 'info');
+            return;
+        }
+
+        editingCell = { row, col };
+        const td = document.querySelector(`td[data-row="${row}"][data-col="${col}"]`);
+        const currentValue = getCellData(row, col);
+
+        td.classList.add('editing');
+        td.innerHTML = `<input type="text" class="cell-input" value="${currentValue || ''}" onblur="finishEdit()" onkeydown="handleEditKey(event)">`;
+
+        const input = td.querySelector('input');
+        input.focus();
+        input.select();
+    }
+
+    function finishEdit() {
+        if (!editingCell) return;
+
+        const input = document.querySelector('.cell-input');
+        if (!input) return;
+
+        const value = input.value;
+        const { row, col } = editingCell;
+
+        processCellValue(row, col, value);
+
+        editingCell = null;
+        recalculateRow(row);
+        syncActiveSheetIntoStore();
+        renderGrid();
+        showToast('✅ Data diperbarui', 'success');
+    }
+
+    function processCellValue(row, col, value) {
+        if (value.startsWith('=')) {
+            const result = processFormula(row, col, value);
+            setCellData(row, col, result);
+            if (!data[row]._formulas) data[row]._formulas = {};
+            data[row]._formulas[col] = value;
+        } else {
+            setCellData(row, col, value);
+            if (data[row]._formulas) delete data[row]._formulas[col];
+        }
+    }
+
+    function handleEditKey(e) {
+        if (e.key === 'Enter') {
+            finishEdit();
+            moveSelection(1, 0);
+        } else if (e.key === 'Escape') {
+            editingCell = null;
+            renderGrid();
+        } else if (e.key === 'Tab') {
+            e.preventDefault();
+            finishEdit();
+            moveSelection(0, e.shiftKey ? -1 : 1);
+        }
+    }
+
+    function handleFormulaKey(e) {
+        if (e.key === 'Enter') {
+            const value = e.target.value;
+            const col = selectedCell.col;
+            const row = selectedCell.row;
+
+            if (col >= 5) {
+                showToast('⚠️ Tidak dapat mengedit kolom read-only', 'error');
+                e.target.value = getCellData(row, col);
+                return;
+            }
+
+            processCellValue(row, col, value);
+            recalculateRow(row);
+            syncActiveSheetIntoStore();
+            renderGrid();
+            moveSelection(1, 0);
+
+        } else if (e.key === 'Escape') {
+            const cached = data[selectedCell.row]?._formulas?.[selectedCell.col];
+            e.target.value = cached || getCellData(selectedCell.row, selectedCell.col);
+            hideFormulaHelper();
+        }
+    }
+
+    // ============================================
+    // DATA OPERATIONS
+    // ============================================
+
+    function getCellData(row, col) {
+        if (row >= data.length || row < 0) return '';
+        const keys = ['tanggal', 'waktu', 'entity', 'metricA', 'metricB', 'rasio', 'status', 'saldoSebelumnya', 'saldo'];
+        return data[row][keys[col]] || '';
+    }
+
+    function setCellData(row, col, value) {
+        const keys = ['tanggal', 'waktu', 'entity', 'metricA', 'metricB', 'rasio', 'status', 'saldoSebelumnya', 'saldo'];
+        const key = keys[col];
+
+        if (col === 3 || col === 4) {
+            const num = parseFloat(value);
+            data[row][key] = isNaN(num) ? 0 : num;
+        } else {
+            data[row][key] = value;
+        }
+    }
+
+    // Hitung ulang seluruh sheet dari atas ke bawah (running total global).
+    // Saldo Sebelumnya = total (jumlah) semua saldo baris sebelumnya.
+    // Pendapatan efektif = Pendapatan yang diinput + Saldo Sebelumnya.
+    // Rasio & status dihitung dari Pendapatan efektif; Saldo = Pendapatan efektif - Biaya.
+    // Saldo baris ini kemudian menjadi bagian dari total untuk baris berikutnya.
+    function recalculateAll() {
+        if (!config.autoCalc) return;
+
+        let totalSaldoSebelumnya = 0;
+        data.forEach(r => {
+            const prev = totalSaldoSebelumnya;
+            const a = (parseFloat(r.metricA) || 0) + prev;
+            const b = parseFloat(r.metricB) || 0;
+
+            r.saldoSebelumnya = prev;
+            r.saldo = a - b;
+            totalSaldoSebelumnya = r.saldo; // akumulasi total untuk baris berikutnya
+
+            if (b === 0) {
+                r.rasio = 0;
+                r.status = 'ERROR';
+            } else {
+                r.rasio = ((a - b) / b) * 100;
+                if (r.rasio > config.optimal) r.status = 'OPTIMAL';
+                else if (r.rasio > config.critical) r.status = 'BALANCED';
+                else r.status = 'CRITICAL';
+            }
+        });
+    }
+
+    // Saldo bergantung pada urutan baris, jadi semua pemanggil menghitung ulang satu sheet penuh
+    function recalculateRow() {
+        recalculateAll();
+    }
+
+    function addRow() {
+        data.push(makeEmptyRow());
+        syncActiveSheetIntoStore();
+        renderGrid();
+        selectCell(data.length - 1, 2);
+        showToast('➕ Baris baru ditambahkan', 'success');
+    }
+
+    function addRowAbove() {
+        if (data.length === 0) return addRow();
+        data.splice(selectedCell.row, 0, makeEmptyRow());
+        syncActiveSheetIntoStore();
+        renderGrid();
+        showToast('➕ Baris ditambahkan di atas', 'success');
+    }
+
+    function addRowBelow() {
+        data.splice(selectedCell.row + 1, 0, makeEmptyRow());
+        selectedCell.row++;
+        syncActiveSheetIntoStore();
+        renderGrid();
+        showToast('➕ Baris ditambahkan di bawah', 'success');
+    }
+
+    function deleteSelectedRow() {
+        if (data.length <= 1) {
+            showToast('⚠️ Minimal satu baris harus tersisa', 'error');
+            return;
+        }
+        data.splice(selectedCell.row, 1);
+        if (selectedCell.row >= data.length) selectedCell.row = data.length - 1;
+        recalculateAll();
+        syncActiveSheetIntoStore();
+        renderGrid();
+        showToast('🗑️ Baris dihapus', 'info');
+    }
+
+    function duplicateRow() {
+        const rowToClone = data[selectedCell.row];
+        const clonedRow = {
+            ...rowToClone,
+            _formulas: { ...rowToClone._formulas },
+            tanggal: new Date().toISOString().split('T')[0],
+            waktu: new Date().toTimeString().slice(0, 8)
+        };
+        data.splice(selectedCell.row + 1, 0, clonedRow);
+        selectedCell.row++;
+        recalculateRow(selectedCell.row);
+        syncActiveSheetIntoStore();
+        renderGrid();
+        showToast('🔁 Baris diduplikat', 'success');
+    }
+
+    function clearAllData() {
+        if (!confirm('⚠️ Yakin ingin menghapus SEMUA data di sheet ini? (sheet lain tidak terpengaruh)')) return;
+
+        data = [makeEmptyRow()];
+        selectedCell = { row: 0, col: 0 };
+        syncActiveSheetIntoStore();
+        renderGrid();
+        showToast('🧹 Data sheet ini dihapus', 'info');
+    }
+
+    // ============================================
+    // OPTIMIZED KEYBOARD NAVIGATION
+    // ============================================
+
+    function setupKeyboardNavigation() {
+        document.addEventListener('keydown', (e) => {
+            if (editingCell) return;
+            if (DOM.formulaBar === document.activeElement) return;
+
+            switch(e.key) {
+                case 'ArrowUp': moveSelection(-1, 0); e.preventDefault(); break;
+                case 'ArrowDown': moveSelection(1, 0); e.preventDefault(); break;
+                case 'ArrowLeft': moveSelection(0, -1); e.preventDefault(); break;
+                case 'ArrowRight': moveSelection(0, 1); e.preventDefault(); break;
+                case 'Delete':
+                    if (selectedCell.col < 5) {
+                        setCellData(selectedCell.row, selectedCell.col, '');
+                        if (data[selectedCell.row]._formulas) {
+                            delete data[selectedCell.row]._formulas[selectedCell.col];
+                        }
+                        recalculateRow(selectedCell.row);
+                        syncActiveSheetIntoStore();
+                        renderGrid();
+                        showToast('🗑️ Cell dikosongkan', 'info');
+                    }
+                    break;
+                case 'F2': startEdit(selectedCell.row, selectedCell.col); break;
+            }
+        });
+
+        // Ctrl/Cmd+PageUp/PageDown untuk pindah antar sheet, mirip Excel
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+                e.preventDefault();
+                copyRow();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+                e.preventDefault();
+                pasteRow();
+            }
+            if (e.ctrlKey && (e.key === 'PageDown' || e.key === 'PageUp')) {
+                e.preventDefault();
+                const idx = sheets.findIndex(s => s.id === activeSheetId);
+                const dir = e.key === 'PageDown' ? 1 : -1;
+                const nextIdx = (idx + dir + sheets.length) % sheets.length;
+                switchSheet(sheets[nextIdx].id);
+            }
+        });
+    }
+
+    function moveSelection(dRow, dCol) {
+        const newRow = Math.max(0, Math.min(data.length - 1, selectedCell.row + dRow));
+        const newCol = Math.max(0, Math.min(8, selectedCell.col + dCol));
+        selectCell(newRow, newCol);
+    }
+
+    function updateCellReference() {
+        const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
+        DOM.cellRef.textContent = cols[selectedCell.col] + (selectedCell.row + 1);
+    }
+
+    // ============================================
+    // OPTIMIZED CONTEXT MENU
+    // ============================================
+
+    function setupContextMenu() {
+        const grid = document.getElementById('sheetGrid');
+
+        grid.addEventListener('contextmenu', (e) => {
+            if (e.target.closest('td')) {
+                e.preventDefault();
+                const td = e.target.closest('td');
+                const row = parseInt(td.dataset.row);
+                const col = parseInt(td.dataset.col);
+                selectCell(row, col);
+
+                DOM.contextMenu.style.display = 'block';
+                DOM.contextMenu.style.left = Math.min(e.pageX, window.innerWidth - 200) + 'px';
+                DOM.contextMenu.style.top = Math.min(e.pageY, window.innerHeight - 250) + 'px';
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.context-menu')) {
+                DOM.contextMenu.style.display = 'none';
+            }
+        });
+    }
+
+    function hideContextMenu() {
+        DOM.contextMenu.style.display = 'none';
+    }
+
+    function copyRow() {
+        clipboard = {
+            data: { ...data[selectedCell.row] },
+            formulas: { ...(data[selectedCell.row]._formulas || {}) }
+        };
+        showToast('📋 Baris dicopy (Ctrl+V untuk paste)', 'success');
+    }
+
+    function pasteRow() {
+        if (!clipboard) {
+            showToast('⚠️ Clipboard kosong', 'error');
+            return;
+        }
+        const newRow = {
+            ...clipboard.data,
+            _formulas: { ...clipboard.formulas },
+            tanggal: new Date().toISOString().split('T')[0],
+            waktu: new Date().toTimeString().slice(0, 8)
+        };
+        data.push(newRow);
+        recalculateRow(data.length - 1);
+        syncActiveSheetIntoStore();
+        renderGrid();
+        showToast('📄 Baris dipaste', 'success');
+    }
+
+    // ============================================
+    // CONFIGURATION
+    // ============================================
+
+    function toggleConfig() {
+        const s = getActiveSheet();
+        if (s) document.getElementById('cfgActiveSheetName').value = s.name;
+        DOM.configPanel.classList.toggle('open');
+        DOM.overlay.classList.toggle('show');
+    }
+
+    function applyConfig() {
+        config.title = document.getElementById('cfgTitle').value;
+        config.entity = document.getElementById('cfgEntity').value;
+        config.metricA = document.getElementById('cfgMetricA').value;
+        config.metricB = document.getElementById('cfgMetricB').value;
+        config.optimal = parseFloat(document.getElementById('cfgOptimal').value);
+        config.critical = parseFloat(document.getElementById('cfgCritical').value);
+        config.autoCalc = document.getElementById('cfgAutoCalc').checked;
+
+        document.getElementById('colEntity').textContent = config.entity;
+        document.getElementById('colMetricA').textContent = config.metricA;
+        document.getElementById('colMetricB').textContent = config.metricB;
+        document.querySelector('.ribbon h1').innerHTML = `📊 ${config.title}`;
+
+        const newSheetName = document.getElementById('cfgActiveSheetName').value.trim();
+        const s = getActiveSheet();
+        if (s && newSheetName && newSheetName !== s.name) {
+            s.name = newSheetName;
+            renderSheetTabs();
+            DOM.activeSheetLabel.textContent = s.name;
+        }
+
+        if (config.autoCalc) {
+            recalculateAll();
+        }
+        syncActiveSheetIntoStore();
+        renderGrid();
+        showToast('✅ Konfigurasi diperbarui', 'success');
+    }
+
+    // ============================================
+    // QUICK STATS
+    // ============================================
+
+    function toggleQuickStats() {
+        DOM.quickStats.classList.toggle('show');
+        if (DOM.quickStats.classList.contains('show')) {
+            updateQuickStats();
+        }
+    }
+
+    function updateQuickStats() {
+        const totalA = data.reduce((sum, r) => sum + (parseFloat(r.metricA) || 0), 0);
+        const totalB = data.reduce((sum, r) => sum + (parseFloat(r.metricB) || 0), 0);
+        const avgRatio = data.length > 0 ? data.reduce((sum, r) => sum + (parseFloat(r.rasio) || 0), 0) / data.length : 0;
+        const optimalCount = data.filter(r => r.status === 'OPTIMAL').length;
+
+        document.getElementById('statTotalA').textContent = totalA.toLocaleString();
+        document.getElementById('statTotalB').textContent = totalB.toLocaleString();
+        document.getElementById('statAvgRatio').textContent = avgRatio.toFixed(2) + '%';
+        document.getElementById('statOptimal').textContent = optimalCount;
+    }
+
+    // ============================================
+    // REKAP PER ENTITAS (terinspirasi rekap buku besar per akun a la Zahir)
+    // ============================================
+
+    function toggleRekap() {
+        DOM.rekapPanel.classList.toggle('show');
+        if (DOM.rekapPanel.classList.contains('show')) {
+            updateRekap();
+        }
+    }
+
+    function updateRekap() {
+        const s = getActiveSheet();
+        document.getElementById('rekapSheetName').textContent = s ? s.name : '';
+        document.getElementById('rekapColEntity').textContent = config.entity;
+        document.getElementById('rekapColA').textContent = config.metricA;
+        document.getElementById('rekapColB').textContent = config.metricB;
+
+        // Kelompokkan baris berdasarkan nama entitas (mirip rekap per akun)
+        const groups = {};
+        data.forEach(row => {
+            const key = (row.entity || '').trim() || '(Tanpa Nama)';
+            if (!groups[key]) {
+                groups[key] = { totalA: 0, totalB: 0, ratios: [], statuses: {} };
+            }
+            groups[key].totalA += parseFloat(row.metricA) || 0;
+            groups[key].totalB += parseFloat(row.metricB) || 0;
+            groups[key].ratios.push(parseFloat(row.rasio) || 0);
+            const st = row.status || 'BALANCED';
+            groups[key].statuses[st] = (groups[key].statuses[st] || 0) + 1;
+        });
+
+        const rekapBody = document.getElementById('rekapBody');
+        rekapBody.innerHTML = '';
+
+        const entityNames = Object.keys(groups).sort((a, b) => a.localeCompare(b));
+        let grandA = 0, grandB = 0, grandRatioSum = 0, grandRatioCount = 0;
+
+        entityNames.forEach(name => {
+            const g = groups[name];
+            const avgRatio = g.ratios.length ? g.ratios.reduce((a, b) => a + b, 0) / g.ratios.length : 0;
+            // status dominan = status dengan jumlah kemunculan terbanyak untuk entitas ini
+            let dominantStatus = 'BALANCED', maxCount = -1;
+            Object.entries(g.statuses).forEach(([st, count]) => {
+                if (count > maxCount) { maxCount = count; dominantStatus = st; }
+            });
+
+            grandA += g.totalA;
+            grandB += g.totalB;
+            grandRatioSum += avgRatio;
+            grandRatioCount++;
+
+            const badgeClass = dominantStatus === 'OPTIMAL' ? 'status-optimal' :
+                              dominantStatus === 'CRITICAL' ? 'status-critical' :
+                              dominantStatus === 'ERROR' ? 'status-error' : 'status-balanced';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${name}</td>
+                <td class="num">${g.totalA.toLocaleString()}</td>
+                <td class="num">${g.totalB.toLocaleString()}</td>
+                <td class="num">${avgRatio.toFixed(2)}%</td>
+                <td><span class="status-badge ${badgeClass}">${dominantStatus}</span></td>
+            `;
+            rekapBody.appendChild(tr);
+        });
+
+        const totalTr = document.createElement('tr');
+        totalTr.className = 'rekap-total';
+        const grandAvgRatio = grandRatioCount ? grandRatioSum / grandRatioCount : 0;
+        totalTr.innerHTML = `
+            <td>TOTAL (${entityNames.length} entitas)</td>
+            <td class="num">${grandA.toLocaleString()}</td>
+            <td class="num">${grandB.toLocaleString()}</td>
+            <td class="num">${grandAvgRatio.toFixed(2)}%</td>
+            <td></td>
+        `;
+        rekapBody.appendChild(totalTr);
+    }
+
+    // ============================================
+    // TRIAL & PAYWALL — Firebase Auth (Anonymous) + Firestore
+    // ============================================
+    // Cara kerja:
+    // 1. Setiap device di-sign-in anonim ke Firebase Auth -> dapat UID unik.
+    // 2. Dokumen Firestore `licenses/{uid}` menyimpan { trialStart, licenseActive, subscriptionExpiry }.
+    // 3. Client boleh MEMBACA dokumen ini (untuk cek status), tapi TIDAK BOLEH
+    //    menuliskan field `licenseActive` — itu diatur di firestore.rules.
+    // 4. Satu-satunya cara `licenseActive` jadi true adalah lewat Cloud Function
+    //    (functions/index.js) yang dipanggil oleh webhook payment gateway setelah
+    //    pembayaran diverifikasi asli oleh Midtrans/Xendit — BUKAN dari browser.
+    // Ini artinya: user tidak bisa lagi "mencurangi" status lisensi lewat DevTools,
+    // karena penulisan status hanya diizinkan dari server yang kita percaya.
+    //
+    // ⚠️ Isi firebaseConfig di bawah dengan kredensial project Firebase kamu sendiri
+    // (Firebase Console > Project Settings > General > SDK setup and configuration).
+    // Kredensial ini (apiKey dkk) memang publik/aman untuk ditaruh di client-side —
+    // keamanan sebenarnya dijaga oleh Firestore Security Rules, bukan oleh rahasia ini.
+    // ============================================
+
+    const firebaseConfig = {
+    apiKey: "AIzaSyD8bTAtwpRP2lZwm9lsDGroUQU95n2yvXw",
+    authDomain: "budget-line-app-1b8ea.firebaseapp.com",
+    projectId: "budget-line-app-1b8ea",
+    storageBucket: "budget-line-app-1b8ea.firebasestorage.app",
+    messagingSenderId: "931684859740",
+    appId: "1:931684859740:web:c0d66aeb56c36d96268b99"
+};
+
+    let fbApp = null, fbAuth = null, fbDb = null, fbUid = null, fbLicenseUnsub = null;
+
+    function initFirebase() {
+        try {
+            fbApp = firebase.initializeApp(firebaseConfig);
+            fbAuth = firebase.auth();
+            fbDb = firebase.firestore();
+            fetchRemoteConfig();
+
+            fbAuth.onAuthStateChanged(user => {
+                if (user) {
+                    fbUid = user.uid;
+                    attachLicenseListener(fbUid);
+                } else {
+                    fbAuth.signInAnonymously().catch(err => {
+                        console.error('Firebase anonymous sign-in gagal:', err);
+                        showToast('⚠️ Gagal terhubung ke server lisensi, cek koneksi/config Firebase', 'error');
+                    });
+                }
+            });
+        } catch (err) {
+            console.error('Firebase init gagal:', err);
+            showToast('⚠️ Firebase belum dikonfigurasi (lihat firebaseConfig di kode)', 'error');
+        }
+    }
+
+    function attachLicenseListener(uid) {
+        const docRef = fbDb.collection('licenses').doc(uid);
+
+        // Pastikan dokumen ada; kalau belum, buat dengan trialStart = sekarang.
+        // (Aturan Firestore mengizinkan create sekali dengan licenseActive default false.)
+        docRef.get().then(snap => {
+            if (!snap.exists) {
+                docRef.set({
+                    trialStart: firebase.firestore.FieldValue.serverTimestamp(),
+                    licenseActive: false,
+                    subscriptionExpiry: null
+                });
+            }
+        });
+
+        // Dengarkan perubahan real-time — begitu Cloud Function mengubah licenseActive
+        // jadi true (setelah bayar), overlay otomatis ke-unlock TANPA reload halaman.
+        if (fbLicenseUnsub) fbLicenseUnsub();
+        fbLicenseUnsub = docRef.onSnapshot(snap => {
+            if (!snap.exists) return;
+            const data = snap.data();
+            evaluateLicenseState(data, uid);
+        }, err => {
+            console.error('Gagal membaca status lisensi:', err);
+        });
+    }
+
+    function evaluateLicenseState(data, uid) {
+        document.getElementById('paywallUserId').textContent = 'ID perangkat: ' + uid.slice(0, 12) + '…';
+
+        if (data.licenseActive === true) {
+            hidePaywall();
+            DOM.trialBanner.style.display = 'none';
+            return;
+        }
+
+        const trialStart = data.trialStart && data.trialStart.toDate ? data.trialStart.toDate() : new Date();
+        const now = new Date();
+        const daysElapsed = Math.floor((now - trialStart) / (1000 * 60 * 60 * 24));
+        const daysLeft = config.trialDays - daysElapsed;
+
+        if (daysLeft <= 0) {
+            showPaywall();
+            DOM.trialBanner.style.display = 'none';
+        } else {
+            hidePaywall();
+            DOM.trialBanner.style.display = 'inline-flex';
+            DOM.trialBanner.textContent = `⏳ Trial: ${daysLeft} hari lagi`;
+            DOM.trialBanner.classList.toggle('urgent', daysLeft <= 3);
+        }
+    }
+
+    // Dipanggil dari init(); menggantikan checkTrialStatus() versi localStorage lama.
+    function checkTrialStatus() {
+        initFirebase();
+    }
+
+    function showPaywall() {
+        DOM.paywallOverlay.classList.add('show');
+    }
+
+    function hidePaywall() {
+        DOM.paywallOverlay.classList.remove('show');
+    }
+
+    function goToPaymentPage() {
+        // Sisipkan UID ke URL pembayaran supaya Cloud Function tahu akun mana yang
+        // harus diaktifkan setelah webhook dari payment gateway masuk.
+        // Contoh: halaman checkout kamu membaca ?uid=xxx lalu mengirimkannya sebagai
+        // custom_field/metadata ke Midtrans/Xendit saat membuat transaksi.
+        const url = fbUid ? `${config.priceUrl}?uid=${encodeURIComponent(fbUid)}` : config.priceUrl;
+        window.open(url, '_blank');
+        showToast('🔗 Halaman pembayaran dibuka di tab baru', 'info');
+    }
+
+    // Ambil konfigurasi harga & link donasi dari Firestore (dokumen publik, read-only
+    // dari sisi client — lihat firestore.rules match /config/{docId}).
+    // Ini memungkinkan kamu mengubah harga/link pembayaran/donasi tanpa deploy ulang app,
+    // cukup edit dokumen `config/app` langsung dari Firebase Console.
+    function fetchRemoteConfig() {
+        fbDb.collection('config').doc('app').get().then(snap => {
+            if (!snap.exists) return;
+            const remote = snap.data();
+
+            if (remote.priceUrl) config.priceUrl = remote.priceUrl;
+            if (remote.donationUrl) config.donationUrl = remote.donationUrl;
+
+            const amountEl = document.getElementById('paywallPriceAmount');
+            const periodEl = document.getElementById('paywallPricePeriod');
+            if (remote.priceDisplay && amountEl) amountEl.textContent = remote.priceDisplay;
+            if (remote.periodDisplay && periodEl) periodEl.textContent = remote.periodDisplay;
+        }).catch(err => {
+            console.warn('Gagal ambil config remote, pakai default lokal:', err);
+        });
+    }
+
+    function goToDonationPage() {
+        window.open(config.donationUrl, '_blank');
+        showToast('❤️ Terima kasih sudah mempertimbangkan untuk donasi!', 'success');
+    }
+
+    // ============================================
+    // SEARCH — cari di dalam sheet aktif + shortcut cari di web
+    // ============================================
+
+    let searchTerm = '';
+
+    function handleSearchInput(e) {
+        searchTerm = e.target.value.trim().toLowerCase();
+        applySearchHighlight();
+    }
+
+    function handleSearchKey(e) {
+        if (e.key === 'Enter') {
+            searchWeb();
+        } else if (e.key === 'Escape') {
+            e.target.value = '';
+            searchTerm = '';
+            applySearchHighlight();
+        }
+    }
+
+    function applySearchHighlight() {
+        if (!DOM.gridBody) return;
+        const rows = DOM.gridBody.querySelectorAll('tr');
+        rows.forEach(tr => {
+            tr.classList.remove('row-match', 'row-dim');
+            if (!searchTerm) return;
+
+            const rowIndex = parseInt(tr.dataset.row, 10);
+            const row = data[rowIndex];
+            if (!row) return;
+
+            const haystack = [row.tanggal, row.waktu, row.entity, row.metricA, row.metricB, row.rasio, row.status, row.saldoSebelumnya, row.saldo]
+                .map(v => (v === undefined || v === null) ? '' : v.toString().toLowerCase())
+                .join(' | ');
+
+            if (haystack.includes(searchTerm)) {
+                tr.classList.add('row-match');
+            } else {
+                tr.classList.add('row-dim');
+            }
+        });
+    }
+
+    function searchWeb() {
+        const q = document.getElementById('searchBox').value.trim();
+        if (!q) {
+            showToast('⚠️ Ketik kata kunci dulu sebelum cari di web', 'error');
+            return;
+        }
+        window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank');
+    }
+
+    // ============================================
+    // EXPORT/IMPORT (v3.0: multi-sheet aware)
+    // ============================================
+
+    // Export ke satu file Excel, tiap sheet aplikasi -> jadi satu worksheet Excel
+    function exportExcel() {
+        syncActiveSheetIntoStore();
+        const wb = XLSX.utils.book_new();
+        const usedNames = new Set();
+
+        sheets.forEach(s => {
+            const exportData = s.data.map(row => ({
+                'Tanggal': row.tanggal,
+                'Waktu': row.waktu,
+                [config.entity]: row.entity,
+                [config.metricA]: row.metricA,
+                [config.metricB]: row.metricB,
+                'Rasio (%)': (row.rasio || 0).toFixed(2),
+                'Status': row.status,
+                'Saldo Sebelumnya': row.saldoSebelumnya || 0,
+                'Saldo': row.saldo || 0
+            }));
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const safeName = sanitizeSheetNameForExcel(s.name, usedNames);
+            XLSX.utils.book_append_sheet(wb, ws, safeName);
+        });
+
+        XLSX.writeFile(wb, `${config.title.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showToast(`📊 ${sheets.length} sheet diexport ke satu file Excel`, 'success');
+    }
+
+    function exportJSON() {
+        syncActiveSheetIntoStore();
+        const exportObj = {
+            config: config,
+            sheets: sheets.map(s => ({
+                id: s.id,
+                name: s.name,
+                data: s.data,
+                formulaHistory: s.formulaHistory
+            })),
+            activeSheetId: activeSheetId,
+            exportedAt: new Date().toISOString(),
+            version: '3.0'
+        };
+
+        const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${config.title.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        showToast('💾 Semua sheet disimpan sebagai JSON', 'success');
+    }
+
+    function importJSON(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const imported = JSON.parse(e.target.result);
+
+                if (imported.config) {
+                    config = imported.config;
+                    document.getElementById('cfgTitle').value = config.title;
+                    document.getElementById('cfgEntity').value = config.entity;
+                    document.getElementById('cfgMetricA').value = config.metricA;
+                    document.getElementById('cfgMetricB').value = config.metricB;
+                    document.getElementById('cfgOptimal').value = config.optimal;
+                    document.getElementById('cfgCritical').value = config.critical;
+                }
+
+                // Format baru (v3.0, multi-sheet)
+                if (Array.isArray(imported.sheets) && imported.sheets.length > 0) {
+                    sheets = imported.sheets.map(s => {
+                        sheetIdCounter++;
+                        const rows = (s.data || []).map(row => {
+                            if (!row._formulas) row._formulas = {};
+                            return row;
+                        });
+                        return {
+                            id: s.id || ('sheet_' + sheetIdCounter),
+                            name: s.name || ('Mitra/Agen ' + sheetIdCounter),
+                            data: rows.length ? rows : [makeEmptyRow()],
+                            formulaHistory: s.formulaHistory || []
+                        };
+                    });
+                    const targetId = imported.activeSheetId && sheets.some(s => s.id === imported.activeSheetId)
+                        ? imported.activeSheetId
+                        : sheets[0].id;
+                    activeSheetId = null;
+                    switchSheet(targetId);
+                }
+                // Format lama (v2.x, single-sheet) — dimuat sebagai satu sheet
+                else if (Array.isArray(imported.data)) {
+                    const legacyRows = imported.data.map(row => {
+                        if (!row._formulas) row._formulas = {};
+                        return row;
+                    });
+                    const legacySheet = createSheet('Imported (v2)');
+                    legacySheet.data = legacyRows.length ? legacyRows : [makeEmptyRow()];
+                    legacySheet.formulaHistory = imported.formulaHistory || [];
+                    sheets = [legacySheet];
+                    activeSheetId = null;
+                    switchSheet(legacySheet.id);
+                }
+
+                if (config.autoCalc) {
+                    recalculateAll();
+                    syncActiveSheetIntoStore();
+                }
+
+                applyConfigLabelsOnly();
+                renderSheetTabs();
+                renderGrid();
+                showToast(`✅ Imported ${sheets.length} sheet`, 'success');
+            } catch (err) {
+                showToast('❌ Error import: ' + err.message, 'error');
+            }
+        };
+        reader.readAsText(file);
+        input.value = '';
+    }
+
+    // Terapkan label kolom & judul dari config tanpa membaca ulang form (dipakai setelah import)
+    function applyConfigLabelsOnly() {
+        document.getElementById('colEntity').textContent = config.entity;
+        document.getElementById('colMetricA').textContent = config.metricA;
+        document.getElementById('colMetricB').textContent = config.metricB;
+        document.querySelector('.ribbon h1').innerHTML = `📊 ${config.title}`;
+    }
+
+    // ============================================
+    // OPTIMIZED STATUS & UTILITIES
+    // ============================================
+
+    function updateStatus() {
+        DOM.recordCount.textContent = `${data.length} records`;
+
+        const optimal = data.filter(r => r.status === 'OPTIMAL').length;
+        const critical = data.filter(r => r.status === 'CRITICAL').length;
+        const balanced = data.filter(r => r.status === 'BALANCED').length;
+
+        DOM.calcStatus.innerHTML = `
+            <span style="color: #86efac;">● ${optimal} Optimal</span>
+            <span style="color: #fde047; margin-left: 8px;">● ${balanced} Balanced</span>
+            <span style="color: #fca5a5; margin-left: 8px;">● ${critical} Critical</span>
+        `;
+
+        const formulaCount = data.reduce((count, row) => count + Object.keys(row._formulas || {}).length, 0);
+        DOM.formulaCount.textContent = `${formulaCount} formulas`;
+    }
+
+    function showToast(message, type = 'info') {
+        while (DOM.toastContainer.children.length >= 3) {
+            DOM.toastContainer.removeChild(DOM.toastContainer.firstChild);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = message;
+        DOM.toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }
+        }, 3000);
+    }
+
+    function setupAutoSave() {
+        if (autoSaveInterval) clearInterval(autoSaveInterval);
+
+        let opacityState = 1;
+        autoSaveInterval = setInterval(() => {
+            const indicator = document.querySelector('.status-item:last-child');
+            if (indicator) {
+                opacityState = opacityState === 1 ? 0.6 : 1;
+                indicator.style.opacity = opacityState;
+            }
+        }, 3000);
+    }
+</script>
+
+</body>
+</html>
