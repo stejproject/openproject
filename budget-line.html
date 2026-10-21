@@ -2891,9 +2891,9 @@ function goToGoogleForm() {
     }
 
     function goToPaymentPage() {    
-        let url = priceUrl;
+        let url = config.priceUrl;
         if (fbUid) {
-            const urlObj = new URL(priceUrl);
+            const urlObj = new URL(config.priceUrl);
             urlObj.searchParams.set('uid', fbUid);
             url = urlObj.toString();
         }
