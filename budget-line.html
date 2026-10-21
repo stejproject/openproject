@@ -2890,12 +2890,13 @@ function goToGoogleForm() {
         DOM.paywallOverlay.classList.remove('show');
     }
 
-    function goToPaymentPage() {
-        // Sisipkan UID ke URL pembayaran supaya Cloud Function tahu akun mana yang
-        // harus diaktifkan setelah webhook dari payment gateway masuk.
-        // Contoh: halaman checkout kamu membaca ?uid=xxx lalu mengirimkannya sebagai
-        // custom_field/metadata ke Midtrans/Xendit saat membuat transaksi.
-        const url = fbUid ? `${config.priceUrl}?uid=${encodeURIComponent(fbUid)}` : config.priceUrl;
+    function goToPaymentPage() {    
+        let url = priceUrl;
+        if (fbUid) {
+            const urlObj = new URL(priceUrl);
+            urlObj.searchParams.set('uid', fbUid);
+            url = urlObj.toString();
+        }
         window.open(url, '_blank');
         showToast('🔗 Halaman pembayaran dibuka di tab baru', 'info');
     }
