@@ -1181,7 +1181,7 @@
     </div>
     <div class="status-right">
         <div class="status-item">💾 Auto-saved</div>
-        <div class="status-item" id="version"> v3.0</div>
+        <div class="status-item" id="version"> v3.1</div>
     </div>
 </div>
 
@@ -1413,8 +1413,10 @@ function goToGoogleForm() {
 </script>
 <script>
     // ============================================
-    // Budget-Line - v3.0
+    // Budget-Line - v3.1
     // Multi-Sheet Edition (tab per sheet, seperti Excel/Google Sheets)
+    // v3.1: Saldo Sebelumnya bisa diedit manual (override) dan memperbarui
+    //       saldo, rasio, status baris tsb serta semua baris di bawahnya.
     // ============================================
 
     // ---- Sheet-level state ----
@@ -1430,6 +1432,12 @@ function goToGoogleForm() {
     let selectedCell = { row: 0, col: 0 };
     let editingCell = null;
     let clipboard = null;
+
+    // Urutan kolom di grid (setelah kolom nomor baris):
+    // 0 tanggal, 1 waktu, 2 entity, 3 metricA, 4 metricB,
+    // 5 saldoSebelumnya (bisa diedit), 6 saldo, 7 rasio, 8 status
+    const COL_KEYS = ['tanggal', 'waktu', 'entity', 'metricA', 'metricB', 'saldoSebelumnya', 'saldo', 'rasio', 'status'];
+    const FIRST_READONLY_COL = 6;
 
     let config = {
         title: 'Budget-Line',
@@ -1704,7 +1712,7 @@ function goToGoogleForm() {
             }
         });
 
-        showToast('✅ Budget-Line v3.0 siap digunakan!', 'success');
+        showToast('✅ Budget-Line v3.1 siap digunakan!', 'success');
     });
 
     window.addEventListener('beforeunload', () => {
@@ -1821,8 +1829,14 @@ function goToGoogleForm() {
                 }
 
                 const hasFormula = row._formulas && row._formulas[colIndex];
-                if (hasFormula && colIndex < 5) {
+                if (hasFormula && colIndex < 6) {
                     td.style.borderLeft = '3px solid #0d9488';
+                }
+
+                // Penanda: Saldo Sebelumnya diisi manual (override)
+                if (cell.key === 'saldoSebelumnya' && row._manualPrev !== undefined && row._manualPrev !== null) {
+                    td.style.borderLeft = '3px solid #f59e0b';
+                    td.title = 'Diisi manual. Kosongkan sel (Delete) untuk kembali otomatis.';
                 }
 
                 const div = document.createElement('div');
@@ -2294,14 +2308,14 @@ function goToGoogleForm() {
         const cellValue = getCellData(row, col);
 
         DOM.formulaBar.value = cachedFormula || cellValue || '';
-        DOM.formulaBar.classList.toggle('readonly', col >= 5);
-        DOM.formulaBar.readOnly = (col >= 5);
+        DOM.formulaBar.classList.toggle('readonly', col >= FIRST_READONLY_COL);
+        DOM.formulaBar.readOnly = (col >= FIRST_READONLY_COL);
 
         hideFormulaHelper();
     }
 
     function startEdit(row, col) {
-        if (col >= 6) {
+        if (col >= FIRST_READONLY_COL) {
             showToast('⚠️ Kolom ini dihitung otomatis', 'info');
             return;
         }
@@ -2311,7 +2325,7 @@ function goToGoogleForm() {
         const currentValue = getCellData(row, col);
 
         td.classList.add('editing');
-        td.innerHTML = `<input type="text" class="cell-input" value="${currentValue || ''}" onblur="finishEdit()" onkeydown="handleEditKey(event)">`;
+        td.innerHTML = `<input type="text" class="cell-input" value="${currentValue === 0 && col === 5 ? '0' : (currentValue || '')}" onblur="finishEdit()" onkeydown="handleEditKey(event)">`;
 
         const input = td.querySelector('input');
         input.focus();
@@ -2368,7 +2382,7 @@ function goToGoogleForm() {
             const col = selectedCell.col;
             const row = selectedCell.row;
 
-            if (col >= 5) {
+            if (col >= FIRST_READONLY_COL) {
                 showToast('⚠️ Tidak dapat mengedit kolom read-only', 'error');
                 e.target.value = getCellData(row, col);
                 return;
@@ -2393,39 +2407,49 @@ function goToGoogleForm() {
 
     function getCellData(row, col) {
         if (row >= data.length || row < 0) return '';
-        const keys = ['tanggal', 'waktu', 'entity', 'metricA', 'metricB', 'rasio', 'status', 'saldoSebelumnya', 'saldo'];
-        return data[row][keys[col]] || '';
+        const v = data[row][COL_KEYS[col]];
+        return (v === undefined || v === null) ? '' : v;
     }
 
     function setCellData(row, col, value) {
-        const keys = ['tanggal', 'waktu', 'entity', 'metricA', 'metricB', 'rasio', 'status', 'saldoSebelumnya', 'saldo'];
-        const key = keys[col];
+        const key = COL_KEYS[col];
 
         if (col === 3 || col === 4) {
             const num = parseFloat(value);
             data[row][key] = isNaN(num) ? 0 : num;
+        } else if (col === 5) {
+            // Saldo Sebelumnya: nilai manual (override).
+            // Kosong = hapus override, kembali ke akumulasi otomatis.
+            if (value === '' || value === null || value === undefined) {
+                delete data[row]._manualPrev;
+            } else {
+                const num = parseFloat(value);
+                data[row]._manualPrev = isNaN(num) ? 0 : num;
+                data[row].saldoSebelumnya = data[row]._manualPrev;
+            }
         } else {
             data[row][key] = value;
         }
     }
 
     // Hitung ulang seluruh sheet dari atas ke bawah (running total global).
-    // Saldo Sebelumnya = total (jumlah) semua saldo baris sebelumnya.
+    // Saldo Sebelumnya = override manual (jika diisi), kalau tidak = saldo baris sebelumnya.
     // Pendapatan efektif = Pendapatan yang diinput + Saldo Sebelumnya.
     // Rasio & status dihitung dari Pendapatan efektif; Saldo = Pendapatan efektif - Biaya.
-    // Saldo baris ini kemudian menjadi bagian dari total untuk baris berikutnya.
+    // Saldo baris ini kemudian menjadi dasar untuk baris berikutnya (kecuali baris itu punya override sendiri).
     function recalculateAll() {
         if (!config.autoCalc) return;
 
-        let totalSaldoSebelumnya = 0;
+        let runningSaldo = 0;
         data.forEach(r => {
-            const prev = totalSaldoSebelumnya;
+            const hasManual = r._manualPrev !== undefined && r._manualPrev !== null;
+            const prev = hasManual ? r._manualPrev : runningSaldo;
             const a = (parseFloat(r.metricA) || 0) + prev;
             const b = parseFloat(r.metricB) || 0;
 
             r.saldoSebelumnya = prev;
             r.saldo = a - b;
-            totalSaldoSebelumnya = r.saldo; // akumulasi total untuk baris berikutnya
+            runningSaldo = r.saldo; // akumulasi untuk baris berikutnya
 
             if (b === 0) {
                 r.rasio = 0;
@@ -2455,6 +2479,7 @@ function goToGoogleForm() {
     function addRowAbove() {
         if (data.length === 0) return addRow();
         data.splice(selectedCell.row, 0, makeEmptyRow());
+        recalculateAll();
         syncActiveSheetIntoStore();
         renderGrid();
         showToast('➕ Baris ditambahkan di atas', 'success');
@@ -2522,7 +2547,7 @@ function goToGoogleForm() {
                 case 'ArrowLeft': moveSelection(0, -1); e.preventDefault(); break;
                 case 'ArrowRight': moveSelection(0, 1); e.preventDefault(); break;
                 case 'Delete':
-                    if (selectedCell.col < 5) {
+                    if (selectedCell.col < FIRST_READONLY_COL) {
                         setCellData(selectedCell.row, selectedCell.col, '');
                         if (data[selectedCell.row]._formulas) {
                             delete data[selectedCell.row]._formulas[selectedCell.col];
@@ -2530,7 +2555,7 @@ function goToGoogleForm() {
                         recalculateRow(selectedCell.row);
                         syncActiveSheetIntoStore();
                         renderGrid();
-                        showToast('🗑️ Cell dikosongkan', 'info');
+                        showToast(selectedCell.col === 5 ? '🔄 Saldo Sebelumnya kembali otomatis' : '🗑️ Cell dikosongkan', 'info');
                     }
                     break;
                 case 'F2': startEdit(selectedCell.row, selectedCell.col); break;
@@ -2539,6 +2564,11 @@ function goToGoogleForm() {
 
         // Ctrl/Cmd+PageUp/PageDown untuk pindah antar sheet, mirip Excel
         document.addEventListener('keydown', (e) => {
+            if (editingCell) return;
+            if (DOM.formulaBar === document.activeElement) return;
+            const tag = (e.target && e.target.tagName) || '';
+            if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
             if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
                 e.preventDefault();
                 copyRow();
@@ -2791,13 +2821,13 @@ function goToGoogleForm() {
     // ============================================
 
     const firebaseConfig = {
-    apiKey: "AIzaSyD8bTAtwpRP2lZwm9lsDGroUQU95n2yvXw",
-    authDomain: "budget-line-app-1b8ea.firebaseapp.com",
-    projectId: "budget-line-app-1b8ea",
-    storageBucket: "budget-line-app-1b8ea.firebasestorage.app",
-    messagingSenderId: "931684859740",
-    appId: "1:931684859740:web:c0d66aeb56c36d96268b99"
-};
+        apiKey: "AIzaSyD8bTAtwpRP2lZwm9lsDGroUQU95n2yvXw",
+        authDomain: "budget-line-app-1b8ea.firebaseapp.com",
+        projectId: "budget-line-app-1b8ea",
+        storageBucket: "budget-line-app-1b8ea.firebasestorage.app",
+        messagingSenderId: "931684859740",
+        appId: "1:931684859740:web:c0d66aeb56c36d96268b99"
+    };
 
     let fbApp = null, fbAuth = null, fbDb = null, fbUid = null, fbLicenseUnsub = null;
 
@@ -2845,23 +2875,23 @@ function goToGoogleForm() {
         if (fbLicenseUnsub) fbLicenseUnsub();
         fbLicenseUnsub = docRef.onSnapshot(snap => {
             if (!snap.exists) return;
-            const data = snap.data();
-            evaluateLicenseState(data, uid);
+            const licData = snap.data();
+            evaluateLicenseState(licData, uid);
         }, err => {
             console.error('Gagal membaca status lisensi:', err);
         });
     }
 
-    function evaluateLicenseState(data, uid) {
+    function evaluateLicenseState(licData, uid) {
         document.getElementById('paywallUserId').textContent = 'ID perangkat: ' + uid.slice(0, 12) + '…';
 
-        if (data.licenseActive === true) {
+        if (licData.licenseActive === true) {
             hidePaywall();
             DOM.trialBanner.style.display = 'none';
             return;
         }
 
-        const trialStart = data.trialStart && data.trialStart.toDate ? data.trialStart.toDate() : new Date();
+        const trialStart = licData.trialStart && licData.trialStart.toDate ? licData.trialStart.toDate() : new Date();
         const now = new Date();
         const daysElapsed = Math.floor((now - trialStart) / (1000 * 60 * 60 * 24));
         const daysLeft = config.trialDays - daysElapsed;
@@ -2986,7 +3016,7 @@ function goToGoogleForm() {
     }
 
     // ============================================
-    // EXPORT/IMPORT (v3.0: multi-sheet aware)
+    // EXPORT/IMPORT (multi-sheet aware)
     // ============================================
 
     // Export ke satu file Excel, tiap sheet aplikasi -> jadi satu worksheet Excel
@@ -3002,10 +3032,10 @@ function goToGoogleForm() {
                 [config.entity]: row.entity,
                 [config.metricA]: row.metricA,
                 [config.metricB]: row.metricB,
-                'Rasio (%)': (row.rasio || 0).toFixed(2),
-                'Status': row.status,
                 'Saldo Sebelumnya': row.saldoSebelumnya || 0,
-                'Saldo': row.saldo || 0
+                'Saldo': row.saldo || 0,
+                'Rasio (%)': (row.rasio || 0).toFixed(2),
+                'Status': row.status
             }));
             const ws = XLSX.utils.json_to_sheet(exportData);
             const safeName = sanitizeSheetNameForExcel(s.name, usedNames);
@@ -3028,7 +3058,7 @@ function goToGoogleForm() {
             })),
             activeSheetId: activeSheetId,
             exportedAt: new Date().toISOString(),
-            version: '3.0'
+            version: '3.1'
         };
 
         const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
@@ -3058,7 +3088,7 @@ function goToGoogleForm() {
                     document.getElementById('cfgCritical').value = config.critical;
                 }
 
-                // Format baru (v3.0, multi-sheet)
+                // Format v3.x (multi-sheet)
                 if (Array.isArray(imported.sheets) && imported.sheets.length > 0) {
                     sheets = imported.sheets.map(s => {
                         sheetIdCounter++;
