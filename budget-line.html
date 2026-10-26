@@ -988,76 +988,6 @@
             color: #991b1b;
         }
 
-        /* Rekap per Entitas Panel (terinspirasi rekap buku besar per akun a la Zahir) */
-        .rekap-panel {
-            position: fixed;
-            right: 20px;
-            bottom: 70px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            padding: 18px;
-            z-index: 100;
-            width: 420px;
-            max-height: 60vh;
-            display: none;
-            flex-direction: column;
-        }
-
-        .rekap-panel.show {
-            display: flex;
-        }
-
-        .rekap-panel h4 {
-            font-size: 13px;
-            color: #0f766e;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-            font-weight: 700;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .rekap-table-wrap {
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .rekap-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-        }
-
-        .rekap-table th {
-            text-align: left;
-            padding: 6px 8px;
-            background: #f0fdfa;
-            color: #0f766e;
-            position: sticky;
-            top: 0;
-            font-weight: 700;
-            border-bottom: 2px solid #ccfbf1;
-        }
-
-        .rekap-table td {
-            padding: 6px 8px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .rekap-table td.num {
-            text-align: right;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .rekap-table tr.rekap-total td {
-            font-weight: 700;
-            background: #f8fafc;
-            border-top: 2px solid #cbd5e1;
-        }
-
         /* Deteksi Kecurangan */
         .fraud-panel {
             position: fixed;
@@ -1068,7 +998,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             padding: 18px;
             z-index: 101;
-            width: 460px;
+            width: 540px;
             max-width: 94vw;
             max-height: 70vh;
             display: none;
@@ -1150,6 +1080,23 @@
         .fraud-verdict.bad { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
         .fraud-verdict-title { font-weight: 700; font-size: 14px; }
 
+        .step-card { border: 1px solid #e2e8f0; border-left: 4px solid #94a3b8; border-radius: 8px; margin-bottom: 8px; background: #fff; }
+        .step-card.ok { border-left-color: #16a34a; }
+        .step-card.warn { border-left-color: #f59e0b; background: #fffbeb; }
+        .step-card.bad { border-left-color: #dc2626; background: #fef2f2; }
+        .step-card.info { border-left-color: #0ea5e9; }
+        .step-card summary { cursor: pointer; padding: 8px 10px; display: flex; gap: 8px; align-items: baseline; font-size: 12px; list-style: none; }
+        .step-card summary::-webkit-details-marker { display: none; }
+        .step-title { font-weight: 700; color: #1e293b; }
+        .step-sum { color: #64748b; margin-left: auto; text-align: right; }
+        .step-body { padding: 4px 10px 10px; }
+        .step-body .tb-table { margin-bottom: 8px; }
+        .lock-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
+        .lock-row input[type=date] { padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; }
+        .lock-btn { padding: 6px 10px; border: none; border-radius: 6px; background: #0f766e; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .lock-btn.secondary { background: #e2e8f0; color: #475569; }
+        .sheet-grid tr.row-locked td { background: #f1f5f9; }
+
         .ribbon-btn.warn {
             background: rgba(245,158,11,0.5);
             border-color: rgba(253,230,138,0.9);
@@ -1228,8 +1175,7 @@
     <div class="ribbon-group">
         <button class="ribbon-btn" onclick="toggleConfig()">⚙️ Konfig</button>
         <button class="ribbon-btn" onclick="toggleQuickStats()">📈 Statistik</button>
-        <button class="ribbon-btn" onclick="toggleRekap()">📑 Rekap Entitas</button>
-        <button class="ribbon-btn" id="fraudBtn" onclick="toggleFraud()" title="Cek anomali dan jejak perubahan di sheet aktif">🕵️ Cek Fraud</button>
+        <button class="ribbon-btn" id="fraudBtn" onclick="toggleFraud()" title="Periksa pembukuan: siklus akuntansi, kejanggalan, dan jejak perubahan">🛡️ Pemeriksaan</button>
     </div>
 
     <div class="ribbon-group">
@@ -1285,7 +1231,7 @@
     </div>
     <div class="status-right">
         <div class="status-item">💾 Auto-saved</div>
-        <div class="status-item" id="version"> v3.3</div>
+        <div class="status-item" id="version"> v3.4</div>
     </div>
 </div>
 
@@ -1387,39 +1333,17 @@
     </div>
 </div>
 
-<!-- Rekap per Entitas Panel (mirip rekap buku besar per akun di Zahir) -->
-<div class="rekap-panel" id="rekapPanel">
-    <h4>
-        <span>📑 Rekap per Entitas — <span id="rekapSheetName">Mitra/Agen 1</span></span>
-        <button class="close-btn" style="width:24px;height:24px;font-size:16px;" onclick="toggleRekap()">×</button>
-    </h4>
-    <div class="rekap-table-wrap">
-        <table class="rekap-table">
-            <thead>
-                <tr>
-                    <th id="rekapColEntity">Entitas</th>
-                    <th id="rekapColA">Pendapatan</th>
-                    <th id="rekapColB">Biaya</th>
-                    <th>Rasio Rata²</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="rekapBody"></tbody>
-        </table>
-    </div>
-</div>
-
 <!-- Panel Deteksi Kecurangan -->
 <div class="fraud-panel" id="fraudPanel">
     <h4>
-        <span>🕵️ Deteksi Kecurangan — <span id="fraudSheetName"></span></span>
+        <span>🛡️ Pemeriksaan Pembukuan — <span id="fraudSheetName"></span></span>
         <button class="close-btn" style="width:24px;height:24px;font-size:16px;background:#e2e8f0;color:#475569;" onclick="toggleFraud()">×</button>
     </h4>
     <div class="fraud-verdict ok" id="fraudVerdict"></div>
     <div class="fraud-tabs">
-        <button class="fraud-tab active" id="fraudTabFindings" onclick="setFraudView('findings')">Temuan</button>
+        <button class="fraud-tab active" id="fraudTabCycle" onclick="setFraudView('cycle')">Siklus</button>
+        <button class="fraud-tab" id="fraudTabFindings" onclick="setFraudView('findings')">Temuan</button>
         <button class="fraud-tab" id="fraudTabAudit" onclick="setFraudView('audit')">Jejak Perubahan</button>
-        <button class="fraud-tab" id="fraudTabLedger" onclick="setFraudView('ledger')">Neraca Saldo</button>
     </div>
     <div class="fraud-list" id="fraudList"></div>
     <div class="fraud-note">Hasil otomatis ini adalah indikasi, bukan putusan bahwa terjadi atau tidak terjadinya kecurangan/korupsi. Tetap cocokkan dengan bukti asli (nota, mutasi bank). Segel dan jejak perubahan melindungi dari edit file biasa, bukan dari pihak yang paham cara memalsukannya.</div>
@@ -1458,7 +1382,7 @@
 <div class="paywall-overlay" id="paywallOverlay">
     <div class="paywall-card">
         <h2>⏳ Masa Trial Sudah Berakhir</h2>
-        <p>Trial 14 hari Budget-Line kamu sudah habis. Lanjutkan berlangganan untuk terus pakai semua fitur (multi-sheet, export Excel/JSON, rekap otomatis).</p>
+        <p>Trial 14 hari Budget-Line kamu sudah habis. Lanjutkan berlangganan untuk terus pakai semua fitur (multi-sheet, export Excel/JSON, pemeriksaan pembukuan otomatis).</p>
 
         <div class="paywall-pricing">
             <div class="price"><span id="paywallPriceAmount">Rp49.000</span> <span id="paywallPricePeriod">/ bulan</span></div>
@@ -1542,7 +1466,7 @@ function goToGoogleForm() {
 </script>
 <script>
     // ============================================
-    // Budget-Line - v3.3
+    // Budget-Line - v3.4
     // Multi-Sheet Edition (tab per sheet, seperti Excel/Google Sheets)
     // v3.1: Saldo Sebelumnya bisa diedit manual (override) dan memperbarui
     //       saldo, rasio, status baris tsb serta semua baris di bawahnya.
@@ -1598,7 +1522,6 @@ function goToGoogleForm() {
         contextMenu: null,
         sheetTabsBar: null,
         activeSheetLabel: null,
-        rekapPanel: null,
         paywallOverlay: null,
         fraudPanel: null,
         trialBanner: null
@@ -1657,6 +1580,8 @@ function goToGoogleForm() {
             formulaHistory: [],
             auditLog: [],
             integrityIssues: [],
+            lockedUntil: '',
+            lockOverrides: [],
             seal: ''
         };
     }
@@ -1671,7 +1596,7 @@ function goToGoogleForm() {
         if (s) {
             s.data = data;
             s.formulaHistory = formulaHistory;
-            s.seal = stateHash(data);
+            s.seal = stateHash(data, s);
         }
     }
 
@@ -1690,8 +1615,8 @@ function goToGoogleForm() {
         updateCellReference();
         DOM.formulaBar.value = '';
         DOM.activeSheetLabel.textContent = target.name;
-        if (DOM.rekapPanel.classList.contains('show')) {
-            updateRekap();
+        if (DOM.fraudPanel && DOM.fraudPanel.classList.contains('show')) {
+            updateFraudPanel();
         }
     }
 
@@ -1803,7 +1728,6 @@ function goToGoogleForm() {
         DOM.contextMenu = document.getElementById('contextMenu');
         DOM.sheetTabsBar = document.getElementById('sheetTabsBar');
         DOM.activeSheetLabel = document.getElementById('activeSheetLabel');
-        DOM.rekapPanel = document.getElementById('rekapPanel');
         DOM.paywallOverlay = document.getElementById('paywallOverlay');
         DOM.trialBanner = document.getElementById('trialBanner');
         DOM.fraudPanel = document.getElementById('fraudPanel');
@@ -1849,7 +1773,7 @@ function goToGoogleForm() {
             }
         });
 
-        showToast('✅ Budget-Line v3.3 siap digunakan!', 'success');
+        showToast('✅ Budget-Line v3.4 siap digunakan!', 'success');
     });
 
     window.addEventListener('beforeunload', () => {
@@ -1920,6 +1844,11 @@ function goToGoogleForm() {
                 deleteSelectedRow();
             };
             
+            if (isRowLocked(rowIndex)) {
+                tr.classList.add('row-locked');
+                num.textContent = '🔒' + (rowIndex + 1);
+                th.title = 'Periode terkunci. Mengubah baris ini wajib disertai alasan.';
+            }
             th.append(num, addBtn, delBtn);
             tr.appendChild(th);
 
@@ -2005,9 +1934,6 @@ function goToGoogleForm() {
 
         if (DOM.quickStats.classList.contains('show')) {
             updateQuickStats();
-        }
-        if (DOM.rekapPanel.classList.contains('show')) {
-            updateRekap();
         }
     }
 
@@ -2478,10 +2404,13 @@ function goToGoogleForm() {
 
         const value = input.value;
         const { row, col } = editingCell;
+        editingCell = null; // cegah pemanggilan ganda (mis. blur saat dialog alasan tampil)
 
-        processCellValue(row, col, value);
+        if (processCellValue(row, col, value) === false) {
+            renderGrid();
+            return;
+        }
 
-        editingCell = null;
         recalculateRow(row);
         syncActiveSheetIntoStore();
         renderGrid();
@@ -2490,6 +2419,9 @@ function goToGoogleForm() {
 
     function processCellValue(row, col, value) {
         const oldVal = getCellData(row, col);
+        if (String(oldVal) !== String(value) && !guardLocked(row, `ubah ${auditColName(col)}`, col === 0 ? value : null)) {
+            return false;
+        }
         if (String(oldVal) !== String(value)) {
             logAudit('Ubah sel', row, `${auditColName(col)}: "${oldVal}" → "${value}"`);
         }
@@ -2502,6 +2434,7 @@ function goToGoogleForm() {
             setCellData(row, col, value);
             if (data[row]._formulas) delete data[row]._formulas[col];
         }
+        return true;
     }
 
     function handleEditKey(e) {
@@ -2530,7 +2463,10 @@ function goToGoogleForm() {
                 return;
             }
 
-            processCellValue(row, col, value);
+            if (processCellValue(row, col, value) === false) {
+                e.target.value = getCellData(row, col);
+                return;
+            }
             recalculateRow(row);
             syncActiveSheetIntoStore();
             renderGrid();
@@ -2642,6 +2578,7 @@ function goToGoogleForm() {
             showToast('⚠️ Minimal satu baris harus tersisa', 'error');
             return;
         }
+        if (!guardLocked(selectedCell.row, 'hapus baris')) return;
         {
             const gone = data[selectedCell.row];
             logAudit('Hapus baris', selectedCell.row, `"${gone.entity || '(tanpa keterangan)'}" ${config.metricA}=${gone.metricA}, ${config.metricB}=${gone.metricB}`);
@@ -2674,6 +2611,8 @@ function goToGoogleForm() {
     function clearAllData() {
         if (!confirm('⚠️ Yakin ingin menghapus SEMUA data di sheet ini? (sheet lain tidak terpengaruh)')) return;
 
+        const lockedAt = data.findIndex((r, i) => isRowLocked(i));
+        if (lockedAt >= 0 && !guardLocked(lockedAt, 'kosongkan seluruh sheet')) return;
         logAudit('Kosongkan sheet', 0, `${data.length} baris dihapus`);
         data = [makeEmptyRow()];
         selectedCell = { row: 0, col: 0 };
@@ -2698,6 +2637,7 @@ function goToGoogleForm() {
                 case 'ArrowRight': moveSelection(0, 1); e.preventDefault(); break;
                 case 'Delete':
                     if (selectedCell.col < FIRST_READONLY_COL) {
+                        if (!guardLocked(selectedCell.row, `kosongkan ${auditColName(selectedCell.col)}`)) break;
                         logAudit('Kosongkan sel', selectedCell.row, `${auditColName(selectedCell.col)}: "${getCellData(selectedCell.row, selectedCell.col)}" dikosongkan`);
                         setCellData(selectedCell.row, selectedCell.col, '');
                         if (data[selectedCell.row]._formulas) {
@@ -2871,86 +2811,6 @@ function goToGoogleForm() {
         document.getElementById('statTotalB').textContent = totalB.toLocaleString();
         document.getElementById('statAvgRatio').textContent = avgRatio.toFixed(2) + '%';
         document.getElementById('statOptimal').textContent = optimalCount;
-    }
-
-    // ============================================
-    // REKAP PER ENTITAS (terinspirasi rekap buku besar per akun a la Zahir)
-    // ============================================
-
-    function toggleRekap() {
-        DOM.rekapPanel.classList.toggle('show');
-        if (DOM.rekapPanel.classList.contains('show')) {
-            updateRekap();
-        }
-    }
-
-    function updateRekap() {
-        const s = getActiveSheet();
-        document.getElementById('rekapSheetName').textContent = s ? s.name : '';
-        document.getElementById('rekapColEntity').textContent = config.entity;
-        document.getElementById('rekapColA').textContent = config.metricA;
-        document.getElementById('rekapColB').textContent = config.metricB;
-
-        // Kelompokkan baris berdasarkan nama entitas (mirip rekap per akun)
-        const groups = {};
-        data.forEach(row => {
-            const key = String(row.entity == null ? '' : row.entity).trim() || '(Tanpa Nama)';
-            if (!groups[key]) {
-                groups[key] = { totalA: 0, totalB: 0, ratios: [], statuses: {} };
-            }
-            groups[key].totalA += parseFloat(row.metricA) || 0;
-            groups[key].totalB += parseFloat(row.metricB) || 0;
-            groups[key].ratios.push(parseFloat(row.rasio) || 0);
-            const st = row.status || 'BALANCED';
-            groups[key].statuses[st] = (groups[key].statuses[st] || 0) + 1;
-        });
-
-        const rekapBody = document.getElementById('rekapBody');
-        rekapBody.innerHTML = '';
-
-        const entityNames = Object.keys(groups).sort((a, b) => a.localeCompare(b));
-        let grandA = 0, grandB = 0, grandRatioSum = 0, grandRatioCount = 0;
-
-        entityNames.forEach(name => {
-            const g = groups[name];
-            const avgRatio = g.ratios.length ? g.ratios.reduce((a, b) => a + b, 0) / g.ratios.length : 0;
-            // status dominan = status dengan jumlah kemunculan terbanyak untuk entitas ini
-            let dominantStatus = 'BALANCED', maxCount = -1;
-            Object.entries(g.statuses).forEach(([st, count]) => {
-                if (count > maxCount) { maxCount = count; dominantStatus = st; }
-            });
-
-            grandA += g.totalA;
-            grandB += g.totalB;
-            grandRatioSum += avgRatio;
-            grandRatioCount++;
-
-            const badgeClass = dominantStatus === 'OPTIMAL' ? 'status-optimal' :
-                              dominantStatus === 'CRITICAL' ? 'status-critical' :
-                              dominantStatus === 'ERROR' ? 'status-error' : 'status-balanced';
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${name}</td>
-                <td class="num">${g.totalA.toLocaleString()}</td>
-                <td class="num">${g.totalB.toLocaleString()}</td>
-                <td class="num">${avgRatio.toFixed(2)}%</td>
-                <td><span class="status-badge ${badgeClass}">${dominantStatus}</span></td>
-            `;
-            rekapBody.appendChild(tr);
-        });
-
-        const totalTr = document.createElement('tr');
-        totalTr.className = 'rekap-total';
-        const grandAvgRatio = grandRatioCount ? grandRatioSum / grandRatioCount : 0;
-        totalTr.innerHTML = `
-            <td>TOTAL (${entityNames.length} entitas)</td>
-            <td class="num">${grandA.toLocaleString()}</td>
-            <td class="num">${grandB.toLocaleString()}</td>
-            <td class="num">${grandAvgRatio.toFixed(2)}%</td>
-            <td></td>
-        `;
-        rekapBody.appendChild(totalTr);
     }
 
     // ============================================
@@ -3213,11 +3073,13 @@ function goToGoogleForm() {
                 auditSeq: s.auditSeq || 0,
                 auditHead: s.auditHead || '',
                 seal: s.seal || '',
+                lockedUntil: s.lockedUntil || '',
+                lockOverrides: s.lockOverrides || [],
                 integrityIssues: s.integrityIssues || []
             })),
             activeSheetId: activeSheetId,
             exportedAt: new Date().toISOString(),
-            version: '3.3'
+            version: '3.4'
         };
 
         const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
@@ -3266,11 +3128,13 @@ function goToGoogleForm() {
                             auditSeq: s.auditSeq || 0,
                             auditHead: s.auditHead || '',
                             seal: s.seal || '',
+                            lockedUntil: s.lockedUntil || '',
+                            lockOverrides: Array.isArray(s.lockOverrides) ? s.lockOverrides : [],
                             integrityIssues: Array.isArray(s.integrityIssues) ? s.integrityIssues : []
                         };
                     });
                     // Verifikasi keaslian SEBELUM hitung ulang apa pun (hitung ulang bisa menimpa angka yang diubah)
-                    verifyImportedSheets(parseFloat(imported.version) >= 3.3);
+                    verifyImportedSheets(parseFloat(imported.version) || 0);
                     const targetId = imported.activeSheetId && sheets.some(s => s.id === imported.activeSheetId)
                         ? imported.activeSheetId
                         : sheets[0].id;
@@ -3329,7 +3193,7 @@ function goToGoogleForm() {
     // Semua hasil adalah INDIKASI untuk diperiksa, bukan bukti hukum.
     // ============================================
 
-    let fraudView = 'findings';
+    let fraudView = 'cycle';
 
     // ---------- SHA-256 sinkron (tanpa dependensi) ----------
     const SHA_K = [
@@ -3377,7 +3241,16 @@ function goToGoogleForm() {
     }
 
     // Segel isi data satu sheet (semua kolom yang tersimpan)
-    function stateHash(rows) {
+    function stateHash(rows, s) {
+        return sha256(JSON.stringify([
+            stateHashRows(rows),
+            s ? (s.lockedUntil || '') : '',
+            s && s.lockOverrides ? s.lockOverrides.length : 0
+        ]));
+    }
+
+    // Format segel lama (v3.3) dipakai hanya untuk memverifikasi file lama
+    function stateHashRows(rows) {
         return sha256(JSON.stringify(rows.map(r => [
             r.tanggal, r.waktu, r.entity, r.metricA, r.metricB,
             r._manualPrev == null ? null : r._manualPrev,
@@ -3461,7 +3334,9 @@ function goToGoogleForm() {
     }
 
     // Dipanggil saat file JSON dibuka, SEBELUM hitung ulang apa pun.
-    function verifyImportedSheets(strict) {
+    function verifyImportedSheets(ver) {
+        const strict = ver >= 3.3;
+        const legacyFormat = ver < 3.4;
         sheets.forEach(s => {
             if (!s.integrityIssues) s.integrityIssues = [];
             const issues = [];
@@ -3469,7 +3344,8 @@ function goToGoogleForm() {
             if (!ch.ok) issues.push(ch.reason);
             if (strict && ch.count > 0 && !ch.hashed) issues.push('Jejak perubahan kehilangan tanda keaslian (hash) pada file versi baru. Kemungkinan dihapus di luar aplikasi.');
             if (s.seal) {
-                if (stateHash(s.data) !== s.seal) {
+                const cur = legacyFormat ? stateHashRows(s.data) : stateHash(s.data, s);
+                if (cur !== s.seal) {
                     issues.push('Angka di sheet ini berubah di luar aplikasi sejak terakhir disimpan (mis. diedit langsung di file JSON).');
                 }
             } else if (strict) {
@@ -3480,7 +3356,7 @@ function goToGoogleForm() {
                 s.integrityIssues.push({ t: new Date().toISOString(), msg: msg });
                 logAuditTo(s, 'PERINGATAN INTEGRITAS', 0, msg);
             });
-            s.seal = stateHash(s.data);
+            s.seal = stateHash(s.data, s);
         });
     }
 
@@ -3542,12 +3418,21 @@ function goToGoogleForm() {
         if (sheet && Array.isArray(sheet.integrityIssues)) {
             sheet.integrityIssues.forEach(it => add(-1, 'high', 'Data diubah di luar aplikasi', it.msg));
         }
+        if (sheet && Array.isArray(sheet.lockOverrides)) {
+            sheet.lockOverrides.forEach(o => {
+                add(-1, o.closed ? 'low' : 'med', 'Perubahan di periode terkunci',
+                    `${o.row ? 'Baris ' + o.row + (o.tanggal ? ' (' + o.tanggal + ') ' : ' ') : ''}${o.action}. Alasan: "${o.reason}".`);
+            });
+        }
         if (full && sheet) {
             const ch = verifyChain(sheet);
             if (!ch.ok) add(-1, 'high', 'Jejak perubahan rusak', ch.reason);
         }
 
         const ledger = buildLedger(rows);
+        if (!ledger.balanced) {
+            add(-1, 'high', 'Jurnal tidak seimbang', `Total debit ${fmtNum(ledger.totalD)} tidak sama dengan total kredit ${fmtNum(ledger.totalC)}.`);
+        }
         const totalIncome = rows.reduce((sum, r) => sum + Math.max(parseFloat(r.metricA) || 0, 0), 0);
 
         // Median pengeluaran (butuh minimal 5 data pengeluaran)
@@ -3643,9 +3528,22 @@ function goToGoogleForm() {
         });
 
         const order = { high: 0, med: 1, low: 2 };
+        findings.forEach(f => { f.step = STEP_BY_TITLE[f.title] || 1; });
         findings.sort((x, y) => (order[x.level] - order[y.level]) || (x.row - y.row));
         return findings;
     }
+
+    // Langkah siklus akuntansi tempat tiap jenis temuan ditampilkan
+    const STEP_BY_TITLE = {
+        'Jurnal tidak seimbang': 2,
+        'Saldo tabel tidak cocok dengan buku besar': 3,
+        'Saldo awal diisi manual': 5,
+        'Saldo diubah manual tanpa transaksi': 5,
+        'Saldo negatif': 6,
+        'Data diubah di luar aplikasi': 7,
+        'Jejak perubahan rusak': 7,
+        'Perubahan di periode terkunci': 7
+    };
 
     // ---------- Putusan sederhana untuk pengguna ----------
     function computeVerdict(full) {
@@ -3699,7 +3597,7 @@ function goToGoogleForm() {
                 btn.textContent = `⚠️ Perlu Diperiksa (${verdict.med})`;
                 btn.classList.add('warn');
             } else {
-                btn.textContent = '✅ Cek Fraud';
+                btn.textContent = '✅ Pemeriksaan';
             }
         }
 
@@ -3761,127 +3659,394 @@ function goToGoogleForm() {
         }
     }
 
+    // ---------- Penguncian periode ----------
+    const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+    function isRowLocked(i, rows) {
+        const s = getActiveSheet();
+        if (!s || !s.lockedUntil) return false;
+        const r = (rows || data)[i];
+        return !!r && DATE_RE.test(r.tanggal || '') && r.tanggal <= s.lockedUntil;
+    }
+
+    // Mengembalikan true bila perubahan boleh lanjut. Di periode terkunci wajib isi alasan.
+    function guardLocked(i, action, newDate) {
+        const s = getActiveSheet();
+        if (!s || !s.lockedUntil) return true;
+        const intoLocked = newDate && DATE_RE.test(String(newDate)) && String(newDate) <= s.lockedUntil;
+        if (!isRowLocked(i) && !intoLocked) return true;
+
+        const reason = prompt(
+            `Baris ${i + 1} berada di periode yang sudah dikunci (sampai ${s.lockedUntil}).\n` +
+            `Isi alasan perubahan. Perubahan ini akan tercatat dan ditandai untuk diperiksa:`
+        );
+        if (!reason || !reason.trim()) {
+            showToast('🔒 Perubahan dibatalkan: periode terkunci dan alasan kosong', 'error');
+            return false;
+        }
+        const r = data[i];
+        if (!s.lockOverrides) s.lockOverrides = [];
+        s.lockOverrides.push({
+            t: new Date().toISOString(), row: i + 1, tanggal: r ? r.tanggal : '',
+            action: action, reason: reason.trim(), closed: false
+        });
+        logAuditTo(s, 'Ubah periode terkunci', i, `${action}. Alasan: ${reason.trim()}`);
+        return true;
+    }
+
+    function lockPeriod() {
+        const s = getActiveSheet();
+        const input = document.getElementById('lockDateInput');
+        if (!s || !input) return;
+        const d = input.value;
+        const today = new Date().toISOString().split('T')[0];
+        if (!DATE_RE.test(d)) return showToast('⚠️ Pilih tanggal penutupan dulu', 'error');
+        if (d > today) return showToast('⚠️ Tanggal penutupan tidak boleh di masa depan', 'error');
+        if (s.lockedUntil && d <= s.lockedUntil) return showToast(`⚠️ Periode sudah dikunci sampai ${s.lockedUntil}. Pilih tanggal yang lebih baru`, 'error');
+        if (!confirm(`Kunci semua transaksi sampai ${d}? Perubahan sesudahnya wajib disertai alasan dan akan ditandai.`)) return;
+
+        (s.lockOverrides || []).forEach(o => { o.closed = true; });
+        s.lockedUntil = d;
+        logAuditTo(s, 'Kunci periode', 0, `Periode dikunci sampai ${d}`);
+        syncActiveSheetIntoStore();
+        renderGrid();
+        updateFraudPanel();
+        showToast(`🔒 Periode dikunci sampai ${d}`, 'success');
+    }
+
+    function unlockPeriod() {
+        const s = getActiveSheet();
+        if (!s || !s.lockedUntil) return;
+        const reason = prompt(`Buka kunci periode (sebelumnya sampai ${s.lockedUntil}).\nIsi alasan. Ini akan tercatat dan ditandai untuk diperiksa:`);
+        if (!reason || !reason.trim()) return showToast('🔒 Dibatalkan: alasan wajib diisi', 'error');
+        if (!s.lockOverrides) s.lockOverrides = [];
+        s.lockOverrides.push({
+            t: new Date().toISOString(), row: 0, tanggal: '',
+            action: `membuka kunci periode (sebelumnya sampai ${s.lockedUntil})`,
+            reason: reason.trim(), closed: false
+        });
+        logAuditTo(s, 'Buka kunci periode', 0, `Sebelumnya sampai ${s.lockedUntil}. Alasan: ${reason.trim()}`);
+        s.lockedUntil = '';
+        syncActiveSheetIntoStore();
+        renderGrid();
+        updateFraudPanel();
+        showToast('🔓 Kunci periode dibuka dan tercatat', 'info');
+    }
+
+    // ---------- Laporan dari buku besar ----------
+    function acctNet(L, name, side) {
+        const a = L.accts[name];
+        if (!a) return 0;
+        return side === 'debit' ? a.d - a.c : a.c - a.d;
+    }
+
+    function financialReport(L) {
+        const pendapatan = acctNet(L, 'Pendapatan', 'credit');
+        const beban = acctNet(L, 'Beban', 'debit');
+        const laba = pendapatan - beban;
+        const modalAwal = acctNet(L, 'Saldo Awal', 'credit');
+        const penyesuaian = acctNet(L, 'Penyesuaian Saldo (tanpa bukti)', 'credit');
+        const kas = L.kasAfter.length ? L.kasAfter[L.kasAfter.length - 1] : 0;
+        const ekuitas = modalAwal + penyesuaian + laba;
+        return { pendapatan, beban, laba, modalAwal, penyesuaian, kas, ekuitas, seimbang: Math.abs(kas - ekuitas) < 0.005 };
+    }
+
+    function groupSummary(rows) {
+        const groups = {};
+        rows.forEach(r => {
+            const key = String(r.entity == null ? '' : r.entity).trim() || '(Tanpa Nama)';
+            const g = groups[key] = groups[key] || { a: 0, b: 0 };
+            g.a += parseFloat(r.metricA) || 0;
+            g.b += parseFloat(r.metricB) || 0;
+        });
+        return Object.keys(groups)
+            .map(k => ({ name: k, a: groups[k].a, b: groups[k].b }))
+            .sort((x, y) => (y.b - x.b) || x.name.localeCompare(y.name));
+    }
+
+    // ---------- Panel Pemeriksaan (siklus akuntansi) ----------
+    const fraudOpen = new Set();
+
+    function mkTable(heads, rows) {
+        const t = document.createElement('table');
+        t.className = 'tb-table';
+        const thead = document.createElement('thead');
+        const hr = document.createElement('tr');
+        heads.forEach(h => { const th = document.createElement('th'); th.textContent = h; hr.appendChild(th); });
+        thead.appendChild(hr);
+        t.appendChild(thead);
+        const tb = document.createElement('tbody');
+        rows.forEach(r => {
+            const tr = document.createElement('tr');
+            if (r.total) tr.className = 'tb-total';
+            r.cells.forEach((c, idx) => {
+                const td = document.createElement('td');
+                td.textContent = c;
+                if (idx > 0) td.className = 'num';
+                tr.appendChild(td);
+            });
+            tb.appendChild(tr);
+        });
+        t.appendChild(tb);
+        return t;
+    }
+
+    function mkLine(text, cls) {
+        const el = document.createElement('div');
+        el.className = 'fraud-item ' + (cls || '');
+        el.style.cursor = 'default';
+        el.textContent = text;
+        return el;
+    }
+
+    function appendFindingItems(container, items) {
+        const levelLabel = { high: 'TINGGI', med: 'SEDANG', low: 'INFO' };
+        items.forEach(f => {
+            const el = document.createElement('div');
+            el.className = 'fraud-item ' + f.level;
+            const t = document.createElement('div');
+            t.className = 'fraud-item-title';
+            t.textContent = `[${levelLabel[f.level]}] ${f.row >= 0 ? 'Baris ' + (f.row + 1) : 'Seluruh sheet'}: ${f.title}`;
+            const m = document.createElement('div');
+            m.className = 'fraud-item-msg';
+            m.textContent = f.msg;
+            el.append(t, m);
+            if (f.row >= 0) el.onclick = () => jumpToRow(f.row);
+            else el.style.cursor = 'default';
+            container.appendChild(el);
+        });
+    }
+
+    function stepLevel(findings, n, neutral) {
+        const f = findings.filter(x => x.step === n);
+        if (f.some(x => x.level === 'high')) return 'bad';
+        if (f.some(x => x.level === 'med')) return 'warn';
+        return neutral || 'ok';
+    }
+
+    function renderCycle(list, s, findings) {
+        const L = buildLedger(data);
+        const rep = financialReport(L);
+        const tx = data.filter(r => (parseFloat(r.metricA) || 0) || (parseFloat(r.metricB) || 0)).length;
+        const byStep = n => findings.filter(f => f.step === n);
+        const count = n => byStep(n).filter(f => f.level !== 'low').length;
+        const lastSaldo = data.length ? (parseFloat(data[data.length - 1].saldo) || 0) : 0;
+        const adjCount = data.filter((r, i) => i > 0 && r._manualPrev !== undefined && r._manualPrev !== null
+            && Math.abs((parseFloat(r._manualPrev) || 0) - L.kasAfter[i - 1]) > 0.005).length;
+        const locked = s && s.lockedUntil;
+
+        const steps = [
+            {
+                n: 1, title: 'Bukti & pencatatan',
+                level: stepLevel(findings, 1),
+                sum: count(1) ? `${count(1)} kejanggalan pada catatan` : 'Keterangan, nominal, dan tanggal wajar',
+                render: body => {
+                    body.appendChild(mkLine('Memeriksa keterangan kosong, nominal negatif, duplikat, pengeluaran tidak wajar, batas persetujuan, dan tanggal.', ''));
+                    appendFindingItems(body, byStep(1));
+                }
+            },
+            {
+                n: 2, title: 'Jurnal (otomatis)',
+                level: stepLevel(findings, 2),
+                sum: `${L.journals.length} jurnal dibuat dari ${tx} transaksi`,
+                render: body => {
+                    body.appendChild(mkLine('Setiap transaksi single entry dijurnal otomatis. Pemasukan: Debit Kas, Kredit Pendapatan. Pengeluaran: Debit Beban, Kredit Kas.', ''));
+                    body.appendChild(mkLine(L.balanced ? '✅ Semua jurnal seimbang.' : '❌ Ada jurnal yang tidak seimbang.', L.balanced ? '' : 'high'));
+                    appendFindingItems(body, byStep(2));
+                }
+            },
+            {
+                n: 3, title: 'Buku besar & rekonsiliasi',
+                level: stepLevel(findings, 3),
+                sum: count(3) ? `Saldo tabel tidak cocok pada ${count(3)} baris` : `Kas buku besar ${fmtNum(rep.kas)} = saldo tabel`,
+                render: body => {
+                    body.appendChild(mkLine(`Kas menurut buku besar: ${fmtNum(rep.kas)}. Saldo terakhir di tabel: ${fmtNum(lastSaldo)}.`, ''));
+                    appendFindingItems(body, byStep(3));
+                }
+            },
+            {
+                n: 4, title: 'Neraca saldo',
+                level: stepLevel(findings, 4),
+                sum: `Debit ${fmtNum(L.totalD)} = Kredit ${fmtNum(L.totalC)}`,
+                render: body => {
+                    const names = ACCT_ORDER.filter(n => L.accts[n]).concat(Object.keys(L.accts).filter(n => ACCT_ORDER.indexOf(n) < 0));
+                    const rows = names.map(n => ({ cells: [n, fmtNum(L.accts[n].d), fmtNum(L.accts[n].c)] }));
+                    rows.push({ cells: ['TOTAL', fmtNum(L.totalD), fmtNum(L.totalC)], total: true });
+                    body.appendChild(mkTable(['Akun', 'Debit', 'Kredit'], rows));
+                    body.appendChild(mkLine(L.balanced ? '✅ Neraca saldo seimbang.' : '❌ Debit tidak sama dengan kredit.', L.balanced ? '' : 'high'));
+                }
+            },
+            {
+                n: 5, title: 'Penyesuaian',
+                level: stepLevel(findings, 5),
+                sum: adjCount ? `${adjCount} penyesuaian saldo manual` : 'Tidak ada penyesuaian manual',
+                render: body => {
+                    const adj = L.accts['Penyesuaian Saldo (tanpa bukti)'];
+                    body.appendChild(mkLine(adj
+                        ? `Penyesuaian saldo tanpa transaksi: menambah ${fmtNum(adj.d)}, mengurangi ${fmtNum(adj.c)}. Perlu bukti pendukung.`
+                        : 'Tidak ada perubahan saldo manual di luar transaksi.', adj ? 'med' : ''));
+                    appendFindingItems(body, byStep(5));
+                }
+            },
+            {
+                n: 6, title: 'Laporan (Laba Rugi & Posisi Keuangan)',
+                level: stepLevel(findings, 6),
+                sum: `${rep.laba >= 0 ? 'Laba' : 'Rugi'} ${fmtNum(Math.abs(rep.laba))}`,
+                render: body => {
+                    body.appendChild(mkTable(['Laba Rugi', 'Jumlah'], [
+                        { cells: [config.metricA, fmtNum(rep.pendapatan)] },
+                        { cells: [config.metricB, fmtNum(rep.beban)] },
+                        { cells: [rep.laba >= 0 ? 'LABA' : 'RUGI', fmtNum(rep.laba)], total: true }
+                    ]));
+                    body.appendChild(mkTable(['Posisi Keuangan', 'Jumlah'], [
+                        { cells: ['Harta (Kas)', fmtNum(rep.kas)] },
+                        { cells: ['Kewajiban (Utang)', fmtNum(0)] },
+                        { cells: ['Modal (saldo awal + penyesuaian + laba)', fmtNum(rep.ekuitas)], total: true }
+                    ]));
+                    body.appendChild(mkLine(rep.seimbang
+                        ? '✅ Harta = Kewajiban + Modal.'
+                        : `❌ Harta ${fmtNum(rep.kas)} ≠ Kewajiban + Modal ${fmtNum(rep.ekuitas)}.`, rep.seimbang ? '' : 'high'));
+
+                    const groups = groupSummary(data);
+                    const rows = groups.map(g => ({ cells: [g.name, fmtNum(g.a), fmtNum(g.b), fmtNum(g.a - g.b)] }));
+                    rows.push({
+                        cells: [`TOTAL (${groups.length} ${config.entity.toLowerCase()})`,
+                            fmtNum(groups.reduce((x, g) => x + g.a, 0)),
+                            fmtNum(groups.reduce((x, g) => x + g.b, 0)),
+                            fmtNum(groups.reduce((x, g) => x + g.a - g.b, 0))],
+                        total: true
+                    });
+                    const h = document.createElement('div');
+                    h.className = 'fraud-note';
+                    h.style.margin = '10px 0 4px';
+                    h.textContent = `Rincian per ${config.entity} (terbesar biaya lebih dulu)`;
+                    body.appendChild(h);
+                    body.appendChild(mkTable([config.entity, config.metricA, config.metricB, 'Selisih'], rows));
+                    appendFindingItems(body, byStep(6));
+                }
+            },
+            {
+                n: 7, title: 'Penutupan periode',
+                level: stepLevel(findings, 7, locked ? 'ok' : 'info'),
+                sum: locked ? `Dikunci sampai ${s.lockedUntil}` : 'Belum ada periode yang dikunci',
+                render: body => {
+                    body.appendChild(mkLine(`Penutupan otomatis: ${config.metricA} ${fmtNum(rep.pendapatan)} dan ${config.metricB} ${fmtNum(rep.beban)} ditutup ke Modal. ${rep.laba >= 0 ? 'Laba' : 'Rugi'} periode ${fmtNum(Math.abs(rep.laba))}.`, ''));
+                    body.appendChild(mkLine(locked
+                        ? `🔒 Transaksi sampai ${s.lockedUntil} sudah dikunci. Mengubahnya wajib disertai alasan dan akan ditandai.`
+                        : 'Belum ada yang dikunci. Kunci periode yang sudah selesai (mis. akhir bulan) supaya perubahan sesudahnya tercatat sebagai kejanggalan.', ''));
+
+                    const row = document.createElement('div');
+                    row.className = 'lock-row';
+                    const input = document.createElement('input');
+                    input.type = 'date';
+                    input.id = 'lockDateInput';
+                    const now = new Date();
+                    input.value = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0)).toISOString().split('T')[0];
+                    const lockBtn = document.createElement('button');
+                    lockBtn.className = 'lock-btn';
+                    lockBtn.textContent = locked ? '🔒 Majukan kunci' : '🔒 Kunci periode';
+                    lockBtn.onclick = lockPeriod;
+                    row.append(input, lockBtn);
+                    if (locked) {
+                        const un = document.createElement('button');
+                        un.className = 'lock-btn secondary';
+                        un.textContent = '🔓 Buka kunci';
+                        un.onclick = unlockPeriod;
+                        row.appendChild(un);
+                    }
+                    body.appendChild(row);
+                    appendFindingItems(body, byStep(7));
+                }
+            }
+        ];
+
+        const icons = { ok: '✅', warn: '⚠️', bad: '❌', info: 'ℹ️' };
+        steps.forEach(st => {
+            const det = document.createElement('details');
+            det.className = 'step-card ' + st.level;
+            det.open = fraudOpen.has(st.n) || st.level === 'bad';
+            det.addEventListener('toggle', () => { det.open ? fraudOpen.add(st.n) : fraudOpen.delete(st.n); });
+
+            const sum = document.createElement('summary');
+            const ic = document.createElement('span');
+            ic.className = 'step-icon';
+            ic.textContent = icons[st.level];
+            const tt = document.createElement('span');
+            tt.className = 'step-title';
+            tt.textContent = `${st.n}. ${st.title}`;
+            const sm = document.createElement('span');
+            sm.className = 'step-sum';
+            sm.textContent = st.sum;
+            sum.append(ic, tt, sm);
+
+            const body = document.createElement('div');
+            body.className = 'step-body';
+            st.render(body);
+            det.append(sum, body);
+            list.appendChild(det);
+        });
+    }
+
+    function renderAuditList(list, s) {
+        const ch = s ? verifyChain(s) : { ok: true, count: 0 };
+        list.appendChild(mkLine(ch.ok
+            ? `🔒 Rantai jejak utuh (${ch.count} catatan, tiap catatan terikat hash catatan sebelumnya).`
+            : '❌ ' + ch.reason, ch.ok ? '' : 'high'));
+
+        const log = (s && s.auditLog) ? s.auditLog.slice().reverse() : [];
+        if (!log.length) {
+            const el = document.createElement('div');
+            el.className = 'fraud-ok';
+            el.textContent = 'Belum ada perubahan tercatat di sheet ini.';
+            list.appendChild(el);
+            return;
+        }
+        log.slice(0, 100).forEach(entry => {
+            const el = document.createElement('div');
+            el.className = 'fraud-item';
+            el.style.cursor = 'default';
+            const t = document.createElement('div');
+            t.className = 'fraud-item-title';
+            t.textContent = `#${entry.seq || ''} ${entry.action} (baris ${entry.row})`;
+            const m = document.createElement('div');
+            m.className = 'fraud-item-msg';
+            m.textContent = entry.detail;
+            const tm = document.createElement('div');
+            tm.className = 'fraud-item-time';
+            tm.textContent = new Date(entry.t).toLocaleString() + (entry.hash ? ' · ' + entry.hash.slice(0, 10) : '');
+            el.append(t, m, tm);
+            list.appendChild(el);
+        });
+    }
+
     function updateFraudPanel() {
         const s = getActiveSheet();
         const v = computeVerdict(true);
         renderVerdictBanner(v);
 
         document.getElementById('fraudSheetName').textContent = s ? s.name : '';
-        ['Findings', 'Audit', 'Ledger'].forEach(k => {
-            document.getElementById('fraudTab' + k).classList.toggle('active', fraudView === k.toLowerCase());
+        [['Cycle', 'cycle'], ['Findings', 'findings'], ['Audit', 'audit']].forEach(([k, val]) => {
+            document.getElementById('fraudTab' + k).classList.toggle('active', fraudView === val);
         });
 
         const list = document.getElementById('fraudList');
         list.innerHTML = '';
-        const emptyBox = (text) => {
-            const el = document.createElement('div');
-            el.className = 'fraud-ok';
-            el.textContent = text;
-            list.appendChild(el);
-        };
+        const active = v.perSheet.find(p => p.sheet.id === activeSheetId);
+        const findings = active ? active.findings : [];
 
-        if (fraudView === 'findings') {
-            const active = v.perSheet.find(p => p.sheet.id === activeSheetId);
-            const findings = active ? active.findings : [];
-            if (!findings.length) return emptyBox('✅ Tidak ada anomali terdeteksi di sheet ini.');
-            const levelLabel = { high: 'TINGGI', med: 'SEDANG', low: 'INFO' };
-            findings.forEach(f => {
-                const el = document.createElement('div');
-                el.className = 'fraud-item ' + f.level;
-                const t = document.createElement('div');
-                t.className = 'fraud-item-title';
-                t.textContent = `[${levelLabel[f.level]}] ${f.row >= 0 ? 'Baris ' + (f.row + 1) : 'Seluruh sheet'}: ${f.title}`;
-                const m = document.createElement('div');
-                m.className = 'fraud-item-msg';
-                m.textContent = f.msg;
-                el.append(t, m);
-                if (f.row >= 0) el.onclick = () => jumpToRow(f.row);
-                else el.style.cursor = 'default';
-                list.appendChild(el);
-            });
-        } else if (fraudView === 'audit') {
-            const ch = s ? verifyChain(s) : { ok: true, count: 0 };
-            const status = document.createElement('div');
-            status.className = 'fraud-item ' + (ch.ok ? '' : 'high');
-            status.style.cursor = 'default';
-            status.textContent = ch.ok
-                ? `🔒 Rantai jejak utuh (${ch.count} catatan, tiap catatan terikat hash catatan sebelumnya).`
-                : '❌ ' + ch.reason;
-            list.appendChild(status);
-
-            const log = (s && s.auditLog) ? s.auditLog.slice().reverse() : [];
-            if (!log.length) return emptyBox('Belum ada perubahan tercatat di sheet ini.');
-            log.slice(0, 100).forEach(entry => {
-                const el = document.createElement('div');
-                el.className = 'fraud-item';
-                el.style.cursor = 'default';
-                const t = document.createElement('div');
-                t.className = 'fraud-item-title';
-                t.textContent = `#${entry.seq || ''} ${entry.action} (baris ${entry.row})`;
-                const m = document.createElement('div');
-                m.className = 'fraud-item-msg';
-                m.textContent = entry.detail;
-                const tm = document.createElement('div');
-                tm.className = 'fraud-item-time';
-                tm.textContent = new Date(entry.t).toLocaleString() + (entry.hash ? ' · ' + entry.hash.slice(0, 10) : '');
-                el.append(t, m, tm);
-                list.appendChild(el);
-            });
-        } else {
-            const L = buildLedger(data);
-            const intro = document.createElement('div');
-            intro.className = 'fraud-note';
-            intro.style.marginBottom = '8px';
-            intro.textContent = 'Dibuat otomatis dari catatan single entry. Pengguna tidak perlu mengisi debit/kredit.';
-            list.appendChild(intro);
-
-            const table = document.createElement('table');
-            table.className = 'tb-table';
-            table.innerHTML = '<thead><tr><th>Akun</th><th>Debit</th><th>Kredit</th></tr></thead>';
-            const tbody = document.createElement('tbody');
-            const names = ACCT_ORDER.filter(n => L.accts[n]).concat(Object.keys(L.accts).filter(n => ACCT_ORDER.indexOf(n) < 0));
-            names.forEach(n => {
-                const tr = document.createElement('tr');
-                const a = L.accts[n];
-                [n, fmtNum(a.d), fmtNum(a.c)].forEach((txt, idx) => {
-                    const td = document.createElement('td');
-                    td.textContent = txt;
-                    if (idx > 0) td.className = 'num';
-                    tr.appendChild(td);
-                });
-                tbody.appendChild(tr);
-            });
-            const total = document.createElement('tr');
-            total.className = 'tb-total';
-            ['TOTAL', fmtNum(L.totalD), fmtNum(L.totalC)].forEach((txt, idx) => {
-                const td = document.createElement('td');
-                td.textContent = txt;
-                if (idx > 0) td.className = 'num';
-                total.appendChild(td);
-            });
-            tbody.appendChild(total);
-            table.appendChild(tbody);
-            list.appendChild(table);
-
-            const lastSaldo = data.length ? (parseFloat(data[data.length - 1].saldo) || 0) : 0;
-            const kas = L.kasAfter.length ? L.kasAfter[L.kasAfter.length - 1] : 0;
-            const matches = !config.autoCalc || Math.abs(kas - lastSaldo) < 0.005;
-            const rec = document.createElement('div');
-            rec.className = 'fraud-item ' + (L.balanced && matches ? '' : 'high');
-            rec.style.cursor = 'default';
-            rec.style.marginTop = '10px';
-            rec.textContent = (L.balanced ? '✅ Debit = Kredit (neraca saldo seimbang). ' : '❌ Debit ≠ Kredit. ')
-                + (matches ? '✅ Kas buku besar = saldo terakhir di tabel.' : `❌ Kas buku besar ${fmtNum(kas)} ≠ saldo tabel ${fmtNum(lastSaldo)}.`);
-            list.appendChild(rec);
-
-            const adj = L.accts['Penyesuaian Saldo (tanpa bukti)'];
-            if (adj) {
-                const w = document.createElement('div');
-                w.className = 'fraud-item med';
-                w.style.cursor = 'default';
-                w.textContent = `⚠️ Ada penyesuaian saldo manual tanpa transaksi: ${fmtNum(adj.d)} (menambah) / ${fmtNum(adj.c)} (mengurangi).`;
-                list.appendChild(w);
+        if (fraudView === 'cycle') {
+            renderCycle(list, s, findings);
+        } else if (fraudView === 'findings') {
+            if (!findings.length) {
+                const ok = document.createElement('div');
+                ok.className = 'fraud-ok';
+                ok.textContent = '✅ Tidak ada anomali terdeteksi di sheet ini.';
+                list.appendChild(ok);
+            } else {
+                appendFindingItems(list, findings);
             }
+        } else {
+            renderAuditList(list, s);
         }
     }
 
