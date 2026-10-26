@@ -1784,10 +1784,10 @@ function goToGoogleForm() {
                 { key: 'entity', type: 'text', class: '' },
                 { key: 'metricA', type: 'number', class: 'cell-number' },
                 { key: 'metricB', type: 'number', class: 'cell-number' },
+                { key: 'saldoSebelumnya', type: 'money', class: 'cell-number' },
+                { key: 'saldo', type: 'money', class: 'cell-number', readOnly: true },
                 { key: 'rasio', type: 'calc', class: 'cell-number', readOnly: true },
                 { key: 'status', type: 'calc', class: '', readOnly: true },
-                { key: 'saldoSebelumnya', type: 'money', class: 'cell-number', readOnly: true },
-                { key: 'saldo', type: 'money', class: 'cell-number', readOnly: true }
             ];
 
             cells.forEach((cell, colIndex) => {
