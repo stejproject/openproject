@@ -1144,6 +1144,23 @@
             border-color: rgba(254,202,202,0.9);
         }
 
+        .fraud-verdict { padding: 10px 12px; border-radius: 8px; margin-bottom: 10px; font-size: 12px; line-height: 1.5; border: 1px solid; }
+        .fraud-verdict.ok { background: #f0fdfa; border-color: #99f6e4; color: #0f766e; }
+        .fraud-verdict.warn { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+        .fraud-verdict.bad { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+        .fraud-verdict-title { font-weight: 700; font-size: 14px; }
+
+        .ribbon-btn.warn {
+            background: rgba(245,158,11,0.5);
+            border-color: rgba(253,230,138,0.9);
+        }
+
+        .tb-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .tb-table th { text-align: left; padding: 6px 8px; background: #f0fdfa; color: #0f766e; border-bottom: 2px solid #ccfbf1; }
+        .tb-table td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; }
+        .tb-table td.num { text-align: right; font-family: 'JetBrains Mono', monospace; }
+        .tb-table tr.tb-total td { font-weight: 700; background: #f8fafc; border-top: 2px solid #cbd5e1; }
+
         /* Responsive */
         @media (max-width: 768px) {
             .ribbon {
@@ -1268,7 +1285,7 @@
     </div>
     <div class="status-right">
         <div class="status-item">💾 Auto-saved</div>
-        <div class="status-item" id="version"> v3.2</div>
+        <div class="status-item" id="version"> v3.3</div>
     </div>
 </div>
 
@@ -1398,12 +1415,14 @@
         <span>🕵️ Deteksi Kecurangan — <span id="fraudSheetName"></span></span>
         <button class="close-btn" style="width:24px;height:24px;font-size:16px;background:#e2e8f0;color:#475569;" onclick="toggleFraud()">×</button>
     </h4>
+    <div class="fraud-verdict ok" id="fraudVerdict"></div>
     <div class="fraud-tabs">
         <button class="fraud-tab active" id="fraudTabFindings" onclick="setFraudView('findings')">Temuan</button>
         <button class="fraud-tab" id="fraudTabAudit" onclick="setFraudView('audit')">Jejak Perubahan</button>
+        <button class="fraud-tab" id="fraudTabLedger" onclick="setFraudView('ledger')">Neraca Saldo</button>
     </div>
     <div class="fraud-list" id="fraudList"></div>
-    <div class="fraud-note">Temuan adalah indikasi untuk diperiksa, bukan bukti kecurangan. Tetap cocokkan dengan bukti asli (nota, mutasi bank).</div>
+    <div class="fraud-note">Hasil otomatis ini adalah indikasi, bukan putusan bahwa terjadi atau tidak terjadinya kecurangan/korupsi. Tetap cocokkan dengan bukti asli (nota, mutasi bank). Segel dan jejak perubahan melindungi dari edit file biasa, bukan dari pihak yang paham cara memalsukannya.</div>
 </div>
 
 <div id="formModal" class="quick-stats" style="display:none;">
@@ -1523,7 +1542,7 @@ function goToGoogleForm() {
 </script>
 <script>
     // ============================================
-    // Budget-Line - v3.2
+    // Budget-Line - v3.3
     // Multi-Sheet Edition (tab per sheet, seperti Excel/Google Sheets)
     // v3.1: Saldo Sebelumnya bisa diedit manual (override) dan memperbarui
     //       saldo, rasio, status baris tsb serta semua baris di bawahnya.
@@ -1636,7 +1655,9 @@ function goToGoogleForm() {
             name: name || ('Mitra/Agen ' + sheetIdCounter),
             data: [makeEmptyRow()],
             formulaHistory: [],
-            auditLog: []
+            auditLog: [],
+            integrityIssues: [],
+            seal: ''
         };
     }
 
@@ -1650,6 +1671,7 @@ function goToGoogleForm() {
         if (s) {
             s.data = data;
             s.formulaHistory = formulaHistory;
+            s.seal = stateHash(data);
         }
     }
 
@@ -1827,7 +1849,7 @@ function goToGoogleForm() {
             }
         });
 
-        showToast('✅ Budget-Line v3.2 siap digunakan!', 'success');
+        showToast('✅ Budget-Line v3.3 siap digunakan!', 'success');
     });
 
     window.addEventListener('beforeunload', () => {
@@ -3186,11 +3208,16 @@ function goToGoogleForm() {
                 name: s.name,
                 data: s.data,
                 formulaHistory: s.formulaHistory,
-                auditLog: s.auditLog || []
+                auditLog: s.auditLog || [],
+                auditAnchor: s.auditAnchor || '',
+                auditSeq: s.auditSeq || 0,
+                auditHead: s.auditHead || '',
+                seal: s.seal || '',
+                integrityIssues: s.integrityIssues || []
             })),
             activeSheetId: activeSheetId,
             exportedAt: new Date().toISOString(),
-            version: '3.2'
+            version: '3.3'
         };
 
         const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
@@ -3234,9 +3261,16 @@ function goToGoogleForm() {
                             name: s.name || ('Mitra/Agen ' + sheetIdCounter),
                             data: rows.length ? rows : [makeEmptyRow()],
                             formulaHistory: s.formulaHistory || [],
-                            auditLog: s.auditLog || []
+                            auditLog: s.auditLog || [],
+                            auditAnchor: s.auditAnchor || '',
+                            auditSeq: s.auditSeq || 0,
+                            auditHead: s.auditHead || '',
+                            seal: s.seal || '',
+                            integrityIssues: Array.isArray(s.integrityIssues) ? s.integrityIssues : []
                         };
                     });
+                    // Verifikasi keaslian SEBELUM hitung ulang apa pun (hitung ulang bisa menimpa angka yang diubah)
+                    verifyImportedSheets(parseFloat(imported.version) >= 3.3);
                     const targetId = imported.activeSheetId && sheets.some(s => s.id === imported.activeSheetId)
                         ? imported.activeSheetId
                         : sheets[0].id;
@@ -3287,38 +3321,237 @@ function goToGoogleForm() {
     // ============================================
 
     // ============================================
-    // DETEKSI KECURANGAN (anomali + jejak perubahan)
-    // Hasil berupa INDIKASI untuk diperiksa, bukan bukti kecurangan.
+    // DETEKSI KECURANGAN v3.3
+    // - Pengguna mengisi single entry. Di belakang layar aplikasi membangun
+    //   buku besar double entry otomatis (Kas, Pendapatan, Beban, dst.) dan Neraca Saldo.
+    // - Jejak perubahan berantai hash (tamper-evident) + segel data saat disimpan.
+    // - Hasil akhir berupa putusan sederhana: AMAN / PERLU DIPERIKSA / INDIKASI KUAT.
+    // Semua hasil adalah INDIKASI untuk diperiksa, bukan bukti hukum.
     // ============================================
 
     let fraudView = 'findings';
 
+    // ---------- SHA-256 sinkron (tanpa dependensi) ----------
+    const SHA_K = [
+        0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+        0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+        0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+        0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+        0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+        0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+        0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+        0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+    ];
+
+    function sha256(str) {
+        const s = unescape(encodeURIComponent(String(str)));
+        const l = s.length;
+        const words = [];
+        for (let i = 0; i < l; i++) words[i >> 2] |= s.charCodeAt(i) << (24 - (i % 4) * 8);
+        words[l >> 2] |= 0x80 << (24 - (l % 4) * 8);
+        words[(((l + 8) >> 6) + 1) * 16 - 1] = l * 8;
+        const H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+        const w = new Array(64);
+        for (let j = 0; j < words.length; j += 16) {
+            for (let t = 0; t < 16; t++) w[t] = words[j + t] | 0;
+            for (let t = 16; t < 64; t++) {
+                const x = w[t - 15], y = w[t - 2];
+                const s0 = ((x >>> 7) | (x << 25)) ^ ((x >>> 18) | (x << 14)) ^ (x >>> 3);
+                const s1 = ((y >>> 17) | (y << 15)) ^ ((y >>> 19) | (y << 13)) ^ (y >>> 10);
+                w[t] = (w[t - 16] + s0 + w[t - 7] + s1) | 0;
+            }
+            let a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+            for (let t = 0; t < 64; t++) {
+                const S1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7));
+                const ch = (e & f) ^ (~e & g);
+                const t1 = (h + S1 + ch + SHA_K[t] + w[t]) | 0;
+                const S0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));
+                const mj = (a & b) ^ (a & c) ^ (b & c);
+                const t2 = (S0 + mj) | 0;
+                h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+            }
+            H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+            H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+        }
+        return H.map(x => ('00000000' + (x >>> 0).toString(16)).slice(-8)).join('');
+    }
+
+    // Segel isi data satu sheet (semua kolom yang tersimpan)
+    function stateHash(rows) {
+        return sha256(JSON.stringify(rows.map(r => [
+            r.tanggal, r.waktu, r.entity, r.metricA, r.metricB,
+            r._manualPrev == null ? null : r._manualPrev,
+            r.saldoSebelumnya, r.saldo
+        ])));
+    }
+
+    // ---------- Jejak perubahan berantai hash ----------
     function auditColName(col) {
         const names = ['Tanggal', 'Waktu', config.entity, config.metricA, config.metricB, 'Saldo Sebelumnya'];
         return names[col] || ('Kolom ' + col);
     }
 
-    function logAudit(action, rowIndex, detail) {
-        const s = getActiveSheet();
+    function auditHash(prev, e) {
+        return sha256([prev, e.seq, e.t, e.action, e.row, e.detail].join('|'));
+    }
+
+    function logAuditTo(s, action, rowIndex, detail) {
         if (!s) return;
         if (!s.auditLog) s.auditLog = [];
-        s.auditLog.push({ t: new Date().toISOString(), action: action, row: rowIndex + 1, detail: detail });
-        if (s.auditLog.length > 500) s.auditLog.shift();
+        const last = s.auditLog[s.auditLog.length - 1];
+        const prev = last ? last.hash : (s.auditAnchor || '');
+        const e = {
+            seq: (last ? last.seq : (s.auditSeq || 0)) + 1,
+            t: new Date().toISOString(),
+            action: action,
+            row: rowIndex + 1,
+            detail: String(detail)
+        };
+        e.prev = prev;
+        e.hash = auditHash(prev, e);
+        s.auditLog.push(e);
+        s.auditHead = e.hash;
+        if (s.auditLog.length > 2000) {
+            const removed = s.auditLog.shift();
+            s.auditAnchor = removed.hash;
+            s.auditSeq = removed.seq;
+        }
+    }
+
+    function logAudit(action, rowIndex, detail) {
+        logAuditTo(getActiveSheet(), action, rowIndex, detail);
+    }
+
+    function rechainLegacy(s) {
+        let prev = s.auditAnchor || '';
+        let seq = s.auditSeq || 0;
+        (s.auditLog || []).forEach(e => {
+            e.seq = ++seq;
+            e.prev = prev;
+            e.hash = auditHash(prev, e);
+            prev = e.hash;
+        });
+        s.auditHead = prev || s.auditHead || '';
+    }
+
+    function verifyChain(s) {
+        const log = s.auditLog || [];
+        if (!log.length) {
+            if (s.auditHead) {
+                return { ok: false, count: 0, hashed: true,
+                    reason: 'Seluruh jejak perubahan hilang (dikosongkan di luar aplikasi).' };
+            }
+            return { ok: true, count: 0, hashed: false };
+        }
+        if (log.some(e => !e.hash)) return { ok: true, count: log.length, hashed: false, legacy: true };
+        let prev = s.auditAnchor || '';
+        for (let i = 0; i < log.length; i++) {
+            const e = log[i];
+            if (e.prev !== prev || auditHash(prev, e) !== e.hash) {
+                return { ok: false, count: log.length, hashed: true,
+                    reason: `Jejak perubahan rusak di catatan #${e.seq}: isinya diubah, atau ada catatan yang dihapus/disisipkan di luar aplikasi.` };
+            }
+            prev = e.hash;
+        }
+        if (s.auditHead && s.auditHead !== prev) {
+            return { ok: false, count: log.length, hashed: true,
+                reason: 'Catatan terakhir pada jejak perubahan hilang (dihapus di luar aplikasi).' };
+        }
+        return { ok: true, count: log.length, hashed: true };
+    }
+
+    // Dipanggil saat file JSON dibuka, SEBELUM hitung ulang apa pun.
+    function verifyImportedSheets(strict) {
+        sheets.forEach(s => {
+            if (!s.integrityIssues) s.integrityIssues = [];
+            const issues = [];
+            const ch = verifyChain(s);
+            if (!ch.ok) issues.push(ch.reason);
+            if (strict && ch.count > 0 && !ch.hashed) issues.push('Jejak perubahan kehilangan tanda keaslian (hash) pada file versi baru. Kemungkinan dihapus di luar aplikasi.');
+            if (s.seal) {
+                if (stateHash(s.data) !== s.seal) {
+                    issues.push('Angka di sheet ini berubah di luar aplikasi sejak terakhir disimpan (mis. diedit langsung di file JSON).');
+                }
+            } else if (strict) {
+                issues.push('Segel data tidak ada pada file versi baru. Kemungkinan dihapus di luar aplikasi.');
+            }
+            if (ch.legacy) rechainLegacy(s);
+            issues.forEach(msg => {
+                s.integrityIssues.push({ t: new Date().toISOString(), msg: msg });
+                logAuditTo(s, 'PERINGATAN INTEGRITAS', 0, msg);
+            });
+            s.seal = stateHash(s.data);
+        });
+    }
+
+    // ---------- Buku besar double entry otomatis (backend) ----------
+    const ACCT_ORDER = ['Kas', 'Pendapatan', 'Beban', 'Saldo Awal', 'Penyesuaian Saldo (tanpa bukti)'];
+
+    function buildLedger(rows) {
+        const accts = {};
+        const journals = [];
+        const kasAfter = [];
+        let kas = 0;
+
+        const post = (row, desc, dr, cr, amt) => {
+            if (Math.abs(amt) < 0.005) return;
+            if (amt < 0) { const tmp = dr; dr = cr; cr = tmp; amt = -amt; }
+            journals.push({ row, desc, dr, cr, amt });
+            (accts[dr] = accts[dr] || { d: 0, c: 0 }).d += amt;
+            (accts[cr] = accts[cr] || { d: 0, c: 0 }).c += amt;
+        };
+
+        rows.forEach((r, i) => {
+            const a = parseFloat(r.metricA) || 0;
+            const b = parseFloat(r.metricB) || 0;
+            if (r._manualPrev !== undefined && r._manualPrev !== null) {
+                const mp = parseFloat(r._manualPrev) || 0;
+                const delta = mp - kas;
+                if (i === 0) post(i, 'Saldo awal', 'Kas', 'Saldo Awal', delta);
+                else post(i, 'Penyesuaian saldo manual', 'Kas', 'Penyesuaian Saldo (tanpa bukti)', delta);
+                kas += delta;
+            }
+            post(i, 'Pendapatan', 'Kas', 'Pendapatan', a);
+            kas += a;
+            post(i, 'Pengeluaran', 'Beban', 'Kas', b);
+            kas -= b;
+            kasAfter.push(kas);
+        });
+
+        let totalD = 0, totalC = 0;
+        Object.keys(accts).forEach(k => { totalD += accts[k].d; totalC += accts[k].c; });
+        return { accts, journals, kasAfter, totalD, totalC, balanced: Math.abs(totalD - totalC) < 0.005 };
     }
 
     function fmtNum(n) {
         return (parseFloat(n) || 0).toLocaleString();
     }
 
-    function runFraudChecks() {
+    // ---------- Pemeriksaan anomali ----------
+    // rows/sheet default = sheet aktif. full=true juga memverifikasi rantai jejak perubahan.
+    function runFraudChecks(rows, sheet, full) {
+        rows = rows || data;
+        sheet = sheet || getActiveSheet();
         const findings = [];
         const add = (row, level, title, msg) => findings.push({ row, level, title, msg });
         const today = new Date().toISOString().split('T')[0];
         const isoDate = /^\d{4}-\d{2}-\d{2}$/;
         const limit = parseFloat(config.fraudApprovalLimit) || 0;
 
+        // 0. Peringatan integritas yang tercatat permanen di sheet
+        if (sheet && Array.isArray(sheet.integrityIssues)) {
+            sheet.integrityIssues.forEach(it => add(-1, 'high', 'Data diubah di luar aplikasi', it.msg));
+        }
+        if (full && sheet) {
+            const ch = verifyChain(sheet);
+            if (!ch.ok) add(-1, 'high', 'Jejak perubahan rusak', ch.reason);
+        }
+
+        const ledger = buildLedger(rows);
+        const totalIncome = rows.reduce((sum, r) => sum + Math.max(parseFloat(r.metricA) || 0, 0), 0);
+
         // Median pengeluaran (butuh minimal 5 data pengeluaran)
-        const costs = data.map(r => parseFloat(r.metricB) || 0).filter(v => v > 0).sort((a, b) => a - b);
+        const costs = rows.map(r => parseFloat(r.metricB) || 0).filter(v => v > 0).sort((x, y) => x - y);
         let median = 0;
         if (costs.length >= 5) {
             const mid = Math.floor(costs.length / 2);
@@ -3327,40 +3560,42 @@ function goToGoogleForm() {
 
         const seenSame = {};
         const seenAny = {};
-        let running = 0; // saldo yang seharusnya mengalir dari baris atas
 
-        data.forEach((r, i) => {
+        rows.forEach((r, i) => {
             const a = parseFloat(r.metricA) || 0;
             const b = parseFloat(r.metricB) || 0;
-            const prev = parseFloat(r.saldoSebelumnya) || 0;
             const name = String(r.entity == null ? '' : r.entity).trim();
+            const kasBefore = i > 0 ? ledger.kasAfter[i - 1] : 0;
+            const kasNow = ledger.kasAfter[i];
             const hasManual = r._manualPrev !== undefined && r._manualPrev !== null;
 
-            // 1. Saldo awal diisi manual
+            // 1. Saldo awal / penyesuaian manual
             if (hasManual) {
+                const mp = parseFloat(r._manualPrev) || 0;
                 if (i === 0) {
-                    if (Math.abs(r._manualPrev) > 0.005) {
-                        add(i, 'low', 'Saldo awal diisi manual', `Saldo awal pembukuan ${fmtNum(r._manualPrev)}. Pastikan sesuai bukti (mis. saldo rekening).`);
+                    if (Math.abs(mp) > 0.005) {
+                        add(i, 'low', 'Saldo awal diisi manual', `Saldo awal pembukuan ${fmtNum(mp)}. Pastikan sesuai bukti (mis. saldo rekening).`);
                     }
-                } else if (Math.abs(r._manualPrev - running) > 0.005) {
-                    add(i, 'high', 'Saldo awal diubah manual',
-                        `Saldo Sebelumnya diisi ${fmtNum(r._manualPrev)}, padahal akumulasi baris di atas ${fmtNum(running)} (selisih ${fmtNum(r._manualPrev - running)}).`);
+                } else if (Math.abs(mp - kasBefore) > 0.005) {
+                    const delta = mp - kasBefore;
+                    const big = totalIncome > 0 && Math.abs(delta) >= totalIncome * 0.5;
+                    add(i, big ? 'high' : 'med', 'Saldo diubah manual tanpa transaksi',
+                        `Saldo Sebelumnya diisi ${fmtNum(mp)}, padahal buku besar menunjukkan ${fmtNum(kasBefore)} (selisih ${fmtNum(delta)}). Perlu bukti pendukung.`);
                 }
             }
 
-            // 2. Integritas hitungan saldo (data diubah di luar aplikasi, mis. file JSON)
-            if (config.autoCalc && Math.abs((parseFloat(r.saldo) || 0) - (prev + a - b)) > 0.005) {
-                add(i, 'high', 'Saldo tidak cocok',
-                    `Saldo tertulis ${fmtNum(r.saldo)}, seharusnya ${fmtNum(prev + a - b)}. Data mungkin diubah di luar aplikasi.`);
+            // 2. Rekonsiliasi: saldo di tabel harus sama dengan Kas di buku besar
+            if (config.autoCalc && Math.abs((parseFloat(r.saldo) || 0) - kasNow) > 0.005) {
+                add(i, 'high', 'Saldo tabel tidak cocok dengan buku besar',
+                    `Saldo tertulis ${fmtNum(r.saldo)}, buku besar menghitung ${fmtNum(kasNow)}. Data mungkin diubah di luar aplikasi.`);
             }
-            running = prev + a - b;
 
             // 3. Nilai negatif dan saldo negatif
             if (a < 0 || b < 0) {
                 add(i, 'med', 'Nilai negatif', 'Pemasukan atau pengeluaran bernilai negatif. Bisa dipakai menyamarkan transaksi.');
             }
-            if (running < -0.005) {
-                add(i, 'med', 'Saldo negatif', `Saldo ${fmtNum(running)}. Pengeluaran melebihi dana yang tersedia.`);
+            if (kasNow < -0.005) {
+                add(i, 'med', 'Saldo negatif', `Saldo ${fmtNum(kasNow)}. Pengeluaran melebihi dana yang tersedia.`);
             }
 
             // 4. Nominal tanpa keterangan
@@ -3399,7 +3634,7 @@ function goToGoogleForm() {
                     if (r.tanggal > today) {
                         add(i, 'med', 'Tanggal di masa depan', `Tanggal ${r.tanggal} belum terjadi.`);
                     }
-                    const pd = i > 0 ? data[i - 1].tanggal : null;
+                    const pd = i > 0 ? rows[i - 1].tanggal : null;
                     if (pd && isoDate.test(pd) && r.tanggal < pd) {
                         add(i, 'low', 'Tanggal mundur', `Lebih lama dari baris sebelumnya (${pd}). Periksa kemungkinan backdating.`);
                     }
@@ -3412,6 +3647,23 @@ function goToGoogleForm() {
         return findings;
     }
 
+    // ---------- Putusan sederhana untuk pengguna ----------
+    function computeVerdict(full) {
+        const perSheet = sheets.map(s => {
+            const rows = s.id === activeSheetId ? data : s.data;
+            const findings = runFraudChecks(rows, s, full);
+            const high = findings.filter(f => f.level === 'high').length;
+            const med = findings.filter(f => f.level === 'med').length;
+            const tx = rows.filter(r => (parseFloat(r.metricA) || 0) || (parseFloat(r.metricB) || 0)).length;
+            return { sheet: s, findings, high, med, tx };
+        });
+        const high = perSheet.reduce((n, p) => n + p.high, 0);
+        const med = perSheet.reduce((n, p) => n + p.med, 0);
+        const tx = perSheet.reduce((n, p) => n + p.tx, 0);
+        const level = high > 0 ? 'bad' : med > 0 ? 'warn' : 'ok';
+        return { level, high, med, tx, perSheet };
+    }
+
     function applyFraudMarks() {
         try {
             applyFraudMarksUnsafe();
@@ -3422,9 +3674,11 @@ function goToGoogleForm() {
 
     function applyFraudMarksUnsafe() {
         if (!DOM.gridBody) return;
-        const findings = runFraudChecks();
+        const verdict = computeVerdict(false);
+        const active = verdict.perSheet.find(p => p.sheet.id === activeSheetId);
+        const findings = active ? active.findings : [];
         const byRow = {};
-        findings.forEach(f => { (byRow[f.row] = byRow[f.row] || []).push(f); });
+        findings.forEach(f => { if (f.row >= 0) (byRow[f.row] = byRow[f.row] || []).push(f); });
 
         DOM.gridBody.querySelectorAll('tr').forEach(tr => {
             const list = byRow[parseInt(tr.dataset.row, 10)];
@@ -3437,19 +3691,29 @@ function goToGoogleForm() {
 
         const btn = document.getElementById('fraudBtn');
         if (btn) {
-            const significant = findings.filter(f => f.level !== 'low').length;
-            btn.textContent = significant ? `🕵️ Cek Fraud (${significant})` : '🕵️ Cek Fraud';
-            btn.classList.toggle('alert', findings.some(f => f.level === 'high'));
+            btn.classList.remove('alert', 'warn');
+            if (verdict.level === 'bad') {
+                btn.textContent = `🚨 Indikasi Kuat (${verdict.high})`;
+                btn.classList.add('alert');
+            } else if (verdict.level === 'warn') {
+                btn.textContent = `⚠️ Perlu Diperiksa (${verdict.med})`;
+                btn.classList.add('warn');
+            } else {
+                btn.textContent = '✅ Cek Fraud';
+            }
         }
 
         if (DOM.fraudPanel && DOM.fraudPanel.classList.contains('show')) {
-            updateFraudPanel(findings);
+            updateFraudPanel();
         }
     }
 
     function toggleFraud() {
         DOM.fraudPanel.classList.toggle('show');
-        if (DOM.fraudPanel.classList.contains('show')) updateFraudPanel();
+        if (DOM.fraudPanel.classList.contains('show')) {
+            syncActiveSheetIntoStore();
+            updateFraudPanel();
+        }
     }
 
     function setFraudView(view) {
@@ -3458,68 +3722,166 @@ function goToGoogleForm() {
     }
 
     function jumpToRow(i) {
+        if (i < 0) return;
         selectCell(i, 2);
         const td = document.querySelector(`td[data-row="${i}"][data-col="2"]`);
         if (td) td.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
 
-    function updateFraudPanel(findings) {
+    function renderVerdictBanner(v) {
+        const box = document.getElementById('fraudVerdict');
+        box.className = 'fraud-verdict ' + v.level;
+        box.innerHTML = '';
+        const title = document.createElement('div');
+        title.className = 'fraud-verdict-title';
+        const msg = document.createElement('div');
+
+        if (v.level === 'ok') {
+            title.textContent = '🟢 Tidak ada indikasi kecurangan';
+            msg.textContent = `Tidak ditemukan kejanggalan pada ${v.tx} transaksi di ${sheets.length} sheet. Pembukuan otomatis di belakang layar seimbang dan cocok dengan saldo di tabel.`;
+        } else if (v.level === 'warn') {
+            title.textContent = '🟡 Perlu diperiksa';
+            msg.textContent = `Ada ${v.med} kejanggalan yang perlu dicocokkan dengan nota atau mutasi bank. Belum tentu kecurangan.`;
+        } else {
+            title.textContent = '🔴 Indikasi kuat kecurangan atau manipulasi data';
+            msg.textContent = `Ada ${v.high} temuan serius${v.med ? ' dan ' + v.med + ' kejanggalan lain' : ''}. Segera periksa bukti asli dan pihak yang memegang data.`;
+        }
+        box.append(title, msg);
+
+        if (sheets.length > 1) {
+            const ul = document.createElement('div');
+            ul.style.marginTop = '6px';
+            v.perSheet.forEach(p => {
+                const line = document.createElement('div');
+                const icon = p.high ? '🔴' : p.med ? '🟡' : '🟢';
+                line.textContent = `${icon} ${p.sheet.name}: ${p.high ? p.high + ' serius' : ''}${p.high && p.med ? ', ' : ''}${p.med ? p.med + ' perlu dicek' : ''}${!p.high && !p.med ? 'aman' : ''}`;
+                ul.appendChild(line);
+            });
+            box.appendChild(ul);
+        }
+    }
+
+    function updateFraudPanel() {
         const s = getActiveSheet();
+        const v = computeVerdict(true);
+        renderVerdictBanner(v);
+
         document.getElementById('fraudSheetName').textContent = s ? s.name : '';
-        document.getElementById('fraudTabFindings').classList.toggle('active', fraudView === 'findings');
-        document.getElementById('fraudTabAudit').classList.toggle('active', fraudView === 'audit');
+        ['Findings', 'Audit', 'Ledger'].forEach(k => {
+            document.getElementById('fraudTab' + k).classList.toggle('active', fraudView === k.toLowerCase());
+        });
 
         const list = document.getElementById('fraudList');
         list.innerHTML = '';
+        const emptyBox = (text) => {
+            const el = document.createElement('div');
+            el.className = 'fraud-ok';
+            el.textContent = text;
+            list.appendChild(el);
+        };
 
         if (fraudView === 'findings') {
-            findings = findings || runFraudChecks();
-            if (!findings.length) {
-                const ok = document.createElement('div');
-                ok.className = 'fraud-ok';
-                ok.textContent = '✅ Tidak ada anomali terdeteksi di sheet ini.';
-                list.appendChild(ok);
-                return;
-            }
+            const active = v.perSheet.find(p => p.sheet.id === activeSheetId);
+            const findings = active ? active.findings : [];
+            if (!findings.length) return emptyBox('✅ Tidak ada anomali terdeteksi di sheet ini.');
             const levelLabel = { high: 'TINGGI', med: 'SEDANG', low: 'INFO' };
             findings.forEach(f => {
                 const el = document.createElement('div');
                 el.className = 'fraud-item ' + f.level;
                 const t = document.createElement('div');
                 t.className = 'fraud-item-title';
-                t.textContent = `[${levelLabel[f.level]}] Baris ${f.row + 1}: ${f.title}`;
+                t.textContent = `[${levelLabel[f.level]}] ${f.row >= 0 ? 'Baris ' + (f.row + 1) : 'Seluruh sheet'}: ${f.title}`;
                 const m = document.createElement('div');
                 m.className = 'fraud-item-msg';
                 m.textContent = f.msg;
                 el.append(t, m);
-                el.onclick = () => jumpToRow(f.row);
+                if (f.row >= 0) el.onclick = () => jumpToRow(f.row);
+                else el.style.cursor = 'default';
                 list.appendChild(el);
             });
-        } else {
+        } else if (fraudView === 'audit') {
+            const ch = s ? verifyChain(s) : { ok: true, count: 0 };
+            const status = document.createElement('div');
+            status.className = 'fraud-item ' + (ch.ok ? '' : 'high');
+            status.style.cursor = 'default';
+            status.textContent = ch.ok
+                ? `🔒 Rantai jejak utuh (${ch.count} catatan, tiap catatan terikat hash catatan sebelumnya).`
+                : '❌ ' + ch.reason;
+            list.appendChild(status);
+
             const log = (s && s.auditLog) ? s.auditLog.slice().reverse() : [];
-            if (!log.length) {
-                const empty = document.createElement('div');
-                empty.className = 'fraud-ok';
-                empty.textContent = 'Belum ada perubahan tercatat di sheet ini.';
-                list.appendChild(empty);
-                return;
-            }
+            if (!log.length) return emptyBox('Belum ada perubahan tercatat di sheet ini.');
             log.slice(0, 100).forEach(entry => {
                 const el = document.createElement('div');
                 el.className = 'fraud-item';
                 el.style.cursor = 'default';
                 const t = document.createElement('div');
                 t.className = 'fraud-item-title';
-                t.textContent = `${entry.action} (baris ${entry.row})`;
+                t.textContent = `#${entry.seq || ''} ${entry.action} (baris ${entry.row})`;
                 const m = document.createElement('div');
                 m.className = 'fraud-item-msg';
                 m.textContent = entry.detail;
                 const tm = document.createElement('div');
                 tm.className = 'fraud-item-time';
-                tm.textContent = new Date(entry.t).toLocaleString();
+                tm.textContent = new Date(entry.t).toLocaleString() + (entry.hash ? ' · ' + entry.hash.slice(0, 10) : '');
                 el.append(t, m, tm);
                 list.appendChild(el);
             });
+        } else {
+            const L = buildLedger(data);
+            const intro = document.createElement('div');
+            intro.className = 'fraud-note';
+            intro.style.marginBottom = '8px';
+            intro.textContent = 'Dibuat otomatis dari catatan single entry. Pengguna tidak perlu mengisi debit/kredit.';
+            list.appendChild(intro);
+
+            const table = document.createElement('table');
+            table.className = 'tb-table';
+            table.innerHTML = '<thead><tr><th>Akun</th><th>Debit</th><th>Kredit</th></tr></thead>';
+            const tbody = document.createElement('tbody');
+            const names = ACCT_ORDER.filter(n => L.accts[n]).concat(Object.keys(L.accts).filter(n => ACCT_ORDER.indexOf(n) < 0));
+            names.forEach(n => {
+                const tr = document.createElement('tr');
+                const a = L.accts[n];
+                [n, fmtNum(a.d), fmtNum(a.c)].forEach((txt, idx) => {
+                    const td = document.createElement('td');
+                    td.textContent = txt;
+                    if (idx > 0) td.className = 'num';
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            const total = document.createElement('tr');
+            total.className = 'tb-total';
+            ['TOTAL', fmtNum(L.totalD), fmtNum(L.totalC)].forEach((txt, idx) => {
+                const td = document.createElement('td');
+                td.textContent = txt;
+                if (idx > 0) td.className = 'num';
+                total.appendChild(td);
+            });
+            tbody.appendChild(total);
+            table.appendChild(tbody);
+            list.appendChild(table);
+
+            const lastSaldo = data.length ? (parseFloat(data[data.length - 1].saldo) || 0) : 0;
+            const kas = L.kasAfter.length ? L.kasAfter[L.kasAfter.length - 1] : 0;
+            const matches = !config.autoCalc || Math.abs(kas - lastSaldo) < 0.005;
+            const rec = document.createElement('div');
+            rec.className = 'fraud-item ' + (L.balanced && matches ? '' : 'high');
+            rec.style.cursor = 'default';
+            rec.style.marginTop = '10px';
+            rec.textContent = (L.balanced ? '✅ Debit = Kredit (neraca saldo seimbang). ' : '❌ Debit ≠ Kredit. ')
+                + (matches ? '✅ Kas buku besar = saldo terakhir di tabel.' : `❌ Kas buku besar ${fmtNum(kas)} ≠ saldo tabel ${fmtNum(lastSaldo)}.`);
+            list.appendChild(rec);
+
+            const adj = L.accts['Penyesuaian Saldo (tanpa bukti)'];
+            if (adj) {
+                const w = document.createElement('div');
+                w.className = 'fraud-item med';
+                w.style.cursor = 'default';
+                w.textContent = `⚠️ Ada penyesuaian saldo manual tanpa transaksi: ${fmtNum(adj.d)} (menambah) / ${fmtNum(adj.c)} (mengurangi).`;
+                list.appendChild(w);
+            }
         }
     }
 
