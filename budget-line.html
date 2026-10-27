@@ -998,7 +998,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             padding: 18px;
             z-index: 101;
-            width: 540px;
+            width: 640px;
             max-width: 94vw;
             max-height: 70vh;
             display: none;
@@ -1099,6 +1099,12 @@
         .debt-table { min-width: 640px; }
         .sheet-grid tr.row-system td { background: #eff6ff; }
         .sheet-grid tr.row-system th.row-header { border-left: 3px solid #3b82f6; }
+        .an-title { font-size: 12px; font-weight: 700; color: #0f766e; text-transform: uppercase; letter-spacing: 0.5px; margin: 12px 0 6px; }
+        .an-graph { min-width: 90px; }
+        .an-bar-wrap { height: 6px; background: #f1f5f9; border-radius: 3px; margin: 2px 0; overflow: hidden; }
+        .an-bar { height: 100%; border-radius: 3px; background: #94a3b8; }
+        .an-bar.in { background: #16a34a; }
+        .an-bar.out { background: #dc2626; }
         .step-card { border: 1px solid #e2e8f0; border-left: 4px solid #94a3b8; border-radius: 8px; margin-bottom: 8px; background: #fff; }
         .step-card.ok { border-left-color: #16a34a; }
         .step-card.warn { border-left-color: #f59e0b; background: #fffbeb; }
@@ -1386,6 +1392,7 @@
     <div class="fraud-verdict ok" id="fraudVerdict"></div>
     <div class="fraud-tabs">
         <button class="fraud-tab active" id="fraudTabCycle" onclick="setFraudView('cycle')">Siklus</button>
+        <button class="fraud-tab" id="fraudTabAnalysis" onclick="setFraudView('analysis')">Analisis</button>
         <button class="fraud-tab" id="fraudTabFindings" onclick="setFraudView('findings')">Temuan</button>
         <button class="fraud-tab" id="fraudTabAudit" onclick="setFraudView('audit')">Jejak Perubahan</button>
     </div>
@@ -2863,10 +2870,12 @@ function goToGoogleForm() {
     }
 
     function updateQuickStats() {
-        const totalA = data.reduce((sum, r) => sum + (parseFloat(r.metricA) || 0), 0);
-        const totalB = data.reduce((sum, r) => sum + (parseFloat(r.metricB) || 0), 0);
-        const avgRatio = data.length > 0 ? data.reduce((sum, r) => sum + (parseFloat(r.rasio) || 0), 0) / data.length : 0;
-        const optimalCount = data.filter(r => r.status === 'OPTIMAL').length;
+        // Baris sistem dari Utang & Piutang bukan pendapatan/biaya, jadi tidak ikut dihitung
+        const rows = data.filter(r => !r._debtRef);
+        const totalA = rows.reduce((sum, r) => sum + (parseFloat(r.metricA) || 0), 0);
+        const totalB = rows.reduce((sum, r) => sum + (parseFloat(r.metricB) || 0), 0);
+        const avgRatio = rows.length > 0 ? rows.reduce((sum, r) => sum + (parseFloat(r.rasio) || 0), 0) / rows.length : 0;
+        const optimalCount = rows.filter(r => r.status === 'OPTIMAL').length;
 
         document.getElementById('statTotalA').textContent = totalA.toLocaleString();
         document.getElementById('statTotalB').textContent = totalB.toLocaleString();
@@ -3924,9 +3933,27 @@ function goToGoogleForm() {
             {
                 n: 1, title: 'Bukti & pencatatan',
                 level: stepLevel(findings, 1),
-                sum: count(1) ? `${count(1)} kejanggalan pada catatan` : 'Keterangan, nominal, dan tanggal wajar',
+                sum: count(1) ? `${count(1)} kejanggalan dari ${tx} transaksi` : `${tx} transaksi diperiksa, semua wajar`,
                 render: body => {
-                    body.appendChild(mkLine('Memeriksa keterangan kosong, nominal negatif, duplikat, pengeluaran tidak wajar, batas persetujuan, dan tanggal.', ''));
+                    const limitOn = (parseFloat(config.fraudApprovalLimit) || 0) > 0;
+                    const checks = [
+                        ['Keterangan terisi', ['Tanpa keterangan']],
+                        ['Tidak ada nominal negatif', ['Nilai negatif']],
+                        ['Tidak ada input ganda', ['Kemungkinan input ganda']],
+                        ['Pengeluaran wajar (tidak lebih dari 5× median)', ['Pengeluaran jauh di atas biasanya']],
+                        [limitOn ? 'Tidak tepat di bawah batas persetujuan' : 'Batas persetujuan (atur di Konfig)', ['Tepat di bawah batas persetujuan'], !limitOn],
+                        ['Tanggal valid dan tidak di masa depan', ['Format tanggal tidak valid', 'Tanggal di masa depan']],
+                        ['Urutan tanggal tidak mundur', ['Tanggal mundur']],
+                        ['Nominal berulang (informasi)', ['Nominal berulang']],
+                        ['Pembayaran utang/piutang wajar', ['Pembayaran sebelum pinjaman', 'Pembayaran melebihi pinjaman']],
+                        ['Piutang ditagih tepat waktu', ['Piutang lama belum ditagih', 'Pinjaman baru ke pihak yang belum melunasi']]
+                    ];
+                    const rows = checks.map(c => {
+                        const n = byStep(1).filter(f => c[1].indexOf(f.title) >= 0).length;
+                        return { cells: [c[0], c[2] ? '➖ Nonaktif' : n ? `⚠️ ${n} temuan` : '✅ Lolos'] };
+                    });
+                    body.appendChild(mkLine(`${tx} transaksi diperiksa.`, ''));
+                    body.appendChild(mkTable(['Pemeriksaan', 'Hasil'], rows));
                     appendFindingItems(body, byStep(1));
                 }
             },
@@ -4106,13 +4133,265 @@ function goToGoogleForm() {
         });
     }
 
+    // ============================================
+    // ANALISIS KEUANGAN
+    // Dihitung dari transaksi operasional (baris sistem utang/piutang tidak dihitung sebagai pemasukan/biaya).
+    // Pedoman penilaian bersifat umum, bukan nasihat keuangan.
+    // ============================================
+    const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+    function monthLabel(key) {
+        const p = key.split('-');
+        return MONTH_NAMES[parseInt(p[1], 10) - 1] + ' ' + p[0];
+    }
+
+    function pctText(v) {
+        return (Math.round(v * 10) / 10).toLocaleString() + '%';
+    }
+
+    function topGroups(rows, field, limit) {
+        const g = {};
+        rows.forEach(r => {
+            const v = parseFloat(r[field]) || 0;
+            if (v <= 0) return;
+            const key = String(r.entity == null ? '' : r.entity).trim() || '(Tanpa Nama)';
+            g[key] = (g[key] || 0) + v;
+        });
+        return Object.keys(g).map(k => ({ name: k, total: g[k] })).sort((x, y) => y.total - x.total).slice(0, limit);
+    }
+
+    function rateLevel(v, goodFn, warnFn) {
+        if (v === null || v === undefined || !isFinite(v)) return 'na';
+        return goodFn(v) ? 'good' : warnFn(v) ? 'warn' : 'bad';
+    }
+
+    function analyzeBooks(rows, s) {
+        const L = buildLedger(rows);
+        const rep = financialReport(L);
+        const ops = rows.filter(r => !r._debtRef);
+        const today = todayStr();
+
+        const monthsMap = {};
+        rows.forEach((r, i) => {
+            if (!DATE_RE.test(r.tanggal || '')) return;
+            const k = r.tanggal.slice(0, 7);
+            const m = monthsMap[k] = monthsMap[k] || { a: 0, b: 0, saldo: 0, lastDate: '' };
+            if (!r._debtRef) {
+                m.a += parseFloat(r.metricA) || 0;
+                m.b += parseFloat(r.metricB) || 0;
+            }
+            if (r.tanggal >= m.lastDate) { m.lastDate = r.tanggal; m.saldo = L.kasAfter[i]; }
+        });
+        const keys = Object.keys(monthsMap).sort();
+        const months = keys.slice(-12).map(k => ({ key: k, a: monthsMap[k].a, b: monthsMap[k].b, saldo: monthsMap[k].saldo }));
+
+        const pendapatan = ops.reduce((n, r) => n + Math.max(parseFloat(r.metricA) || 0, 0), 0);
+        const beban = ops.reduce((n, r) => n + Math.max(parseFloat(r.metricB) || 0, 0), 0);
+        const laba = pendapatan - beban;
+        const monthCount = keys.length || 1;
+        const avgMonthlyExpense = beban / monthCount;
+
+        const harta = rep.kas + rep.piutang;
+        const expenseRatio = pendapatan > 0 ? beban / pendapatan * 100 : null;
+        const savingRate = pendapatan > 0 ? laba / pendapatan * 100 : null;
+        const runway = avgMonthlyExpense > 0 ? Math.max(rep.kas, 0) / avgMonthlyExpense : null;
+        const debtRatio = rep.utang <= 0.005 ? 0 : (harta > 0 ? rep.utang / harta * 100 : null);
+
+        let piutangSisa = 0, piutangAgeWeighted = 0;
+        getDebts(s).forEach(d => {
+            const sisa = debtSisa(d);
+            if (d.jenis !== 'piutang' || sisa <= 0.005 || !DATE_RE.test(d.tanggal || '')) return;
+            piutangSisa += sisa;
+            piutangAgeWeighted += sisa * daysBetween(d.tanggal, today);
+        });
+        const piutangAge = piutangSisa > 0 ? piutangAgeWeighted / piutangSisa : null;
+
+        let growth = null, growthLabel = '';
+        if (months.length >= 2) {
+            const last = months[months.length - 1], prev = months[months.length - 2];
+            if (prev.b > 0) growth = (last.b - prev.b) / prev.b * 100;
+            growthLabel = `${monthLabel(last.key)} vs ${monthLabel(prev.key)}`;
+        }
+
+        const indicators = [
+            { name: 'Rasio pengeluaran', value: expenseRatio, text: expenseRatio === null ? 'n/a' : pctText(expenseRatio),
+              guide: 'Pengeluaran ÷ pemasukan. Baik ≤ 70%, waspada ≤ 90%',
+              level: rateLevel(expenseRatio, v => v <= 70, v => v <= 90),
+              msg: v => `Pengeluaran menghabiskan ${pctText(v)} dari pemasukan.` },
+            { name: 'Rasio tabungan', value: savingRate, text: savingRate === null ? 'n/a' : pctText(savingRate),
+              guide: 'Selisih ÷ pemasukan. Baik ≥ 20%, waspada ≥ 0%',
+              level: rateLevel(savingRate, v => v >= 20, v => v >= 0),
+              msg: v => v < 0 ? `Pengeluaran melebihi pemasukan (defisit ${fmtNum(Math.abs(laba))}).` : `Hanya ${pctText(v)} pemasukan yang tersisa.` },
+            { name: 'Kas bertahan', value: runway, text: runway === null ? 'n/a' : (Math.round(runway * 10) / 10).toLocaleString() + ' bulan',
+              guide: 'Kas ÷ rata-rata pengeluaran per bulan. Baik ≥ 6, waspada ≥ 3',
+              level: rateLevel(runway, v => v >= 6, v => v >= 3),
+              msg: v => `Kas hanya cukup untuk ${(Math.round(v * 10) / 10).toLocaleString()} bulan pengeluaran.` },
+            { name: 'Utang terhadap harta', value: debtRatio, text: debtRatio === null ? 'n/a' : pctText(debtRatio),
+              guide: 'Utang ÷ (kas + piutang). Baik ≤ 30%, waspada ≤ 50%',
+              level: rateLevel(debtRatio, v => v <= 30, v => v <= 50),
+              msg: v => `Utang sudah ${pctText(v)} dari harta.` },
+            { name: 'Umur rata-rata piutang', value: piutangAge, text: piutangAge === null ? 'tidak ada piutang' : Math.round(piutangAge) + ' hari',
+              guide: 'Rata-rata lama sisa piutang belum tertagih. Baik ≤ 30, waspada ≤ 60',
+              level: rateLevel(piutangAge, v => v <= 30, v => v <= 60),
+              msg: v => `Piutang rata-rata sudah ${Math.round(v)} hari belum tertagih.` },
+            { name: 'Kenaikan pengeluaran', value: growth, text: growth === null ? 'n/a' : (growth > 0 ? '+' : '') + pctText(growth),
+              guide: (growthLabel ? growthLabel + '. ' : '') + 'Baik ≤ 10%, waspada ≤ 25% (bulan berjalan belum penuh)',
+              level: rateLevel(growth, v => v <= 10, v => v <= 25),
+              msg: v => `Pengeluaran naik ${pctText(v)} (${growthLabel}).` }
+        ];
+
+        const topExpense = topGroups(ops, 'metricB', 5);
+        const topIncome = topGroups(ops, 'metricA', 3);
+
+        const insights = [];
+        if (ops.some(r => (parseFloat(r.metricA) || 0) || (parseFloat(r.metricB) || 0))) {
+            insights.push({ level: laba < 0 ? 'bad' : 'good', text: `Total pemasukan ${fmtNum(pendapatan)}, pengeluaran ${fmtNum(beban)}, ${laba >= 0 ? 'selisih lebih' : 'defisit'} ${fmtNum(Math.abs(laba))}.` });
+        }
+        indicators.forEach(ind => {
+            if (ind.level === 'warn' || ind.level === 'bad') insights.push({ level: ind.level, text: ind.msg(ind.value) });
+        });
+        if (topExpense.length && beban > 0) {
+            insights.push({ level: 'good', text: `Pengeluaran terbesar: ${topExpense[0].name} (${pctText(topExpense[0].total / beban * 100)} dari total pengeluaran).` });
+        }
+
+        return { months, pendapatan, beban, laba, rep, indicators, topExpense, topIncome, insights, hasData: ops.some(r => (parseFloat(r.metricA) || 0) || (parseFloat(r.metricB) || 0)) };
+    }
+
+    function barCell(value, max, cls) {
+        const wrap = document.createElement('div');
+        wrap.className = 'an-bar-wrap';
+        const bar = document.createElement('div');
+        bar.className = 'an-bar ' + (cls || '');
+        bar.style.width = (max > 0 ? Math.max(0, Math.min(100, value / max * 100)) : 0) + '%';
+        wrap.appendChild(bar);
+        return wrap;
+    }
+
+    function renderAnalysis(list, s) {
+        const A = analyzeBooks(data, s);
+        if (!A.hasData) {
+            const e = document.createElement('div');
+            e.className = 'fraud-ok';
+            e.textContent = 'Belum ada transaksi untuk dianalisis. Isi pemasukan dan pengeluaran di tabel dulu.';
+            list.appendChild(e);
+            return;
+        }
+        const icon = { good: '✅', warn: '⚠️', bad: '❌', na: '➖' };
+        const label = { good: 'Baik', warn: 'Waspada', bad: 'Perlu perhatian', na: '-' };
+
+        const h = (text) => {
+            const d = document.createElement('div');
+            d.className = 'an-title';
+            d.textContent = text;
+            return d;
+        };
+
+        // 1. Kesimpulan singkat
+        list.appendChild(h('Kesimpulan singkat'));
+        A.insights.forEach(ins => {
+            list.appendChild(mkLine((ins.level === 'good' ? '✅ ' : ins.level === 'warn' ? '⚠️ ' : '❌ ') + ins.text,
+                ins.level === 'bad' ? 'high' : ins.level === 'warn' ? 'med' : ''));
+        });
+
+        // 2. Ringkasan per bulan
+        list.appendChild(h('Ringkasan per bulan'));
+        const maxVal = Math.max(1, ...A.months.map(m => Math.max(m.a, m.b)));
+        const mt = document.createElement('table');
+        mt.className = 'tb-table';
+        mt.innerHTML = '<thead><tr><th>Bulan</th><th>Pemasukan</th><th>Pengeluaran</th><th>Selisih</th><th>Rasio biaya</th><th>Saldo kas akhir</th><th>Grafik</th></tr></thead>';
+        const mb = document.createElement('tbody');
+        A.months.forEach(m => {
+            const tr = document.createElement('tr');
+            const sel = m.a - m.b;
+            [monthLabel(m.key), fmtNum(m.a), fmtNum(m.b), fmtNum(sel), m.a > 0 ? pctText(m.b / m.a * 100) : '-', fmtNum(m.saldo)].forEach((txt, idx) => {
+                const td = document.createElement('td');
+                td.textContent = txt;
+                if (idx > 0) td.className = 'num';
+                if (idx === 3) td.style.color = sel < 0 ? '#dc2626' : '#16a34a';
+                tr.appendChild(td);
+            });
+            const g = document.createElement('td');
+            g.className = 'an-graph';
+            g.append(barCell(m.a, maxVal, 'in'), barCell(m.b, maxVal, 'out'));
+            tr.appendChild(g);
+            mb.appendChild(tr);
+        });
+        const tot = document.createElement('tr');
+        tot.className = 'tb-total';
+        ['TOTAL', fmtNum(A.pendapatan), fmtNum(A.beban), fmtNum(A.laba), A.pendapatan > 0 ? pctText(A.beban / A.pendapatan * 100) : '-', fmtNum(A.rep.kas), ''].forEach((txt, idx) => {
+            const td = document.createElement('td');
+            td.textContent = txt;
+            if (idx > 0) td.className = 'num';
+            tot.appendChild(td);
+        });
+        mb.appendChild(tot);
+        mt.appendChild(mb);
+        list.appendChild(mt);
+        const legend = document.createElement('div');
+        legend.className = 'fraud-note';
+        legend.textContent = 'Grafik: batang hijau = pemasukan, batang merah = pengeluaran. Pinjaman, cicilan, dan penagihan tidak dihitung sebagai pemasukan/pengeluaran.';
+        list.appendChild(legend);
+
+        // 3. Rasio keuangan
+        list.appendChild(h('Rasio keuangan'));
+        const rt = document.createElement('table');
+        rt.className = 'tb-table';
+        rt.innerHTML = '<thead><tr><th>Indikator</th><th>Nilai</th><th>Pedoman</th><th>Penilaian</th></tr></thead>';
+        const rb = document.createElement('tbody');
+        A.indicators.forEach(ind => {
+            const tr = document.createElement('tr');
+            [ind.name, ind.text, ind.guide, `${icon[ind.level]} ${label[ind.level]}`].forEach((txt, idx) => {
+                const td = document.createElement('td');
+                td.textContent = txt;
+                if (idx === 1) td.className = 'num';
+                if (idx === 2) td.style.cssText = 'font-size:11px;color:#64748b;';
+                tr.appendChild(td);
+            });
+            rb.appendChild(tr);
+        });
+        rt.appendChild(rb);
+        list.appendChild(rt);
+
+        // 4. Pengeluaran & pemasukan terbesar
+        const topTable = (title, items, total, cls) => {
+            list.appendChild(h(title));
+            const t = document.createElement('table');
+            t.className = 'tb-table';
+            t.innerHTML = `<thead><tr><th>${config.entity}</th><th>Jumlah</th><th>Porsi</th><th></th></tr></thead>`;
+            const b = document.createElement('tbody');
+            items.forEach(it => {
+                const tr = document.createElement('tr');
+                [it.name, fmtNum(it.total), total > 0 ? pctText(it.total / total * 100) : '-'].forEach((txt, idx) => {
+                    const td = document.createElement('td');
+                    td.textContent = txt;
+                    if (idx > 0) td.className = 'num';
+                    tr.appendChild(td);
+                });
+                const g = document.createElement('td');
+                g.className = 'an-graph';
+                g.appendChild(barCell(it.total, items[0].total, cls));
+                tr.appendChild(g);
+                b.appendChild(tr);
+            });
+            t.appendChild(b);
+            list.appendChild(t);
+        };
+        if (A.topExpense.length) topTable('Pengeluaran terbesar', A.topExpense, A.beban, 'out');
+        if (A.topIncome.length) topTable('Sumber pemasukan terbesar', A.topIncome, A.pendapatan, 'in');
+
+        const note = document.createElement('div');
+        note.className = 'fraud-note';
+        note.textContent = 'Pedoman bersifat umum untuk membantu membaca angka, bukan nasihat keuangan. Sesuaikan dengan kondisi dan kebutuhanmu.';
+        list.appendChild(note);
+    }
+
     function updateFraudPanel() {
         const s = getActiveSheet();
         const v = computeVerdict(true);
         renderVerdictBanner(v);
 
         document.getElementById('fraudSheetName').textContent = s ? s.name : '';
-        [['Cycle', 'cycle'], ['Findings', 'findings'], ['Audit', 'audit']].forEach(([k, val]) => {
+        [['Cycle', 'cycle'], ['Analysis', 'analysis'], ['Findings', 'findings'], ['Audit', 'audit']].forEach(([k, val]) => {
             document.getElementById('fraudTab' + k).classList.toggle('active', fraudView === val);
         });
 
@@ -4123,6 +4402,8 @@ function goToGoogleForm() {
 
         if (fraudView === 'cycle') {
             renderCycle(list, s, findings);
+        } else if (fraudView === 'analysis') {
+            renderAnalysis(list, s);
         } else if (fraudView === 'findings') {
             if (!findings.length) {
                 const ok = document.createElement('div');
