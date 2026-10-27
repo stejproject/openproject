@@ -1080,6 +1080,25 @@
         .fraud-verdict.bad { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
         .fraud-verdict-title { font-weight: 700; font-size: 14px; }
 
+        .debt-panel { position: fixed; right: 20px; bottom: 70px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); padding: 18px; z-index: 101; width: 800px; max-width: 96vw; max-height: 78vh; display: none; flex-direction: column; }
+        .debt-panel.show { display: flex; }
+        .debt-panel h4 { font-size: 13px; color: #0f766e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        .debt-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .debt-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; background: #f8fafc; }
+        .debt-card.warn { background: #fffbeb; border-color: #fcd34d; }
+        .debt-card.bad { background: #fef2f2; border-color: #fca5a5; }
+        .debt-card-label { font-size: 11px; color: #64748b; }
+        .debt-card-value { font-size: 16px; font-weight: 700; color: #0f766e; font-family: 'JetBrains Mono', monospace; }
+        .debt-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; margin-bottom: 10px; }
+        .debt-form input, .debt-form select, .debt-pay-form input { padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; }
+        .debt-row { cursor: pointer; }
+        .debt-row:hover td { background: #f0fdfa; }
+        .debt-detail { background: #f8fafc; padding: 8px 10px; }
+        .debt-pay-line { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 3px 0; }
+        .debt-pay-form { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+        .debt-table { min-width: 640px; }
+        .sheet-grid tr.row-system td { background: #eff6ff; }
+        .sheet-grid tr.row-system th.row-header { border-left: 3px solid #3b82f6; }
         .step-card { border: 1px solid #e2e8f0; border-left: 4px solid #94a3b8; border-radius: 8px; margin-bottom: 8px; background: #fff; }
         .step-card.ok { border-left-color: #16a34a; }
         .step-card.warn { border-left-color: #f59e0b; background: #fffbeb; }
@@ -1175,6 +1194,7 @@
     <div class="ribbon-group">
         <button class="ribbon-btn" onclick="toggleConfig()">⚙️ Konfig</button>
         <button class="ribbon-btn" onclick="toggleQuickStats()">📈 Statistik</button>
+        <button class="ribbon-btn" id="debtBtn" onclick="toggleDebt()" title="Catat dan pantau piutang (tagihan saya) dan utang (kewajiban saya)">🤝 Utang &amp; Piutang</button>
         <button class="ribbon-btn" id="fraudBtn" onclick="toggleFraud()" title="Periksa pembukuan: siklus akuntansi, kejanggalan, dan jejak perubahan">🛡️ Pemeriksaan</button>
     </div>
 
@@ -1231,7 +1251,7 @@
     </div>
     <div class="status-right">
         <div class="status-item">💾 Auto-saved</div>
-        <div class="status-item" id="version"> v3.4</div>
+        <div class="status-item" id="version"> v3.5</div>
     </div>
 </div>
 
@@ -1331,6 +1351,30 @@
         <span>Record Optimal:</span>
         <span class="stat-value" id="statOptimal">0</span>
     </div>
+</div>
+
+<!-- Panel Utang & Piutang -->
+<div class="debt-panel" id="debtPanel">
+    <h4>
+        <span>🤝 Utang &amp; Piutang — <span id="debtSheetName"></span></span>
+        <button class="close-btn" style="width:24px;height:24px;font-size:16px;background:#e2e8f0;color:#475569;" onclick="toggleDebt()">×</button>
+    </h4>
+    <div class="debt-cards" id="debtSummary"></div>
+    <div class="fraud-note" id="debtAging" style="margin:6px 0 10px;"></div>
+    <div class="debt-form">
+        <select id="dJenis">
+            <option value="piutang">Piutang: saya meminjamkan uang</option>
+            <option value="utang">Utang: saya meminjam uang</option>
+        </select>
+        <input type="text" id="dPihak" placeholder="Nama pihak (mis. Budi)">
+        <input type="number" id="dJumlah" placeholder="Jumlah" min="0" step="any">
+        <input type="date" id="dTanggal" title="Tanggal pinjaman">
+        <input type="date" id="dJatuhTempo" title="Jatuh tempo (opsional)">
+        <input type="text" id="dCatatan" placeholder="Catatan (opsional)">
+        <button class="lock-btn" onclick="addDebt()">➕ Simpan</button>
+    </div>
+    <div class="fraud-list" id="debtList"></div>
+    <div class="fraud-note">Cukup catat sekali. Kas di sheet ini menyesuaikan otomatis (baris bertanda biru), dan pembukuan Piutang/Utang dibuat di belakang layar. Klik sebuah baris untuk mencatat pembayaran atau melihat riwayat. Menghapus catatan butuh alasan dan akan ditandai di Pemeriksaan.</div>
 </div>
 
 <!-- Panel Deteksi Kecurangan -->
@@ -1466,7 +1510,7 @@ function goToGoogleForm() {
 </script>
 <script>
     // ============================================
-    // Budget-Line - v3.4
+    // Budget-Line - v3.5
     // Multi-Sheet Edition (tab per sheet, seperti Excel/Google Sheets)
     // v3.1: Saldo Sebelumnya bisa diedit manual (override) dan memperbarui
     //       saldo, rasio, status baris tsb serta semua baris di bawahnya.
@@ -1524,6 +1568,7 @@ function goToGoogleForm() {
         activeSheetLabel: null,
         paywallOverlay: null,
         fraudPanel: null,
+        debtPanel: null,
         trialBanner: null
     };
 
@@ -1582,6 +1627,7 @@ function goToGoogleForm() {
             integrityIssues: [],
             lockedUntil: '',
             lockOverrides: [],
+            debts: [],
             seal: ''
         };
     }
@@ -1618,6 +1664,8 @@ function goToGoogleForm() {
         if (DOM.fraudPanel && DOM.fraudPanel.classList.contains('show')) {
             updateFraudPanel();
         }
+        debtOpenId = null;
+        updateDebtPanel();
     }
 
     function addSheet() {
@@ -1731,6 +1779,7 @@ function goToGoogleForm() {
         DOM.paywallOverlay = document.getElementById('paywallOverlay');
         DOM.trialBanner = document.getElementById('trialBanner');
         DOM.fraudPanel = document.getElementById('fraudPanel');
+        DOM.debtPanel = document.getElementById('debtPanel');
 
         // Mulai dengan satu sheet default (nama otomatis "Mitra/Agen 1")
         const firstSheet = createSheet();
@@ -1773,7 +1822,7 @@ function goToGoogleForm() {
             }
         });
 
-        showToast('✅ Budget-Line v3.4 siap digunakan!', 'success');
+        showToast('✅ Budget-Line v3.5 siap digunakan!', 'success');
     });
 
     window.addEventListener('beforeunload', () => {
@@ -1813,6 +1862,7 @@ function goToGoogleForm() {
         data.forEach((row, rowIndex) => {
             const tr = document.createElement('tr');
             tr.dataset.row = rowIndex;
+            if (row._debtRef) tr.classList.add('row-system');
 
             const th = document.createElement('th');
             th.className = 'row-header';
@@ -1880,7 +1930,7 @@ function goToGoogleForm() {
                 if (cell.key === 'status') {
                     const badgeClass = value === 'OPTIMAL' ? 'status-optimal' :
                                       value === 'CRITICAL' ? 'status-critical' :
-                                      value === 'ERROR' ? 'status-error' : 'status-balanced';
+                                      (value === 'ERROR' || value === 'AUTO') ? 'status-error' : 'status-balanced';
                     displayValue = `<span class="status-badge ${badgeClass}">${value}</span>`;
                 }
 
@@ -1930,6 +1980,7 @@ function goToGoogleForm() {
         DOM.gridBody.appendChild(fragment);
         updateStatus();
         applyFraudMarks();
+        try { updateDebtBadge(); } catch (err) { console.error(err); }
         applySearchHighlight();
 
         if (DOM.quickStats.classList.contains('show')) {
@@ -2379,6 +2430,7 @@ function goToGoogleForm() {
     }
 
     function startEdit(row, col) {
+        if (data[row] && data[row]._debtRef) { showToast('🔗 Baris ini dibuat otomatis dari Utang & Piutang. Ubah lewat panel Utang & Piutang.', 'info'); return; }
         if (col >= FIRST_READONLY_COL) {
             showToast('⚠️ Kolom ini dihitung otomatis', 'info');
             return;
@@ -2418,6 +2470,7 @@ function goToGoogleForm() {
     }
 
     function processCellValue(row, col, value) {
+        if (data[row] && data[row]._debtRef) { showToast('🔗 Baris ini dibuat otomatis dari Utang & Piutang. Ubah lewat panel Utang & Piutang.', 'info'); return false; }
         const oldVal = getCellData(row, col);
         if (String(oldVal) !== String(value) && !guardLocked(row, `ubah ${auditColName(col)}`, col === 0 ? value : null)) {
             return false;
@@ -2531,7 +2584,10 @@ function goToGoogleForm() {
             r.saldo = a - b;
             runningSaldo = r.saldo; // akumulasi untuk baris berikutnya
 
-            if (b === 0) {
+            if (r._debtRef) {
+                r.rasio = 0;
+                r.status = 'AUTO';
+            } else if (b === 0) {
                 r.rasio = 0;
                 r.status = 'ERROR';
             } else {
@@ -2578,6 +2634,7 @@ function goToGoogleForm() {
             showToast('⚠️ Minimal satu baris harus tersisa', 'error');
             return;
         }
+        if (data[selectedCell.row] && data[selectedCell.row]._debtRef) { showToast('🔗 Baris ini dibuat otomatis dari Utang & Piutang. Ubah lewat panel Utang & Piutang.', 'info'); return; }
         if (!guardLocked(selectedCell.row, 'hapus baris')) return;
         {
             const gone = data[selectedCell.row];
@@ -2592,6 +2649,7 @@ function goToGoogleForm() {
     }
 
     function duplicateRow() {
+        if (data[selectedCell.row] && data[selectedCell.row]._debtRef) { showToast('🔗 Baris ini dibuat otomatis dari Utang & Piutang. Ubah lewat panel Utang & Piutang.', 'info'); return; }
         const rowToClone = data[selectedCell.row];
         const clonedRow = {
             ...rowToClone,
@@ -2609,11 +2667,12 @@ function goToGoogleForm() {
     }
 
     function clearAllData() {
-        if (!confirm('⚠️ Yakin ingin menghapus SEMUA data di sheet ini? (sheet lain tidak terpengaruh)')) return;
+        if (!confirm('⚠️ Yakin ingin menghapus SEMUA data di sheet ini? (sheet lain tidak terpengaruh). Catatan utang/piutang sheet ini ikut terhapus.')) return;
 
         const lockedAt = data.findIndex((r, i) => isRowLocked(i));
         if (lockedAt >= 0 && !guardLocked(lockedAt, 'kosongkan seluruh sheet')) return;
         logAudit('Kosongkan sheet', 0, `${data.length} baris dihapus`);
+        { const shc = getActiveSheet(); if (shc) shc.debts = []; }
         data = [makeEmptyRow()];
         selectedCell = { row: 0, col: 0 };
         syncActiveSheetIntoStore();
@@ -2637,6 +2696,7 @@ function goToGoogleForm() {
                 case 'ArrowRight': moveSelection(0, 1); e.preventDefault(); break;
                 case 'Delete':
                     if (selectedCell.col < FIRST_READONLY_COL) {
+                        if (data[selectedCell.row] && data[selectedCell.row]._debtRef) { showToast('🔗 Baris ini dibuat otomatis dari Utang & Piutang. Ubah lewat panel Utang & Piutang.', 'info'); break; }
                         if (!guardLocked(selectedCell.row, `kosongkan ${auditColName(selectedCell.col)}`)) break;
                         logAudit('Kosongkan sel', selectedCell.row, `${auditColName(selectedCell.col)}: "${getCellData(selectedCell.row, selectedCell.col)}" dikosongkan`);
                         setCellData(selectedCell.row, selectedCell.col, '');
@@ -2722,6 +2782,7 @@ function goToGoogleForm() {
     }
 
     function copyRow() {
+        if (data[selectedCell.row] && data[selectedCell.row]._debtRef) { showToast('🔗 Baris ini dibuat otomatis dari Utang & Piutang. Ubah lewat panel Utang & Piutang.', 'info'); return; }
         clipboard = {
             data: { ...data[selectedCell.row] },
             formulas: { ...(data[selectedCell.row]._formulas || {}) }
@@ -3075,11 +3136,12 @@ function goToGoogleForm() {
                 seal: s.seal || '',
                 lockedUntil: s.lockedUntil || '',
                 lockOverrides: s.lockOverrides || [],
+                debts: s.debts || [],
                 integrityIssues: s.integrityIssues || []
             })),
             activeSheetId: activeSheetId,
             exportedAt: new Date().toISOString(),
-            version: '3.4'
+            version: '3.5'
         };
 
         const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
@@ -3130,6 +3192,7 @@ function goToGoogleForm() {
                             seal: s.seal || '',
                             lockedUntil: s.lockedUntil || '',
                             lockOverrides: Array.isArray(s.lockOverrides) ? s.lockOverrides : [],
+                            debts: Array.isArray(s.debts) ? s.debts : [],
                             integrityIssues: Array.isArray(s.integrityIssues) ? s.integrityIssues : []
                         };
                     });
@@ -3241,11 +3304,22 @@ function goToGoogleForm() {
     }
 
     // Segel isi data satu sheet (semua kolom yang tersimpan)
-    function stateHash(rows, s) {
+    function stateHashV34(rows, s) {
         return sha256(JSON.stringify([
             stateHashRows(rows),
             s ? (s.lockedUntil || '') : '',
             s && s.lockOverrides ? s.lockOverrides.length : 0
+        ]));
+    }
+
+    // Format terbaru: ditambah catatan utang/piutang dan penanda baris sistem
+    function stateHash(rows, s) {
+        return sha256(JSON.stringify([
+            stateHashV34(rows, s),
+            sha256(JSON.stringify([
+                (s && s.debts) || [],
+                rows.map(r => r._debtRef ? [r._debtRef.id, r._debtRef.pay || '', r._debtRef.type] : null)
+            ]))
         ]));
     }
 
@@ -3336,7 +3410,6 @@ function goToGoogleForm() {
     // Dipanggil saat file JSON dibuka, SEBELUM hitung ulang apa pun.
     function verifyImportedSheets(ver) {
         const strict = ver >= 3.3;
-        const legacyFormat = ver < 3.4;
         sheets.forEach(s => {
             if (!s.integrityIssues) s.integrityIssues = [];
             const issues = [];
@@ -3344,7 +3417,7 @@ function goToGoogleForm() {
             if (!ch.ok) issues.push(ch.reason);
             if (strict && ch.count > 0 && !ch.hashed) issues.push('Jejak perubahan kehilangan tanda keaslian (hash) pada file versi baru. Kemungkinan dihapus di luar aplikasi.');
             if (s.seal) {
-                const cur = legacyFormat ? stateHashRows(s.data) : stateHash(s.data, s);
+                const cur = ver < 3.4 ? stateHashRows(s.data) : ver < 3.5 ? stateHashV34(s.data, s) : stateHash(s.data, s);
                 if (cur !== s.seal) {
                     issues.push('Angka di sheet ini berubah di luar aplikasi sejak terakhir disimpan (mis. diedit langsung di file JSON).');
                 }
@@ -3361,7 +3434,7 @@ function goToGoogleForm() {
     }
 
     // ---------- Buku besar double entry otomatis (backend) ----------
-    const ACCT_ORDER = ['Kas', 'Pendapatan', 'Beban', 'Saldo Awal', 'Penyesuaian Saldo (tanpa bukti)'];
+    const ACCT_ORDER = ['Kas', 'Piutang', 'Utang', 'Saldo Awal', 'Penyesuaian Saldo (tanpa bukti)', 'Pendapatan', 'Beban'];
 
     function buildLedger(rows) {
         const accts = {};
@@ -3387,9 +3460,12 @@ function goToGoogleForm() {
                 else post(i, 'Penyesuaian saldo manual', 'Kas', 'Penyesuaian Saldo (tanpa bukti)', delta);
                 kas += delta;
             }
-            post(i, 'Pendapatan', 'Kas', 'Pendapatan', a);
+            const ref = r._debtRef;
+            const accIn = ref && ref.type === 'piutang-terima' ? 'Piutang' : ref && ref.type === 'utang-terima' ? 'Utang' : 'Pendapatan';
+            const accOut = ref && ref.type === 'piutang-beri' ? 'Piutang' : ref && ref.type === 'utang-bayar' ? 'Utang' : 'Beban';
+            post(i, accIn === 'Pendapatan' ? 'Pendapatan' : 'Utang/Piutang masuk', 'Kas', accIn, a);
             kas += a;
-            post(i, 'Pengeluaran', 'Beban', 'Kas', b);
+            post(i, accOut === 'Beban' ? 'Pengeluaran' : 'Utang/Piutang keluar', accOut, 'Kas', b);
             kas -= b;
             kasAfter.push(kas);
         });
@@ -3420,7 +3496,7 @@ function goToGoogleForm() {
         }
         if (sheet && Array.isArray(sheet.lockOverrides)) {
             sheet.lockOverrides.forEach(o => {
-                add(-1, o.closed ? 'low' : 'med', 'Perubahan di periode terkunci',
+                add(-1, o.closed ? 'low' : 'med', o.kind === 'debt' ? 'Penghapusan catatan utang/piutang' : 'Perubahan di periode terkunci',
                     `${o.row ? 'Baris ' + o.row + (o.tanggal ? ' (' + o.tanggal + ') ' : ' ') : ''}${o.action}. Alasan: "${o.reason}".`);
             });
         }
@@ -3433,10 +3509,10 @@ function goToGoogleForm() {
         if (!ledger.balanced) {
             add(-1, 'high', 'Jurnal tidak seimbang', `Total debit ${fmtNum(ledger.totalD)} tidak sama dengan total kredit ${fmtNum(ledger.totalC)}.`);
         }
-        const totalIncome = rows.reduce((sum, r) => sum + Math.max(parseFloat(r.metricA) || 0, 0), 0);
+        const totalIncome = rows.reduce((sum, r) => sum + (r._debtRef ? 0 : Math.max(parseFloat(r.metricA) || 0, 0)), 0);
 
         // Median pengeluaran (butuh minimal 5 data pengeluaran)
-        const costs = rows.map(r => parseFloat(r.metricB) || 0).filter(v => v > 0).sort((x, y) => x - y);
+        const costs = rows.filter(r => !r._debtRef).map(r => parseFloat(r.metricB) || 0).filter(v => v > 0).sort((x, y) => x - y);
         let median = 0;
         if (costs.length >= 5) {
             const mid = Math.floor(costs.length / 2);
@@ -3453,6 +3529,7 @@ function goToGoogleForm() {
             const kasBefore = i > 0 ? ledger.kasAfter[i - 1] : 0;
             const kasNow = ledger.kasAfter[i];
             const hasManual = r._manualPrev !== undefined && r._manualPrev !== null;
+            const sys = !!r._debtRef; // baris sistem dari Utang & Piutang
 
             // 1. Saldo awal / penyesuaian manual
             if (hasManual) {
@@ -3489,7 +3566,7 @@ function goToGoogleForm() {
             }
 
             // 5. Duplikat
-            if (name && (a || b)) {
+            if (!sys && name && (a || b)) {
                 const kAny = name.toLowerCase() + '|' + a + '|' + b;
                 const kSame = kAny + '|' + r.tanggal;
                 if (seenSame[kSame] !== undefined) {
@@ -3502,12 +3579,12 @@ function goToGoogleForm() {
             }
 
             // 6. Pengeluaran jauh di atas kebiasaan
-            if (median > 0 && b > median * 5) {
+            if (!sys && median > 0 && b > median * 5) {
                 add(i, 'med', 'Pengeluaran jauh di atas biasanya', `${fmtNum(b)} lebih dari 5× median pengeluaran (${fmtNum(median)}).`);
             }
 
             // 7. Tepat di bawah batas persetujuan
-            if (limit > 0 && b < limit && b >= limit * 0.9) {
+            if (!sys && limit > 0 && b < limit && b >= limit * 0.9) {
                 add(i, 'med', 'Tepat di bawah batas persetujuan', `${fmtNum(b)} vs batas ${fmtNum(limit)}. Periksa kemungkinan transaksi dipecah.`);
             }
 
@@ -3520,12 +3597,14 @@ function goToGoogleForm() {
                         add(i, 'med', 'Tanggal di masa depan', `Tanggal ${r.tanggal} belum terjadi.`);
                     }
                     const pd = i > 0 ? rows[i - 1].tanggal : null;
-                    if (pd && isoDate.test(pd) && r.tanggal < pd) {
+                    if (!sys && pd && isoDate.test(pd) && r.tanggal < pd) {
                         add(i, 'low', 'Tanggal mundur', `Lebih lama dari baris sebelumnya (${pd}). Periksa kemungkinan backdating.`);
                     }
                 }
             }
         });
+
+        checkDebts(rows, sheet, add);
 
         const order = { high: 0, med: 1, low: 2 };
         findings.forEach(f => { f.step = STEP_BY_TITLE[f.title] || 1; });
@@ -3542,7 +3621,9 @@ function goToGoogleForm() {
         'Saldo negatif': 6,
         'Data diubah di luar aplikasi': 7,
         'Jejak perubahan rusak': 7,
-        'Perubahan di periode terkunci': 7
+        'Perubahan di periode terkunci': 7,
+        'Penghapusan catatan utang/piutang': 7,
+        'Utang/piutang tidak cocok dengan kas': 3
     };
 
     // ---------- Putusan sederhana untuk pengguna ----------
@@ -3609,6 +3690,7 @@ function goToGoogleForm() {
     function toggleFraud() {
         DOM.fraudPanel.classList.toggle('show');
         if (DOM.fraudPanel.classList.contains('show')) {
+            DOM.debtPanel.classList.remove('show');
             syncActiveSheetIntoStore();
             updateFraudPanel();
         }
@@ -3747,13 +3829,16 @@ function goToGoogleForm() {
         const modalAwal = acctNet(L, 'Saldo Awal', 'credit');
         const penyesuaian = acctNet(L, 'Penyesuaian Saldo (tanpa bukti)', 'credit');
         const kas = L.kasAfter.length ? L.kasAfter[L.kasAfter.length - 1] : 0;
+        const piutang = acctNet(L, 'Piutang', 'debit');
+        const utang = acctNet(L, 'Utang', 'credit');
         const ekuitas = modalAwal + penyesuaian + laba;
-        return { pendapatan, beban, laba, modalAwal, penyesuaian, kas, ekuitas, seimbang: Math.abs(kas - ekuitas) < 0.005 };
+        return { pendapatan, beban, laba, modalAwal, penyesuaian, kas, piutang, utang, ekuitas,
+            seimbang: Math.abs((kas + piutang) - (utang + ekuitas)) < 0.005 };
     }
 
     function groupSummary(rows) {
         const groups = {};
-        rows.forEach(r => {
+        rows.filter(r => !r._debtRef).forEach(r => {
             const key = String(r.entity == null ? '' : r.entity).trim() || '(Tanpa Nama)';
             const g = groups[key] = groups[key] || { a: 0, b: 0 };
             g.a += parseFloat(r.metricA) || 0;
@@ -3858,9 +3943,10 @@ function goToGoogleForm() {
             {
                 n: 3, title: 'Buku besar & rekonsiliasi',
                 level: stepLevel(findings, 3),
-                sum: count(3) ? `Saldo tabel tidak cocok pada ${count(3)} baris` : `Kas buku besar ${fmtNum(rep.kas)} = saldo tabel`,
+                sum: count(3) ? `${count(3)} ketidakcocokan (tabel, buku besar, utang/piutang)` : `Kas buku besar ${fmtNum(rep.kas)} = saldo tabel`,
                 render: body => {
                     body.appendChild(mkLine(`Kas menurut buku besar: ${fmtNum(rep.kas)}. Saldo terakhir di tabel: ${fmtNum(lastSaldo)}.`, ''));
+                    body.appendChild(mkLine(`Utang/piutang: ${getDebts(s).length} catatan, semuanya dicocokkan dengan baris kas. Piutang ${fmtNum(rep.piutang)}, utang ${fmtNum(rep.utang)}.`, ''));
                     appendFindingItems(body, byStep(3));
                 }
             },
@@ -3899,13 +3985,14 @@ function goToGoogleForm() {
                         { cells: [rep.laba >= 0 ? 'LABA' : 'RUGI', fmtNum(rep.laba)], total: true }
                     ]));
                     body.appendChild(mkTable(['Posisi Keuangan', 'Jumlah'], [
-                        { cells: ['Harta (Kas)', fmtNum(rep.kas)] },
-                        { cells: ['Kewajiban (Utang)', fmtNum(0)] },
+                        { cells: ['Harta: Kas', fmtNum(rep.kas)] },
+                        { cells: ['Harta: Piutang', fmtNum(rep.piutang)] },
+                        { cells: ['Kewajiban: Utang', fmtNum(rep.utang)] },
                         { cells: ['Modal (saldo awal + penyesuaian + laba)', fmtNum(rep.ekuitas)], total: true }
                     ]));
                     body.appendChild(mkLine(rep.seimbang
                         ? '✅ Harta = Kewajiban + Modal.'
-                        : `❌ Harta ${fmtNum(rep.kas)} ≠ Kewajiban + Modal ${fmtNum(rep.ekuitas)}.`, rep.seimbang ? '' : 'high'));
+                        : `❌ Harta ${fmtNum(rep.kas + rep.piutang)} ≠ Kewajiban + Modal ${fmtNum(rep.utang + rep.ekuitas)}.`, rep.seimbang ? '' : 'high'));
 
                     const groups = groupSummary(data);
                     const rows = groups.map(g => ({ cells: [g.name, fmtNum(g.a), fmtNum(g.b), fmtNum(g.a - g.b)] }));
@@ -4048,6 +4135,422 @@ function goToGoogleForm() {
         } else {
             renderAuditList(list, s);
         }
+    }
+
+    // ============================================
+    // UTANG & PIUTANG
+    // Pengguna cukup mencatat satu kali (single entry). Aplikasi otomatis:
+    //  - menambah baris di sheet kas (uang keluar/masuk), ditandai sebagai baris sistem
+    //  - menjurnal ke akun Piutang / Utang di buku besar (bukan Pendapatan/Beban)
+    // ============================================
+
+    let debtOpenId = null;
+
+    function todayStr() { return new Date().toISOString().split('T')[0]; }
+
+    function daysBetween(a, b) { // jumlah hari dari a ke b
+        return Math.round((Date.parse(b + 'T00:00:00Z') - Date.parse(a + 'T00:00:00Z')) / 86400000);
+    }
+
+    function getDebts(s) {
+        s = s || getActiveSheet();
+        if (!s) return [];
+        if (!s.debts) s.debts = [];
+        return s.debts;
+    }
+
+    function newDebtId() { return 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+    function debtPaid(d) { return (d.payments || []).reduce((n, p) => n + (parseFloat(p.jumlah) || 0), 0); }
+    function debtSisa(d) { return (parseFloat(d.jumlah) || 0) - debtPaid(d); }
+
+    function debtStatus(d, today) {
+        const sisa = debtSisa(d);
+        if (sisa <= 0.005) return { code: 'LUNAS', label: 'Lunas', cls: 'status-optimal' };
+        if (d.jatuhTempo && DATE_RE.test(d.jatuhTempo) && d.jatuhTempo < today) {
+            const late = daysBetween(d.jatuhTempo, today);
+            return { code: 'TERLAMBAT', label: `Terlambat ${late} hari`, cls: 'status-critical', late };
+        }
+        return debtPaid(d) > 0.005
+            ? { code: 'SEBAGIAN', label: 'Sebagian', cls: 'status-balanced' }
+            : { code: 'BELUM', label: 'Belum dibayar', cls: 'status-error' };
+    }
+
+    function debtRowTypes(d) {
+        return d.jenis === 'piutang'
+            ? { open: 'piutang-beri', pay: 'piutang-terima' }
+            : { open: 'utang-terima', pay: 'utang-bayar' };
+    }
+
+    function typeInflow(type) { return type === 'utang-terima' || type === 'piutang-terima'; }
+
+    function debtLabel(d, kind) {
+        if (kind === 'open') return d.jenis === 'piutang' ? `Piutang: ${d.pihak}` : `Pinjaman dari ${d.pihak}`;
+        return d.jenis === 'piutang' ? `Terima pembayaran piutang: ${d.pihak}` : `Bayar utang: ${d.pihak}`;
+    }
+
+    function postDebtRow(ref, tanggal, label, amount, inflow) {
+        const row = makeEmptyRow();
+        row.tanggal = tanggal;
+        row.entity = label;
+        if (inflow) row.metricA = amount; else row.metricB = amount;
+        row._debtRef = ref;
+        data.push(row);
+        return data.length - 1;
+    }
+
+    function finishDebtChange() {
+        recalculateAll();
+        syncActiveSheetIntoStore();
+        renderGrid();
+        updateDebtPanel();
+    }
+
+    function addDebt() {
+        const s = getActiveSheet();
+        if (!s) return;
+        const g = id => document.getElementById(id);
+        const jenis = g('dJenis').value === 'utang' ? 'utang' : 'piutang';
+        const pihak = g('dPihak').value.trim();
+        const jumlah = parseFloat(g('dJumlah').value);
+        const tanggal = g('dTanggal').value || todayStr();
+        const jt = g('dJatuhTempo').value;
+        const catatan = g('dCatatan').value.trim();
+
+        if (!pihak) return showToast('⚠️ Isi nama pihak dulu', 'error');
+        if (!(jumlah > 0)) return showToast('⚠️ Jumlah harus lebih dari 0', 'error');
+        if (!DATE_RE.test(tanggal)) return showToast('⚠️ Tanggal tidak valid', 'error');
+        if (jt && (!DATE_RE.test(jt) || jt < tanggal)) return showToast('⚠️ Jatuh tempo tidak boleh sebelum tanggal pinjaman', 'error');
+        if (!guardLocked(data.length, `catat ${jenis} tanggal ${tanggal}`, tanggal)) return;
+
+        const d = { id: newDebtId(), tanggal, pihak, jenis, jumlah, jatuhTempo: jt || '', catatan, payments: [] };
+        getDebts(s).push(d);
+        const t = debtRowTypes(d);
+        postDebtRow({ id: d.id, pay: '', type: t.open }, tanggal, debtLabel(d, 'open'), jumlah, typeInflow(t.open));
+        logAuditTo(s, jenis === 'piutang' ? 'Catat piutang' : 'Catat utang', data.length - 1,
+            `${pihak}: ${fmtNum(jumlah)}${jt ? ', jatuh tempo ' + jt : ''}`);
+
+        ['dPihak', 'dJumlah', 'dJatuhTempo', 'dCatatan'].forEach(id => { g(id).value = ''; });
+        debtOpenId = d.id;
+        finishDebtChange();
+        showToast(jenis === 'piutang'
+            ? `🤝 Piutang ke ${pihak} dicatat. Kas berkurang ${fmtNum(jumlah)}`
+            : `🤝 Utang dari ${pihak} dicatat. Kas bertambah ${fmtNum(jumlah)}`, 'success');
+    }
+
+    function addPayment(id) {
+        const s = getActiveSheet();
+        const d = getDebts(s).find(x => x.id === id);
+        if (!d) return;
+        const amt = parseFloat(document.getElementById('payAmt').value);
+        const tgl = document.getElementById('payDate').value || todayStr();
+        const note = document.getElementById('payNote').value.trim();
+        const sisa = debtSisa(d);
+
+        if (!(amt > 0)) return showToast('⚠️ Jumlah pembayaran harus lebih dari 0', 'error');
+        if (amt > sisa + 0.005) return showToast(`⚠️ Pembayaran melebihi sisa (${fmtNum(sisa)})`, 'error');
+        if (!DATE_RE.test(tgl) || tgl < d.tanggal) return showToast('⚠️ Tanggal pembayaran tidak boleh sebelum tanggal pinjaman', 'error');
+        if (!guardLocked(data.length, `catat pembayaran ${d.pihak} tanggal ${tgl}`, tgl)) return;
+
+        const p = { id: newDebtId(), tanggal: tgl, jumlah: amt, catatan: note };
+        d.payments.push(p);
+        const t = debtRowTypes(d);
+        postDebtRow({ id: d.id, pay: p.id, type: t.pay }, tgl, debtLabel(d, 'pay'), amt, typeInflow(t.pay));
+        logAuditTo(s, d.jenis === 'piutang' ? 'Terima pembayaran piutang' : 'Bayar utang', data.length - 1,
+            `${d.pihak}: ${fmtNum(amt)}${note ? ' (' + note + ')' : ''}. Sisa ${fmtNum(debtSisa(d))}`);
+        finishDebtChange();
+        showToast(debtSisa(d) <= 0.005 ? `✅ ${d.pihak} lunas` : `✅ Pembayaran dicatat. Sisa ${fmtNum(debtSisa(d))}`, 'success');
+    }
+
+    function removeLinkedRows(pred) {
+        for (let i = data.length - 1; i >= 0; i--) {
+            if (data[i]._debtRef && pred(data[i]._debtRef)) data.splice(i, 1);
+        }
+        if (!data.length) data.push(makeEmptyRow());
+        if (selectedCell.row >= data.length) selectedCell.row = data.length - 1;
+    }
+
+    // Menghapus catatan utang/piutang selalu butuh alasan dan ditandai untuk diperiksa
+    function askDeleteReason(what) {
+        const reason = prompt(`Hapus ${what}?\nIsi alasan. Penghapusan tercatat dan ditandai untuk diperiksa sampai periode berikutnya ditutup:`);
+        if (!reason || !reason.trim()) {
+            showToast('Dibatalkan: alasan wajib diisi', 'error');
+            return null;
+        }
+        return reason.trim();
+    }
+
+    function recordSensitive(s, action, reason) {
+        if (!s.lockOverrides) s.lockOverrides = [];
+        s.lockOverrides.push({ t: new Date().toISOString(), row: 0, tanggal: '', action, reason, closed: false, kind: 'debt' });
+        logAuditTo(s, 'Hapus catatan utang/piutang', 0, `${action}. Alasan: ${reason}`);
+    }
+
+    function deletePayment(id, payId) {
+        const s = getActiveSheet();
+        const d = getDebts(s).find(x => x.id === id);
+        const p = d && d.payments.find(x => x.id === payId);
+        if (!p) return;
+        const reason = askDeleteReason(`pembayaran ${fmtNum(p.jumlah)} dari/ke ${d.pihak} (${p.tanggal})`);
+        if (!reason) return;
+        recordSensitive(s, `menghapus pembayaran ${fmtNum(p.jumlah)} (${p.tanggal}) ${d.pihak}`, reason);
+        d.payments = d.payments.filter(x => x.id !== payId);
+        removeLinkedRows(ref => ref.id === id && ref.pay === payId);
+        finishDebtChange();
+        showToast('🗑️ Pembayaran dihapus dan tercatat', 'info');
+    }
+
+    function deleteDebt(id) {
+        const s = getActiveSheet();
+        const d = getDebts(s).find(x => x.id === id);
+        if (!d) return;
+        const reason = askDeleteReason(`${d.jenis} ${d.pihak} sebesar ${fmtNum(d.jumlah)} beserta semua pembayarannya`);
+        if (!reason) return;
+        recordSensitive(s, `menghapus ${d.jenis} ${d.pihak} ${fmtNum(d.jumlah)} (${d.payments.length} pembayaran)`, reason);
+        s.debts = getDebts(s).filter(x => x.id !== id);
+        removeLinkedRows(ref => ref.id === id);
+        if (debtOpenId === id) debtOpenId = null;
+        finishDebtChange();
+        showToast('🗑️ Catatan dihapus dan tercatat', 'info');
+    }
+
+    // Pemeriksaan khusus utang/piutang (dipanggil dari runFraudChecks)
+    function checkDebts(rows, sheet, add) {
+        const debts = (sheet && sheet.debts) || [];
+        const today = todayStr();
+        const links = {};
+        rows.forEach((r, i) => {
+            if (!r._debtRef) return;
+            const k = r._debtRef.id + '|' + (r._debtRef.pay || '');
+            (links[k] = links[k] || []).push(i);
+        });
+        const used = {};
+        const amountOf = (r, type) => typeInflow(type) ? (parseFloat(r.metricA) || 0) : (parseFloat(r.metricB) || 0);
+        const otherSide = (r, type) => typeInflow(type) ? (parseFloat(r.metricB) || 0) : (parseFloat(r.metricA) || 0);
+
+        const verify = (key, type, amount, tanggal, desc) => {
+            used[key] = true;
+            const idxs = links[key] || [];
+            if (idxs.length !== 1) {
+                add(-1, 'high', 'Utang/piutang tidak cocok dengan kas',
+                    `${desc}: seharusnya ada tepat 1 baris kas, ditemukan ${idxs.length}.`);
+                return;
+            }
+            const r = rows[idxs[0]];
+            const ref = r._debtRef;
+            if (ref.type !== type || Math.abs(amountOf(r, type) - amount) > 0.005 || otherSide(r, type) > 0.005 || r.tanggal !== tanggal) {
+                add(idxs[0], 'high', 'Utang/piutang tidak cocok dengan kas',
+                    `${desc}: catatan ${fmtNum(amount)} (${tanggal}) tidak sama dengan baris kas (${fmtNum(amountOf(r, type))}, ${r.tanggal}).`);
+            }
+        };
+
+        debts.forEach(d => {
+            const t = debtRowTypes(d);
+            verify(d.id + '|', t.open, parseFloat(d.jumlah) || 0, d.tanggal, `${d.jenis} ${d.pihak}`);
+            (d.payments || []).forEach(p => {
+                verify(d.id + '|' + p.id, t.pay, parseFloat(p.jumlah) || 0, p.tanggal, `pembayaran ${d.pihak} (${p.tanggal})`);
+                if (DATE_RE.test(p.tanggal || '') && DATE_RE.test(d.tanggal || '') && p.tanggal < d.tanggal) {
+                    add(-1, 'med', 'Pembayaran sebelum pinjaman', `${d.pihak}: pembayaran ${p.tanggal} lebih awal dari tanggal pinjaman ${d.tanggal}.`);
+                }
+            });
+            if (debtSisa(d) < -0.005) {
+                add(-1, 'high', 'Pembayaran melebihi pinjaman', `${d.pihak}: total pembayaran ${fmtNum(debtPaid(d))} melebihi pinjaman ${fmtNum(d.jumlah)}.`);
+            }
+            if (d.jenis === 'piutang' && debtSisa(d) > 0.005 && !(d.payments || []).length
+                && DATE_RE.test(d.tanggal || '') && daysBetween(d.tanggal, today) > 60) {
+                add(-1, 'med', 'Piutang lama belum ditagih', `${d.pihak}: ${fmtNum(d.jumlah)} sejak ${d.tanggal} (${daysBetween(d.tanggal, today)} hari) belum ada pembayaran sama sekali.`);
+            }
+        });
+
+        // Baris kas bertanda sistem tanpa catatan utang/piutang
+        rows.forEach((r, i) => {
+            if (!r._debtRef) return;
+            const k = r._debtRef.id + '|' + (r._debtRef.pay || '');
+            if (!used[k]) {
+                add(i, 'high', 'Utang/piutang tidak cocok dengan kas', 'Baris kas ini bertanda utang/piutang tetapi catatannya tidak ada (dihapus di luar aplikasi).');
+            }
+        });
+
+        // Meminjamkan lagi ke pihak yang belum melunasi pinjaman jatuh tempo
+        const piutang = debts.filter(d => d.jenis === 'piutang').sort((x, y) => String(x.tanggal).localeCompare(String(y.tanggal)));
+        piutang.forEach((d, idx) => {
+            const earlier = piutang.slice(0, idx).find(e =>
+                String(e.pihak).trim().toLowerCase() === String(d.pihak).trim().toLowerCase()
+                && debtSisa(e) > 0.005 && e.jatuhTempo && e.jatuhTempo < d.tanggal);
+            if (earlier) {
+                add(-1, 'med', 'Pinjaman baru ke pihak yang belum melunasi',
+                    `${d.pihak} dipinjami lagi (${d.tanggal}) padahal pinjaman ${earlier.tanggal} sebesar ${fmtNum(debtSisa(earlier))} sudah lewat jatuh tempo (${earlier.jatuhTempo}).`);
+            }
+        });
+    }
+
+    // ---------- Panel Utang & Piutang ----------
+    function toggleDebt() {
+        DOM.debtPanel.classList.toggle('show');
+        if (DOM.debtPanel.classList.contains('show')) {
+            DOM.fraudPanel.classList.remove('show');
+            const dt = document.getElementById('dTanggal');
+            if (dt && !dt.value) dt.value = todayStr();
+            updateDebtPanel();
+        }
+    }
+
+    function updateDebtBadge() {
+        const btn = document.getElementById('debtBtn');
+        const s = getActiveSheet();
+        if (!btn || !s) return;
+        const today = todayStr();
+        const late = getDebts(s).filter(d => debtStatus(d, today).code === 'TERLAMBAT').length;
+        btn.textContent = late ? `🤝 Utang & Piutang (${late} terlambat)` : '🤝 Utang & Piutang';
+        btn.classList.toggle('warn', late > 0);
+    }
+
+    function debtBtn(text, cls, handler) {
+        const b = document.createElement('button');
+        b.className = 'lock-btn ' + (cls || '');
+        b.textContent = text;
+        b.onclick = (e) => { e.stopPropagation(); handler(); };
+        return b;
+    }
+
+    function updateDebtPanel() {
+        updateDebtBadge();
+        const s = getActiveSheet();
+        if (!s || !DOM.debtPanel || !DOM.debtPanel.classList.contains('show')) return;
+        document.getElementById('debtSheetName').textContent = s.name;
+        const debts = getDebts(s);
+        const today = todayStr();
+
+        // Ringkasan + umur
+        let piutang = 0, utang = 0, soon = 0, late = 0;
+        const aging = { piutang: [0, 0, 0], utang: [0, 0, 0] };
+        debts.forEach(d => {
+            const sisa = debtSisa(d);
+            if (sisa <= 0.005) return;
+            if (d.jenis === 'piutang') piutang += sisa; else utang += sisa;
+            const age = DATE_RE.test(d.tanggal || '') ? daysBetween(d.tanggal, today) : 0;
+            aging[d.jenis][age <= 30 ? 0 : age <= 60 ? 1 : 2] += sisa;
+            const st = debtStatus(d, today);
+            if (st.code === 'TERLAMBAT') late++;
+            else if (d.jatuhTempo && DATE_RE.test(d.jatuhTempo)) {
+                const dd = daysBetween(today, d.jatuhTempo);
+                if (dd >= 0 && dd <= 7) soon++;
+            }
+        });
+
+        const cards = document.getElementById('debtSummary');
+        cards.innerHTML = '';
+        [['Tagihan saya (piutang)', fmtNum(piutang), ''], ['Kewajiban saya (utang)', fmtNum(utang), ''],
+         ['Jatuh tempo ≤ 7 hari', String(soon), soon ? 'warn' : ''], ['Terlambat', String(late), late ? 'bad' : '']].forEach(([label, val, cls]) => {
+            const c = document.createElement('div');
+            c.className = 'debt-card ' + cls;
+            const l = document.createElement('div');
+            l.className = 'debt-card-label';
+            l.textContent = label;
+            const v = document.createElement('div');
+            v.className = 'debt-card-value';
+            v.textContent = val;
+            c.append(l, v);
+            cards.appendChild(c);
+        });
+        const ag = document.getElementById('debtAging');
+        ag.textContent = `Umur sisa piutang: 0–30 hari ${fmtNum(aging.piutang[0])} · 31–60 hari ${fmtNum(aging.piutang[1])} · lebih dari 60 hari ${fmtNum(aging.piutang[2])}`
+            + `  |  Umur sisa utang: 0–30 hari ${fmtNum(aging.utang[0])} · 31–60 hari ${fmtNum(aging.utang[1])} · lebih dari 60 hari ${fmtNum(aging.utang[2])}`;
+
+        // Daftar
+        const list = document.getElementById('debtList');
+        list.innerHTML = '';
+        if (!debts.length) {
+            const e = document.createElement('div');
+            e.className = 'fraud-ok';
+            e.textContent = 'Belum ada catatan. Isi formulir di atas untuk mencatat piutang atau utang. Kas akan menyesuaikan otomatis.';
+            list.appendChild(e);
+            return;
+        }
+
+        const sorted = debts.slice().sort((x, y) => {
+            const ox = debtSisa(x) > 0.005 ? 0 : 1, oy = debtSisa(y) > 0.005 ? 0 : 1;
+            if (ox !== oy) return ox - oy;
+            if (ox === 0) return String(x.jatuhTempo || '9999').localeCompare(String(y.jatuhTempo || '9999'));
+            return String(y.tanggal).localeCompare(String(x.tanggal));
+        });
+
+        const table = document.createElement('table');
+        table.className = 'tb-table debt-table';
+        table.innerHTML = '<thead><tr><th>Pihak</th><th>Jenis</th><th>Tanggal</th><th>Jumlah</th><th>Dibayar</th><th>Sisa</th><th>Jatuh tempo</th><th>Status</th></tr></thead>';
+        const tb = document.createElement('tbody');
+
+        sorted.forEach(d => {
+            const st = debtStatus(d, today);
+            const tr = document.createElement('tr');
+            tr.className = 'debt-row';
+            tr.onclick = () => { debtOpenId = debtOpenId === d.id ? null : d.id; updateDebtPanel(); };
+            const cells = [
+                d.pihak + (d.catatan ? ' — ' + d.catatan : ''),
+                d.jenis === 'piutang' ? 'Piutang' : 'Utang',
+                d.tanggal, fmtNum(d.jumlah), fmtNum(debtPaid(d)), fmtNum(debtSisa(d)), d.jatuhTempo || '-'
+            ];
+            cells.forEach((txt, idx) => {
+                const td = document.createElement('td');
+                td.textContent = txt;
+                if (idx >= 3 && idx <= 5) td.className = 'num';
+                tr.appendChild(td);
+            });
+            const tdS = document.createElement('td');
+            const badge = document.createElement('span');
+            badge.className = 'status-badge ' + st.cls;
+            badge.textContent = st.label;
+            tdS.appendChild(badge);
+            tr.appendChild(tdS);
+            tb.appendChild(tr);
+
+            if (debtOpenId === d.id) {
+                const dr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 8;
+                td.className = 'debt-detail';
+
+                const hist = document.createElement('div');
+                hist.className = 'fraud-note';
+                hist.textContent = d.payments.length ? 'Riwayat pembayaran:' : 'Belum ada pembayaran.';
+                td.appendChild(hist);
+                d.payments.forEach(p => {
+                    const line = document.createElement('div');
+                    line.className = 'debt-pay-line';
+                    const t = document.createElement('span');
+                    t.textContent = `${p.tanggal} · ${fmtNum(p.jumlah)}${p.catatan ? ' · ' + p.catatan : ''}`;
+                    line.appendChild(t);
+                    line.appendChild(debtBtn('Hapus', 'secondary', () => deletePayment(d.id, p.id)));
+                    td.appendChild(line);
+                });
+
+                if (debtSisa(d) > 0.005) {
+                    const form = document.createElement('div');
+                    form.className = 'debt-pay-form';
+                    form.onclick = e => e.stopPropagation();
+                    const amt = document.createElement('input');
+                    amt.type = 'number'; amt.id = 'payAmt'; amt.min = '0'; amt.step = 'any';
+                    amt.value = String(Math.round(debtSisa(d) * 100) / 100);
+                    amt.title = d.jenis === 'piutang' ? 'Jumlah yang diterima' : 'Jumlah yang dibayar';
+                    const dt = document.createElement('input');
+                    dt.type = 'date'; dt.id = 'payDate'; dt.value = todayStr();
+                    const nt = document.createElement('input');
+                    nt.type = 'text'; nt.id = 'payNote'; nt.placeholder = 'Catatan (opsional)';
+                    form.append(amt, dt, nt,
+                        debtBtn(d.jenis === 'piutang' ? '💵 Catat diterima' : '💸 Catat dibayar', '', () => addPayment(d.id)));
+                    td.appendChild(form);
+                }
+                const act = document.createElement('div');
+                act.style.marginTop = '8px';
+                act.appendChild(debtBtn('🗑️ Hapus catatan ini', 'secondary', () => deleteDebt(d.id)));
+                td.appendChild(act);
+
+                dr.appendChild(td);
+                tb.appendChild(dr);
+            }
+        });
+        table.appendChild(tb);
+        list.appendChild(table);
     }
 
     function updateStatus() {
