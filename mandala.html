@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mandala Chart & Lembar Target</title>
+<style>
+  :root{
+    --bg:#f4f5f7; --card:#fff; --ink:#1d2330; --muted:#6b7280; --line:#222;
+    --soft:#d9d9d9; --accent:#2ec4ff; --head:#c9d6ea; --row:#e9f0fa; --btn:#1f6feb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+  header.bar{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #dcdfe4;padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  header.bar h1{font-size:16px;margin:0 12px 0 0}
+  .tabs{display:flex;gap:4px;margin-right:auto}
+  .tab{border:1px solid #cbd0d8;background:#f3f4f6;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:14px}
+  .tab.active{background:var(--btn);border-color:var(--btn);color:#fff}
+  .btn{border:1px solid #cbd0d8;background:#fff;padding:7px 12px;border-radius:8px;cursor:pointer;font-size:13px}
+  .btn:hover{background:#f0f3f8}
+  .btn.primary{background:var(--btn);color:#fff;border-color:var(--btn)}
+  .btn.primary:hover{background:#1858c0}
+  .btn.danger{color:#b42318}
+  main{max-width:1000px;margin:18px auto;padding:0 12px 60px}
+  section.page{display:none;background:var(--card);padding:18px;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  section.page.active{display:block}
+  h2{margin:0 0 4px;font-size:20px}
+  .hint{color:var(--muted);font-size:13px;margin:0 0 14px}
+
+  /* ===== Mandala ===== */
+  .scroll{overflow-x:auto}
+  .mandala{display:grid;grid-template-columns:repeat(9,1fr);grid-auto-rows:1fr;aspect-ratio:1/1;min-width:640px;border:3px solid var(--line);background:#fff}
+  .cell{display:flex;align-items:center;justify-content:center;text-align:center;padding:3px;border:1px solid #bbb;font-size:clamp(9px,1.25vw,13px);line-height:1.25;overflow:hidden;word-break:break-word;outline:none;cursor:text;background:#fff}
+  .cell:focus{box-shadow:inset 0 0 0 2px var(--btn);background:#fffdf0}
+  .cell:empty::before{content:attr(data-ph);color:#b9bec7;font-size:.85em}
+  .cell.sub{background:var(--soft);font-weight:700}
+  .cell.sub:focus{background:#ececec}
+  .cell.goal{background:var(--accent);font-weight:700;font-size:clamp(10px,1.4vw,15px)}
+  /* thick block borders */
+  .cell.br{border-right:3px solid var(--line)}
+  .cell.bb{border-bottom:3px solid var(--line)}
+
+  /* ===== Goal sheet ===== */
+  .sheet{border:1.5px solid #333;border-collapse:collapse;width:100%;font-size:14px}
+  .sheet td,.sheet th{border:1px solid #333;padding:4px 6px;vertical-align:middle}
+  .sheet .lab{background:#fff;width:150px;font-weight:500}
+  .sheet th{background:var(--head);font-weight:700}
+  .sheet .sub-lab{background:#fff;width:90px}
+  .sheet .fill{background:var(--row);padding:0}
+  .sheet input[type=text],.sheet input[type=date],.sheet textarea{width:100%;border:0;background:transparent;font:inherit;padding:6px;outline:none;color:inherit}
+  .sheet textarea{resize:vertical;min-height:34px;display:block}
+  .sheet input:focus,.sheet textarea:focus{background:#fffdf0;box-shadow:inset 0 0 0 2px var(--btn)}
+  .sheet td.plain{padding:0}
+  .sec-head{background:#e8ebf0;font-weight:700;text-align:center}
+  .principle{border:1.5px solid #333;border-top:0;background:#fff8e1;padding:10px 14px;font-size:14px;line-height:1.5}
+  .principle p{margin:6px 0 0}
+
+  .persp{position:relative;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;min-height:340px}
+  .persp::before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px solid #333}
+  .persp::after{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid #333}
+  .persp textarea{border:0;background:transparent;resize:none;font:inherit;padding:8px;width:100%;height:100%;min-height:170px;outline:none}
+  .persp textarea.q1{padding-top:44px;padding-left:115px}
+  .persp textarea.q2{padding-top:44px;padding-right:90px}
+  .persp textarea.q3{padding-bottom:44px;padding-left:115px}
+  .persp textarea.q4{padding-bottom:44px;padding-right:90px}
+  .persp .lbl{position:absolute;background:#fff;border:1.5px solid #222;padding:3px 14px;font-size:13px;z-index:2;text-align:center}
+  .lbl.t{top:10px;left:50%;transform:translateX(-50%)}
+  .lbl.b{bottom:10px;left:50%;transform:translateX(-50%)}
+  .lbl.l{left:6px;top:50%;transform:translateY(-50%);width:84px}
+  .lbl.r{right:6px;top:50%;transform:translateY(-50%)}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1d2330;color:#fff;padding:9px 16px;border-radius:8px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50}
+  .toast.show{opacity:1}
+  .toast.err{background:#b42318}
+
+  @media (max-width:640px){
+    .persp textarea.q1,.persp textarea.q3{padding-left:96px}
+    .persp textarea.q2,.persp textarea.q4{padding-right:70px}
+    .sheet .lab{width:110px}
+  }
+  @media print{
+    header.bar,.hint,.toast{display:none}
+    body{background:#fff}
+    main{margin:0;max-width:none;padding:0}
+    section.page{display:block !important;box-shadow:none;padding:0;page-break-after:always}
+    .scroll{overflow:visible}
+    .mandala{min-width:0;width:100%}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <h1>Mandala Chart & Lembar Target</h1>
+  <div class="tabs">
+    <button class="tab active" data-tab="p-mandala">Mandala Chart</button>
+    <button class="tab" data-tab="p-sheet">Lembar Target</button>
+  </div>
+  <button class="btn primary" id="btnSave">💾 Simpan JSON</button>
+  <button class="btn" id="btnImport">📂 Impor JSON</button>
+  <button class="btn" id="btnSample">Muat contoh</button>
+  <button class="btn" id="btnPrint">🖨 Cetak</button>
+  <button class="btn danger" id="btnClear">Kosongkan</button>
+  <input type="file" id="fileInput" accept=".json,application/json" hidden>
+</header>
+
+<main>
+  <!-- ===== MANDALA ===== -->
+  <section class="page active" id="p-mandala">
+    <h2>Mandala Chart (9×9)</h2>
+    <p class="hint">Klik kotak untuk mengisi. Isi tujuan utama di tengah (biru), lalu 8 sub-tujuan di blok tengah (abu-abu) — sub-tujuan otomatis tersalin ke pusat blok di sekelilingnya. Isi 8 langkah aksi untuk tiap blok. Tekan Enter untuk selesai mengedit.</p>
+    <div class="scroll"><div class="mandala" id="mandala"></div></div>
+  </section>
+
+  <!-- ===== SHEET ===== -->
+  <section class="page" id="p-sheet">
+    <h2>Lembar Penetapan Target</h2>
+    <p class="hint">Semua isian tersimpan otomatis di browser dan ikut tersimpan saat Anda menekan “Simpan JSON”.</p>
+
+    <table class="sheet">
+      <tr><td class="lab">Tujuan<br><small>Goal</small></td><td colspan="5" class="fill"><input type="text" data-k="goal"></td></tr>
+      <tr><td class="lab">Nama penetap tujuan<br><small>Name of goal setter</small></td><td colspan="5" class="fill"><input type="text" data-k="setter"></td></tr>
+      <tr>
+        <td class="lab">Rencana tanggal selesai<br><small>Planned date of completion</small></td>
+        <td class="fill"><input type="date" data-k="date_planned"></td>
+        <td class="lab">Tanggal target ditetapkan<br><small>Date targets set</small></td>
+        <td class="fill"><input type="date" data-k="date_set"></td>
+        <td class="lab">Tanggal target tercapai<br><small>Date targets achieved</small></td>
+        <td class="fill"><input type="date" data-k="date_achieved"></td>
+      </tr>
+      <tr><td class="lab">Aktivitas pelayanan<br><small>Service activity</small></td><td colspan="5" class="fill"><input type="text" data-k="service"></td></tr>
+      <tr>
+        <td class="lab" rowspan="4">Target akhir<br><small>Final targets</small></td>
+        <td class="sub-lab" colspan="1">Target tertinggi<br><small>Ultimate target</small></td>
+        <td colspan="4" class="fill"><input type="text" data-k="t_ultimate"></td>
+      </tr>
+      <tr><td class="sub-lab">Target menengah<br><small>Intermediate</small></td><td colspan="4" class="fill"><input type="text" data-k="t_intermediate"></td></tr>
+      <tr><td class="sub-lab">Target pasti tercapai<br><small>Definitely achievable</small></td><td colspan="4" class="fill"><input type="text" data-k="t_achievable"></td></tr>
+      <tr><td class="sub-lab">Target saat ini<br><small>Current target</small></td><td colspan="4" class="fill"><input type="text" data-k="t_current"></td></tr>
+      <tr><td class="lab">Target sementara<br><small>Interim targets</small></td><td colspan="5" class="fill"><textarea data-k="interim" rows="2"></textarea></td></tr>
+      <tr>
+        <td class="lab">Empat perspektif tentang tujuan dan target<br><small>Four perspectives</small></td>
+        <td colspan="5" class="plain">
+          <div class="persp">
+            <span class="lbl t">Berwujud<br><small>Tangible</small></span>
+            <span class="lbl b">Tak berwujud<br><small>Intangible</small></span>
+            <span class="lbl l">Masyarakat & orang lain<br><small>Society and others</small></span>
+            <span class="lbl r">Diri saya<br><small>Myself</small></span>
+            <textarea class="q1" data-k="p_tan_soc" aria-label="Berwujud - masyarakat"></textarea>
+            <textarea class="q2" data-k="p_tan_me" aria-label="Berwujud - diri sendiri"></textarea>
+            <textarea class="q3" data-k="p_int_soc" aria-label="Tak berwujud - masyarakat"></textarea>
+            <textarea class="q4" data-k="p_int_me" aria-label="Tak berwujud - diri sendiri"></textarea>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <table class="sheet" style="border-top:0">
+      <tr><th style="width:90px"></th><th>Analisis keberhasilan<br><small>Analysis of success</small></th><th>Analisis kegagalan<br><small>Analysis of failure</small></th></tr>
+      <tbody id="an1"></tbody>
+      <tr><th></th><th>Kemungkinan masalah<br><small>Possible problems</small></th><th>Keberhasilan<br><small>Success</small></th></tr>
+      <tbody id="an2"></tbody>
+    </table>
+
+    <div class="principle">
+      <strong>Prinsip Hukum Parkinson</strong>
+      <p>“Pekerjaan akan mengembang sampai memenuhi waktu yang tersedia untuk menyelesaikannya.” Prinsip ini dikemukakan C. Northcote Parkinson (esai di <em>The Economist</em>, 1955). Artinya, tugas yang diberi waktu longgar cenderung memakan waktu longgar pula.</p>
+      <p>Cara menerapkannya pada target Anda: pasang tenggat yang lebih ketat dari kebiasaan, pecah target besar menjadi bagian kecil dengan tenggat masing-masing, dan tulis tenggat itu di kolom “Tenggat penting” di bawah.</p>
+    </div>
+    <table class="sheet" style="border-top:0">
+      <tr><th colspan="3">Penerapan Hukum Parkinson<br><small>Perketat waktu pengerjaan setiap tugas</small></th></tr>
+      <tr><td class="sec-head" style="width:42%">Tugas</td><td class="sec-head" style="width:29%">Waktu yang biasa saya pakai</td><td class="sec-head">Batas waktu yang saya perketat</td></tr>
+      <tbody id="parkinson"></tbody>
+    </table>
+
+    <table class="sheet" style="border-top:0">
+      <tr><th colspan="2">Aktivitas rutin (urut dari terpenting)<br><small>Routine activities</small></th><th>Tenggat penting (urut kejadian)<br><small>Key deadlines</small></th></tr>
+      <tr><td class="sec-head" style="width:42%">Aktivitas</td><td class="sec-head" style="width:16%">Tanggal dilakukan</td><td class="sec-head"></td></tr>
+      <tbody id="routine"></tbody>
+    </table>
+
+    <table class="sheet" style="border-top:0">
+      <tr><td class="lab">Orang yang membantu saya mencapai target<br><small>People helping me</small></td><td class="fill"><textarea data-k="helpers" rows="2"></textarea></td></tr>
+      <tr><td class="lab">Bantuan yang diberikan orang kepada saya<br><small>Help that people are giving me</small></td><td class="fill"><textarea data-k="help_given" rows="2"></textarea></td></tr>
+    </table>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  'use strict';
+  var POS = [0,1,2,3,5,6,7,8];          // posisi non-tengah dalam blok 3x3
+  var STORE_KEY = 'mandala-goal-sheet-v1';
+  var APP_ID = 'mandala-goal-sheet';
+
+  /* ---------- Data contoh (dari gambar) ---------- */
+  var SAMPLE_MANDALA = {
+    goal: 'Get drafted 1st overall (8 teams)',
+    sub: ['Physical conditioning','Control','Sharpness','Mental strength','Speed (100 mph)','Character','Karma','Trickery'],
+    actions: [
+      ['Body care','Body care','Body care','Flexibility','RSQ 130kg','Stamina','Range of motion','Meals Dinner: 7 Breakfast: 3'],
+      ['Body care','Strengthen the body core','Maintain body axis','Stabilize the release point','Get rid of uneasy feelings','Lower body strength',"Don't open the body",'Control mental'],
+      ['Create an angle','Hit the ball from above','Strengthen the wrist','Do not tense up','The lower body leads','Release the ball in the front','Increase the number of rotations','Range of motion'],
+      ['Have clear goals and purposes','Do not swing joy and sorrow','Cool head, hot heart','Strong under pressure','Not swayed by atmosphere',"Don't create ups and downs",'Tenacity for victory','The heart to care for teammates'],
+      ['Turn along body axis','Lower body strength','Gain weight','Strengthen the body core','Strengthen around the shoulders','Range of motion','Catch liner balls','Increase pitching'],
+      ['Sensitivity','Worthy to be loved','Plan ahead','Caring','Gratitude','Well mannered','Worthy to be trusted','Sustained efforts'],
+      ['Greetings','Pick up trash','Clean room','Use the tools with care','Respect towards umpires','Positive thinking','Be a person that people root for','Read books'],
+      ['Increase ball count','Perfect the forkball','Sharpness of sliders','Slow curveball with a big drop','Put-away pitch for lefties','Use fastball form for all pitches','Strike/ball control','Visualize depth']
+    ]
+  };
+
+  function emptyMandala(){
+    var a=[],i,j;
+    for(i=0;i<8;i++){ a.push(['','','','','','','','']); }
+    return {goal:'',sub:['','','','','','','',''],actions:a};
+  }
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+
+  var state = { mandala: clone(SAMPLE_MANDALA), sheet: {} };
+
+  /* ---------- Util ---------- */
+  var toastEl = document.getElementById('toast'), toastTimer;
+  function toast(msg, err){
+    toastEl.textContent = msg;
+    toastEl.className = 'toast show' + (err ? ' err' : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.className = 'toast'; }, 2600);
+  }
+  function str(v){ return (typeof v === 'string') ? v : (v == null ? '' : String(v)); }
+
+  /* ---------- Mandala build ---------- */
+  var grid = document.getElementById('mandala');
+  var subCells = [[],[],[],[],[],[],[],[]];
+  var goalCell, actCells = [];
+  var i,j;
+  for(i=0;i<8;i++){ actCells.push(new Array(8)); }
+
+  function makeCell(r,c){
+    var d = document.createElement('div');
+    d.className = 'cell';
+    d.setAttribute('contenteditable','true');
+    d.setAttribute('spellcheck','false');
+    if(c%3===2 && c!==8) d.className += ' br';
+    if(r%3===2 && r!==8) d.className += ' bb';
+    return d;
+  }
+
+  for(var r=0;r<9;r++){
+    for(var c=0;c<9;c++){
+      var b = Math.floor(r/3)*3 + Math.floor(c/3);
+      var p = (r%3)*3 + (c%3);
+      var cell = makeCell(r,c);
+      if(b===4){
+        if(p===4){
+          cell.className += ' goal'; cell.dataset.kind='goal'; cell.dataset.ph='Tujuan utama';
+          goalCell = cell;
+        } else {
+          var s = POS.indexOf(p);
+          cell.className += ' sub'; cell.dataset.kind='sub'; cell.dataset.s=s; cell.dataset.ph='Sub-tujuan';
+          subCells[s].push(cell);
+        }
+      } else {
+        var bs = POS.indexOf(b);
+        if(p===4){
+          cell.className += ' sub'; cell.dataset.kind='sub'; cell.dataset.s=bs; cell.dataset.ph='Sub-tujuan';
+          subCells[bs].push(cell);
+        } else {
+          var a = POS.indexOf(p);
+          cell.dataset.kind='act'; cell.dataset.s=bs; cell.dataset.a=a; cell.dataset.ph='Aksi';
+          actCells[bs][a] = cell;
+        }
+      }
+      grid.appendChild(cell);
+    }
+  }
+
+  grid.addEventListener('input', function(e){
+    var t = e.target;
+    if(!t.classList.contains('cell')) return;
+    var v = t.textContent;
+    var k = t.dataset.kind;
+    if(k==='goal'){ state.mandala.goal = v; }
+    else if(k==='sub'){
+      var s = +t.dataset.s;
+      state.mandala.sub[s] = v;
+      subCells[s].forEach(function(o){ if(o!==t && o.textContent!==v) o.textContent = v; });
+    } else {
+      state.mandala.actions[+t.dataset.s][+t.dataset.a] = v;
+    }
+    persist();
+  });
+  grid.addEventListener('keydown', function(e){
+    if(e.key==='Enter'){ e.preventDefault(); e.target.blur(); }
+  });
+  grid.addEventListener('paste', function(e){
+    e.preventDefault();
+    var txt = (e.clipboardData || window.clipboardData).getData('text').replace(/\s*\n\s*/g,' ');
+    document.execCommand('insertText', false, txt);
+  });
+
+  function renderMandala(){
+    var m = state.mandala;
+    goalCell.textContent = m.goal;
+    for(var s=0;s<8;s++){
+      subCells[s].forEach(function(o){ o.textContent = m.sub[s]; });
+      for(var a=0;a<8;a++){ actCells[s][a].textContent = m.actions[s][a]; }
+    }
+  }
+
+  /* ---------- Sheet build ---------- */
+  var cats = [['mental','Mental'],['skill','Skill'],['health','Kesehatan'],['life','Gaya hidup']];
+  function buildAnalysis(id, kL, kR){
+    var tb = document.getElementById(id);
+    cats.forEach(function(ct){
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td class="sub-lab">'+ct[1]+'</td>'+
+        '<td class="fill"><textarea rows="2" data-k="'+kL+'_'+ct[0]+'"></textarea></td>'+
+        '<td class="fill"><textarea rows="2" data-k="'+kR+'_'+ct[0]+'"></textarea></td>';
+      tb.appendChild(tr);
+    });
+  }
+  buildAnalysis('an1','succ','fail');
+  buildAnalysis('an2','prob','win');
+
+  var pk = document.getElementById('parkinson');
+  for(i=0;i<5;i++){
+    var trp = document.createElement('tr');
+    trp.innerHTML = '<td class="fill"><input type="text" data-k="park_'+i+'_task"></td>'+
+      '<td class="fill"><input type="text" data-k="park_'+i+'_normal" placeholder="mis. 1 minggu"></td>'+
+      '<td class="fill"><input type="text" data-k="park_'+i+'_tight" placeholder="mis. 3 hari"></td>';
+    pk.appendChild(trp);
+  }
+
+  var rt = document.getElementById('routine');
+  for(i=0;i<7;i++){
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td class="fill"><input type="text" data-k="routine_'+i+'_act"></td>'+
+      '<td class="fill"><input type="date" data-k="routine_'+i+'_date"></td>'+
+      '<td class="fill"><input type="text" data-k="deadline_'+i+'"></td>';
+    rt.appendChild(tr);
+  }
+
+  function sheetFields(){ return document.querySelectorAll('[data-k]'); }
+  function autosize(t){
+    if(t.tagName!=='TEXTAREA' || t.closest('.persp')) return;
+    t.style.height='auto';
+    t.style.height = Math.max(34, t.scrollHeight) + 'px';
+  }
+  document.getElementById('p-sheet').addEventListener('input', function(e){
+    var t = e.target;
+    if(!t.dataset || !t.dataset.k) return;
+    state.sheet[t.dataset.k] = t.value;
+    autosize(t);
+    persist();
+  });
+  function renderSheet(){
+    Array.prototype.forEach.call(sheetFields(), function(el){
+      el.value = str(state.sheet[el.dataset.k]);
+      autosize(el);
+    });
+  }
+
+  /* ---------- State IO ---------- */
+  function renderAll(){ renderMandala(); renderSheet(); }
+
+  function persist(){
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(err){}
+  }
+
+  function normalize(obj){
+    if(!obj || typeof obj!=='object') throw new Error('Format JSON tidak valid.');
+    var m = obj.mandala;
+    if(!m || typeof m!=='object') throw new Error('Data "mandala" tidak ditemukan di file.');
+    var out = { mandala: emptyMandala(), sheet: {} };
+    out.mandala.goal = str(m.goal);
+    if(Array.isArray(m.sub)) for(var s=0;s<8;s++) out.mandala.sub[s] = str(m.sub[s]);
+    if(Array.isArray(m.actions)) for(var s2=0;s2<8;s2++){
+      var row = Array.isArray(m.actions[s2]) ? m.actions[s2] : [];
+      for(var a=0;a<8;a++) out.mandala.actions[s2][a] = str(row[a]);
+    }
+    if(obj.sheet && typeof obj.sheet==='object'){
+      Array.prototype.forEach.call(sheetFields(), function(el){
+        var k = el.dataset.k;
+        if(Object.prototype.hasOwnProperty.call(obj.sheet,k)) out.sheet[k] = str(obj.sheet[k]);
+      });
+    }
+    return out;
+  }
+
+  /* ---------- Buttons ---------- */
+  document.getElementById('btnSave').onclick = function(){
+    var payload = { app: APP_ID, version: 1, savedAt: new Date().toISOString(), mandala: state.mandala, sheet: state.sheet };
+    var blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var d = new Date(), pad=function(n){return (n<10?'0':'')+n;};
+    a.href = url;
+    a.download = 'mandala-target-'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    toast('File JSON disimpan.');
+  };
+
+  var fileInput = document.getElementById('fileInput');
+  document.getElementById('btnImport').onclick = function(){ fileInput.click(); };
+  fileInput.onchange = function(){
+    var f = fileInput.files && fileInput.files[0];
+    if(!f) return;
+    var rd = new FileReader();
+    rd.onload = function(){
+      try{
+        state = normalize(JSON.parse(rd.result));
+        renderAll(); persist();
+        toast('Impor berhasil: '+f.name);
+      }catch(err){
+        toast('Gagal impor: '+err.message, true);
+      }
+      fileInput.value = '';
+    };
+    rd.onerror = function(){ toast('Gagal membaca file.', true); };
+    rd.readAsText(f);
+  };
+
+  document.getElementById('btnSample').onclick = function(){
+    if(!confirm('Muat contoh? Isian Mandala Chart saat ini akan diganti.')) return;
+    state.mandala = clone(SAMPLE_MANDALA);
+    renderMandala(); persist(); toast('Contoh dimuat.');
+  };
+  document.getElementById('btnClear').onclick = function(){
+    if(!confirm('Kosongkan SEMUA isian (Mandala dan Lembar Target)?')) return;
+    state = { mandala: emptyMandala(), sheet: {} };
+    renderAll(); persist(); toast('Semua isian dikosongkan.');
+  };
+  document.getElementById('btnPrint').onclick = function(){ window.print(); };
+
+  /* ---------- Tabs ---------- */
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(tb){
+    tb.onclick = function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(x){ x.classList.remove('active'); });
+      Array.prototype.forEach.call(document.querySelectorAll('.page'), function(x){ x.classList.remove('active'); });
+      tb.classList.add('active');
+      document.getElementById(tb.dataset.tab).classList.add('active');
+      if(tb.dataset.tab==='p-sheet') renderSheet();
+    };
+  });
+
+  /* ---------- Init ---------- */
+  try{
+    var saved = localStorage.getItem(STORE_KEY);
+    if(saved) state = normalize(JSON.parse(saved));
+  }catch(err){}
+  renderAll();
+})();
+</script>
+</body>
+</html>
