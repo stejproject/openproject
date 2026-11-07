@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dify Dashboard & Chat v1</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f3f4f6; color: #1f2937; display: flex; height: 100vh; }
+        
+        /* Sidebar ala Dify */
+        .sidebar { width: 260px; background-color: #1e293b; color: white; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .sidebar h2 { font-size: 1.2rem; margin-bottom: 20px; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
+        .menu-btn { background: none; border: none; color: #cbd5e1; padding: 12px; text-align: left; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: 0.2s; }
+        .menu-btn:hover, .menu-btn.active { background-color: #334155; color: white; }
+
+        /* Main Content Workspace */
+        .main-content { flex: 1; display: flex; flex-direction: column; background: #f8fafc; }
+        .tab-panel { display: none; padding: 30px; flex: 1; }
+        .tab-panel.active { display: flex; flex-direction: column; }
+
+        /* Dashboard Styles */
+        .card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); max-width: 600px; }
+        .btn-primary { background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .key-display { background: #f1f5f9; padding: 12px; border-radius: 6px; margin-top: 15px; font-family: monospace; word-break: break-all; border: 1px dashed #cbd5e1; display: none; }
+
+        /* Chat Styles (Kloning UI Dify) */
+        .chat-box { flex: 1; background: white; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; overflow: hidden; height: 100%; }
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .message { max-width: 75%; padding: 12px 16px; border-radius: 12px; font-size: 0.95rem; line-height: 1.5; }
+        .message.user { background: #2563eb; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .message.bot { background: #f1f5f9; color: #1e293b; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .chat-input-container { padding: 15px; background: #fff; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; }
+        .chat-input-container input { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; }
+        .chat-input-container input:focus { border-color: #2563eb; }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>🛠️ Dify Builder Lite</h2>
+        <button class="menu-btn active" onclick="switchTab('dashboard')">🔑 API Key Generator</button>
+        <button class="menu-btn" onclick="switchTab('chat-interface')">💬 Chat App Window</button>
+    </div>
+
+    <!-- MAIN APP CONTENT -->
+    <div class="main-content">
+        
+        <!-- TAB 1: DASHBOARD DEVELOPER (GENERATE API) -->
+        <div id="dashboard" class="tab-panel active">
+            <div class="card">
+                <h3>Generate API Key Aplikasi Anda</h3>
+                <p style="color: #64748b; font-size: 0.9rem; margin: 8px 0 20px 0;">Buat token otentikasi kustom untuk mengaktifkan fungsi chat umum di platform Anda.</p>
+                <button class="btn-primary" onclick="generateKey()">Generate New Secret Key</button>
+                <div class="key-display" id="keyResult"></div>
+            </div>
+        </div>
+
+        <!-- TAB 2: INTERFACES WINDOW CHAT -->
+        <div id="chat-interface" class="tab-panel">
+            <div class="chat-box">
+                <div class="chat-messages" id="chatContainer">
+                    <div class="message bot">Halo! Saya adalah sistem bot hasil integrasi API Anda. Ada yang bisa dibantu?</div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" id="chatInput" placeholder="Masukkan token Anda lalu ketik pesan..." autocomplete="off">
+                    <button class="btn-primary" onclick="handleSend()">Kirim</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ⚠️ SAMBUNGKAN KE URL CLOUDFLARE WORKER ANDA DI SINI
+        const BACKEND_URL = 'https://workers.dev'; 
+        let MY_GENERATED_KEY = localStorage.getItem('app_saved_key') || '';
+
+        // Tampilkan key jika sudah pernah digenerate sebelumnya
+        if(MY_GENERATED_KEY) {
+            document.getElementById('keyResult').style.display = 'block';
+            document.getElementById('keyResult').innerText = `Active Key: ${MY_GENERATED_KEY}`;
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.menu-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // FUNGSI UNTUK GENERATE API KEY SECARA MANDIRI
+        async function generateKey() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/v1/keys/generate`, { method: 'POST' });
+                const data = await response.json();
+                if(data.success) {
+                    MY_GENERATED_KEY = data.api_key;
+                    localStorage.setItem('app_saved_key', MY_GENERATED_KEY);
+                    const el = document.getElementById('keyResult');
+                    el.style.display = 'block';
+                    el.innerText = `BERHASIL DICETAK:\n${data.api_key}\n\n(Gunakan token ini untuk melakukan chat)`;
+                }
+            } catch (err) {
+                alert('Gagal generate API Key. Periksa URL Worker Cloudflare Anda.');
+            }
+        }
+
+        // FUNGSI SEND CHAT MENGGUNAKAN API KEY SENDIRI
+        async function handleSend() {
+            const inputEl = document.getElementById('chatInput');
+            const msgText = inputEl.value.trim();
+            if(!msgText) return;
+
+            if(!MY_GENERATED_KEY) {
+                alert('Anda harus men-generate API Key terlebih dahulu di tab sebelah kiri!');
+                return;
+            }
+
+            appendMsg(msgText, 'user');
+            inputEl.value = '';
+
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/v1/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${MY_GENERATED_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: msgText, model: "deepseek-chat" })
+                });
+
+                const data = await res.json();
+                if(res.ok) {
+                    appendMsg(data.answer, 'bot');
+                } else {
+                    appendMsg(`Error: ${data.error}`, 'bot');
+                }
+            } catch (err) {
+                appendMsg('Terjadi kegagalan koneksi sistem backend.', 'bot');
+            }
+        }
+
+        function appendMsg(text, sender) {
+            const container = document.getElementById('chatContainer');
+            const div = document.createElement('div');
+            div.classList.add('message', sender);
+            div.innerText = text;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+    </script>
+</body>
+</html>
