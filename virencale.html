@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalender Video Conference – Ring Satu (Waktu Dieng)</title>
+<style>
+:root{
+  --bg:#f4f6fb;--card:#fff;--ink:#16202e;--muted:#667085;--line:#e3e8f0;
+  --brand:#2563eb;--brand-d:#1d4ed8;--soft:#eaf1ff;--ok:#16a34a;--warn:#f59e0b;--danger:#dc2626;
+  --et:#7c3aed;--mt:#0891b2;--pt:#ea580c;--dieng:#0d9488;
+  --radius:14px;--shadow:0 2px 10px rgba(16,24,40,.07);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#0e141d;--card:#161e2b;--ink:#e8edf5;--muted:#93a0b4;--line:#263145;--soft:#1b2a47;--shadow:none}
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+header{background:linear-gradient(135deg,#0f766e,#0d9488);color:#fff;padding:18px 16px}
+.wrap{max-width:1100px;margin:0 auto}
+.head-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+h1{margin:0;font-size:1.25rem}
+header p{margin:2px 0 0;opacity:.85;font-size:.85rem}
+.clock{text-align:right;font-variant-numeric:tabular-nums}
+.clock b{font-size:1.3rem;display:block}
+.clock small{opacity:.85}
+.world{max-width:1100px;margin:12px auto 0;padding:0 12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:700px){.world{grid-template-columns:repeat(2,1fr)}}
+.wc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow)}
+.wc small{display:block;color:var(--muted);font-size:.72rem}
+.wc b{display:block;font-size:1.05rem;font-variant-numeric:tabular-nums}
+.wc span{font-size:.7rem;color:var(--brand);font-weight:700}
+.wc.dieng{border:2px solid var(--dieng);box-shadow:0 0 0 1px var(--dieng)}
+.wc.dieng span{color:var(--dieng)}
+.wl{font-size:.74rem;color:var(--muted);margin-top:2px}
+main{max-width:1100px;margin:16px auto;padding:0 12px 40px;display:grid;grid-template-columns:340px 1fr;gap:16px}
+@media(max-width:860px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.card h2{margin:0 0 12px;font-size:1rem}
+label{display:block;font-size:.78rem;font-weight:600;color:var(--muted);margin:10px 0 4px}
+input,select,textarea,button{font:inherit}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{border:0;background:var(--brand);color:#fff;padding:9px 14px;border-radius:9px;cursor:pointer;font-weight:600;font-size:.88rem}
+.btn:hover{background:var(--brand-d)}
+.btn.ghost{background:var(--soft);color:var(--brand)}
+.btn.danger{background:transparent;color:var(--danger);padding:9px 10px}
+.btn.sm{padding:6px 10px;font-size:.78rem}
+.btn.full{width:100%;margin-top:14px}
+.btn.dieng{background:var(--dieng)}
+.btn.dieng:hover{background:#0f766e}
+.preview{margin-top:12px;padding:10px;border-radius:10px;background:var(--soft);font-size:.82rem}
+.preview .t{font-weight:700;word-break:break-word}
+.preview .w{color:var(--dieng);font-weight:600}
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.tab{border:1px solid var(--line);background:transparent;color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer;font-size:.82rem}
+.tab.on{background:var(--dieng);color:#fff;border-color:var(--dieng)}
+.spacer{flex:1}
+.day-h{margin:16px 0 6px;font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.ev{display:flex;gap:12px;padding:12px;border:1px solid var(--line);border-left:5px solid var(--brand);border-radius:11px;margin-bottom:8px;background:var(--card)}
+.ev.ET{border-left-color:var(--et)}.ev.MT{border-left-color:var(--mt)}.ev.PT{border-left-color:var(--pt)}
+.ev.GMT{border-left-color:#475569}.badge.GMT{background:#475569}.dot.GMT{background:#475569}
+.ev.WIB{border-left-color:var(--dieng)}
+.conv{margin-top:12px;padding:10px;border:1px dashed var(--line);border-radius:10px;font-size:.82rem}
+.conv b{display:block;margin-bottom:6px}
+.conv .out{margin-top:6px;color:var(--dieng);font-weight:700}
+.ev.past{opacity:.55}
+.ev.live{outline:2px solid var(--ok)}
+.time{min-width:70px;font-variant-numeric:tabular-nums}
+.time b{font-size:1.05rem;display:block}
+.time small{color:var(--muted)}
+.body{flex:1;min-width:0}
+.title{font-weight:700;word-break:break-word}
+.meta{font-size:.78rem;color:var(--muted);margin-top:2px;word-break:break-word}
+.badge{display:inline-block;font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:999px;color:#fff;margin-right:4px}
+.badge.ET{background:var(--et)}.badge.MT{background:var(--mt)}.badge.PT{background:var(--pt)}
+.badge.WIB{background:var(--dieng)}
+.badge.live{background:var(--ok)}.badge.soon{background:var(--warn)}
+.actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.empty{text-align:center;color:var(--muted);padding:30px 10px}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.cal-nav b{font-size:.95rem}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow{font-size:.7rem;text-align:center;color:var(--muted);font-weight:700;padding:4px 0}
+.cell{min-height:64px;border:1px solid var(--line);border-radius:8px;padding:4px;font-size:.75rem;cursor:pointer;background:var(--card);overflow:hidden}
+.cell:hover{background:var(--soft)}
+.cell.out{opacity:.4}
+.cell.today{border-color:var(--dieng);box-shadow:inset 0 0 0 1px var(--dieng)}
+.cell.sel{background:var(--soft)}
+.dot{display:block;font-size:.62rem;border-radius:4px;padding:1px 4px;margin-top:2px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot.ET{background:var(--et)}.dot.MT{background:var(--mt)}.dot.PT{background:var(--pt)}.dot.WIB{background:var(--dieng)}
+.legend{display:flex;gap:10px;font-size:.75rem;color:var(--muted);margin-top:10px;flex-wrap:wrap}
+.tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.note{font-size:.76rem;color:var(--muted);margin-top:8px}
+#toasts{position:fixed;right:12px;bottom:12px;display:flex;flex-direction:column;gap:8px;z-index:50;max-width:calc(100vw - 24px)}
+.toast{background:#111827;color:#fff;padding:12px 14px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.3);width:320px;max-width:100%;border-left:5px solid var(--warn)}
+.toast.go{border-left-color:var(--ok)}
+.toast b{display:block;margin-bottom:2px}
+.toast a{color:#93c5fd;font-weight:700}
+.toast button{float:right;background:none;border:0;color:#fff;font-size:1.1rem;cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap head-row">
+    <div>
+      <h1>📅 Jadwal Video Conference Mitra</h1>
+      <p>Kalender terpusat Ring Satu · fokus <b>Waktu Dieng</b> · semua jam otomatis dikonversi ke WIB/Dieng</p>
+    </div>
+    <div class="clock">
+      <b id="clock">--:--:--</b>
+      <small id="clockDate"></small>
+    </div>
+  </div>
+</header>
+<div class="world" id="world" aria-label="Jam dunia"></div>
+
+<main>
+  <section class="card" aria-label="Tambah rapat">
+    <h2>➕ Tambah Rapat</h2>
+    <form id="form" autocomplete="off">
+      <label for="partner">Nama Mitra</label>
+      <input id="partner" required maxlength="40" placeholder="mis. Mitra NY">
+
+      <label for="tz">Zona Waktu Asal</label>
+      <select id="tz">
+        <option value="ET">ET – Eastern (New York)</option>
+        <option value="MT">MT – Mountain (Denver)</option>
+        <option value="PT">PT – Pacific (Los Angeles)</option>
+        <option value="GMT">GMT – Greenwich</option>
+        <option value="WIB">WIB – Jakarta</option>
+      </select>
+
+      <label for="topic">Topik Rapat</label>
+      <input id="topic" required maxlength="80" placeholder="mis. Sinkronisasi Proyek">
+
+      <div class="row2">
+        <div><label for="date">Tanggal (waktu mitra)</label><input type="date" id="date" required></div>
+        <div><label for="time">Jam (waktu mitra)</label><input type="time" id="time" required></div>
+      </div>
+
+      <div class="row2">
+        <div><label for="dur">Durasi</label>
+          <select id="dur">
+            <option value="30">30 menit</option>
+            <option value="60" selected>60 menit</option>
+            <option value="90">90 menit</option>
+            <option value="120">120 menit</option>
+          </select>
+        </div>
+        <div><label for="platform">Platform</label>
+          <select id="platform">
+            <option>Zoom</option>
+            <option>Google Meet</option>
+            <option>Microsoft Teams</option>
+            <option>Lainnya</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="link">Tautan Rapat (masuk ke kolom Lokasi)</label>
+      <input id="link" type="url" required placeholder="https://zoom.us/j/...">
+
+      <div class="conv">
+        <b>🔁 Konversi cepat → Waktu Dieng (WIB)</b>
+        <div class="row2" style="margin-top:6px">
+          <div>
+            <label for="convIn" style="margin:0 0 4px">Jam sumber</label>
+            <input type="time" id="convIn" aria-label="Jam sumber">
+          </div>
+          <div>
+            <label for="convFrom" style="margin:0 0 4px">Dari zona</label>
+            <select id="convFrom">
+              <option value="ET">ET (New York)</option>
+              <option value="GMT">GMT</option>
+              <option value="MT">MT (Denver)</option>
+              <option value="PT">PT (Los Angeles)</option>
+              <option value="WIB">WIB</option>
+            </select>
+          </div>
+        </div>
+        <div class="out" id="convOut">Isi jam di atas.</div>
+        <div class="note" id="convNow"></div>
+      </div>
+
+      <div class="preview" id="preview">Isi formulir untuk melihat pratinjau.</div>
+      <button class="btn full dieng" type="submit">Simpan ke Kalender Bersama</button>
+    </form>
+
+    <div class="tools">
+      <button class="btn ghost sm" id="btnNotif" type="button">🔔 Aktifkan notifikasi</button>
+      <button class="btn ghost sm" id="btnIcsAll" type="button">⬇ Ekspor semua (.ics)</button>
+      <button class="btn ghost sm" id="btnSample" type="button">Contoh data</button>
+      <button class="btn ghost sm" id="btnClearAll" type="button">🗑 Hapus semua</button>
+    </div>
+    <p class="note">Pengingat otomatis: <b>30 menit</b> (persiapan) dan <b>5 menit</b> (masuk waiting room) sebelum rapat. Biarkan tab ini terbuka; file .ics membawa pengingat yang sama ke Google/Outlook/Apple Calendar.</p>
+  </section>
+
+  <section class="card" aria-label="Agenda">
+    <div class="tabs">
+      <button class="tab on" data-view="agenda">Agenda</button>
+      <button class="tab" data-view="month">Bulan</button>
+      <span class="spacer"></span>
+      <label style="margin:0;display:flex;align-items:center;gap:6px;font-weight:500">
+        <input type="checkbox" id="showPast" style="width:auto"> tampilkan yang lewat
+      </label>
+    </div>
+    <div id="view"></div>
+    <div class="legend">
+      <span><span class="badge WIB">Dieng</span>Waktu Dieng (WIB + offset)</span>
+      <span><span class="badge ET">ET</span>Eastern</span>
+      <span><span class="badge MT">MT</span>Mountain</span>
+      <span><span class="badge PT">PT</span>Pacific</span>
+      <span><span class="badge GMT">GMT</span>Greenwich</span>
+    </div>
+  </section>
+</main>
+<div id="toasts" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  // FOKUS: Waktu Dieng (WIB). Offset custom hanya di kartu Dieng.
+  const WIB = "Asia/Jakarta";
+  const ZONES = {
+    ET:  "America/New_York",
+    MT:  "America/Denver",
+    PT:  "America/Los_Angeles",
+    GMT: "UTC",
+    WIB: "Asia/Jakarta"
+  };
+  const ZNAME = {
+    ET:  "Eastern",
+    MT:  "Mountain",
+    PT:  "Pacific",
+    GMT: "Greenwich",
+    WIB: "Jakarta"
+  };
+  const KEY   = "ring1_vc_events_v1_dieng";
+  const FIRED = "ring1_vc_fired_v1_dieng";
+  const DKEY  = "ring1_dieng_offset_v1";
+  const REMINDERS = [30, 5];
+
+  const $   = s => document.querySelector(s);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const pad = n => String(n).padStart(2, "0");
+
+  function load(k, d){ try{ return JSON.parse(localStorage.getItem(k)) ?? d; }catch(e){ return d; } }
+  function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+  let events = load(KEY, []);
+  let fired  = load(FIRED, {});
+  let view   = "agenda";
+  let cursor = new Date();
+  let selDay = null;
+
+  function diengOffset(){ const v = load(DKEY, null); return v === null ? 2*3600000 : (+v || 0); }
+
+  function setDieng(){
+    const v = prompt("Masukkan jam Dieng sekarang (JJ:MM), mis. 11:42\nKosongkan untuk kembali ke jam perangkat (WIB). Default saat ini: +2 jam.", "");
+    if(v === null) return;
+    if(v.trim() === ""){
+      save(DKEY, 0);
+      tick();
+      toast("Waktu Dieng", "Kembali ke jam perangkat (WIB).", null, true);
+      return;
+    }
+    const m = v.trim().replace(".", ":").match(/^(\d{1,2}):(\d{2})$/);
+    if(!m || +m[1] > 23 || +m[2] > 59){
+      alert("Format jam harus JJ:MM, mis. 11:42");
+      return;
+    }
+    const now = Date.now();
+    const p = new Intl.DateTimeFormat("en-US", {
+      timeZone: WIB, hourCycle: "h23",
+      hour: "2-digit", minute: "2-digit", second: "2-digit"
+    }).formatToParts(new Date(now));
+    const g = t => +p.find(x => x.type === t).value;
+    const devMs = ((g("hour") * 60 + g("minute")) * 60 + g("second")) * 1000;
+    const tgt   = (+m[1] * 60 + +m[2]) * 60000;
+    let off = tgt - devMs;
+    if(off >  12 * 3600000) off -= 24 * 3600000;
+    if(off <= -12 * 3600000) off += 24 * 3600000;
+    save(DKEY, off);
+    tick();
+    toast("Waktu Dieng disetel", "Jam Dieng sekarang " + pad(+m[1]) + ":" + pad(+m[2]), null, true);
+  }
+
+  document.addEventListener("click", ev => {
+    if(ev.target.closest("[data-setdieng]")) setDieng();
+  });
+
+  function tzOffsetMs(utcMs, zone){
+    const p = new Intl.DateTimeFormat("en-US", {
+      timeZone: zone, hourCycle: "h23",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit"
+    }).formatToParts(new Date(utcMs));
+    const g = t => +p.find(x => x.type === t).value;
+    return Date.UTC(g("year"), g("month") - 1, g("day"), g("hour"), g("minute"), g("second")) - utcMs;
+  }
+
+  function zonedToUtc(dateStr, timeStr, zone){
+    zone = ZONES[zone] || zone; // "ET"/"MT"/"PT"/"GMT" -> nama zona IANA
+    const [y, m, d] = dateStr.split("-").map(Number);
+    const [h, mi]   = timeStr.split(":").map(Number);
+    const guess = Date.UTC(y, m - 1, d, h, mi);
+    let off  = tzOffsetMs(guess, zone);
+    let utc  = guess - off;
+    const off2 = tzOffsetMs(utc, zone);
+    if(off2 !== off) utc = guess - off2;
+    return utc;
+  }
+
+  const fmt = (ms, opt) => new Intl.DateTimeFormat("id-ID", { timeZone: WIB, ...opt }).format(new Date(ms));
+  const wibTime = ms => fmt(ms, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).replace(".", ":");
+  const wibDay  = ms => fmt(ms, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const wibKey  = ms => new Intl.DateTimeFormat("en-CA", { timeZone: WIB }).format(new Date(ms));
+  // Waktu Dieng = waktu absolut + offset Dieng (default +2 jam dari WIB); dipakai di SEMUA label "Dieng"
+  const dShift = ms => ms + diengOffset();
+  const dTime  = ms => wibTime(dShift(ms));
+  const dDay   = ms => wibDay(dShift(ms));
+  const dKey   = ms => wibKey(dShift(ms));
+  const srcTime = (ms, zone) => new Intl.DateTimeFormat("id-ID", {
+    timeZone: ZONES[zone], hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+  }).format(new Date(ms)).replace(".", ":");
+  const makeTitle = (p, z, t) => `[${p} - ${z}] ${t}`;
+  const safeUrl = u => { try{ const x = new URL(u); return /^https?:$/.test(x.protocol) ? x.href : ""; }catch(e){ return ""; } };
+
+  const WORLD = [
+    { n: "Dieng",    z: "Asia/Jakarta",        note: "Jawa Tengah (fokus)", abbr: "Waktu Dieng", custom: true },
+    { n: "Delhi",    z: "Asia/Kolkata",        note: "India",               abbr: "Waktu Delhi" },
+    { n: "Tel Aviv", z: "Asia/Jerusalem",      note: "Israel",              abbr: "Waktu Tel Aviv" },
+    { n: "Alcatraz", z: "America/Los_Angeles", note: "San Francisco, AS",   abbr: "Waktu Alcatraz" }
+  ];
+
+  function tick(){
+    const now = Date.now();
+    $("#clock").textContent = fmt(dShift(now), { hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" }).replace(/\./g, ":") + " Dieng";
+    $("#clockDate").textContent = dDay(now);
+
+    $("#world").innerHTML = WORLD.map(w => {
+      if(w.custom){
+        const wibParts = new Intl.DateTimeFormat("en-GB", {
+          timeZone: WIB, hourCycle: "h23",
+          hour: "2-digit", minute: "2-digit", second: "2-digit",
+          weekday: "short", day: "numeric", month: "short"
+        }).formatToParts(new Date(now));
+        const g0 = t => (wibParts.find(x => x.type === t) || {}).value || "";
+        let totalMin = (+g0("hour") * 60 + +g0("minute")) + Math.round(diengOffset() / 60000);
+        if(totalMin >= 1440) totalMin -= 1440;
+        if(totalMin < 0) totalMin += 1440;
+        const hh = pad(Math.floor(totalMin / 60));
+        const mm = pad(totalMin % 60);
+        const ss = g0("second");
+        return `<div class="wc dieng">
+          <small>${w.n} · ${w.note}</small>
+          <b>${hh}:${mm}:${ss}</b>
+          <span>${w.abbr}</span>
+          <small style="display:inline">${g0("weekday")}, ${g0("day")} ${g0("month")}</small>
+          <button class="btn ghost sm" data-setdieng type="button">Setel jam</button>
+        </div>`;
+      }
+      const p = new Intl.DateTimeFormat("en-GB", {
+        timeZone: w.z, hourCycle: "h23",
+        hour: "2-digit", minute: "2-digit", second: "2-digit",
+        weekday: "short", day: "numeric", month: "short"
+      }).formatToParts(new Date(now));
+      const g = t => (p.find(x => x.type === t) || {}).value || "";
+      return `<div class="wc">
+        <small>${w.n} · ${w.note}</small>
+        <b>${g("hour")}:${g("minute")}:${g("second")}</b>
+        <span>${w.abbr}</span>
+        <small style="display:inline">${g("weekday")}, ${g("day")} ${g("month")}</small>
+      </div>`;
+    }).join("");
+  }
+
+  function worldLine(ms){
+    const base = dKey(ms);
+    return WORLD.map(w => {
+      if(w.custom) return `Dieng ${dTime(ms)}`;
+      const p = new Intl.DateTimeFormat("en-GB", {
+        timeZone: w.z, hourCycle: "h23", hour: "2-digit", minute: "2-digit"
+      }).format(new Date(ms));
+      const k = new Intl.DateTimeFormat("en-CA", { timeZone: w.z }).format(new Date(ms));
+      const day = k < base ? " (H-1)" : k > base ? " (H+1)" : "";
+      return `${w.n} ${p}${day}`;
+    }).join(" · ");
+  }
+
+  function updateConv(){
+    const v = $("#convIn").value;
+    const from = $("#convFrom").value;
+    if(!v){
+      $("#convOut").textContent = "Isi jam di atas.";
+    } else {
+      const today = new Intl.DateTimeFormat("en-CA", { timeZone: ZONES[from] }).format(new Date());
+      const utc = zonedToUtc(today, v, from);
+      const dt = dTime(utc);
+      const srcKey = new Intl.DateTimeFormat("en-CA", { timeZone: ZONES[from] }).format(new Date(utc));
+      const dK = dKey(utc);
+      let dayShift = "";
+      if(dK > srcKey) dayShift = " (+1 hari)";
+      if(dK < srcKey) dayShift = " (-1 hari)";
+      $("#convOut").textContent = `${v} ${from} → ${dt} Dieng${dayShift}`;
+    }
+    const now = Date.now();
+    const nowDieng = dTime(now);
+    const nowEt = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "America/New_York", hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+    }).format(new Date(now)).replace(".", ":");
+    const nowGmt = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "UTC", hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+    }).format(new Date(now)).replace(".", ":");
+    $("#convNow").textContent = `Sekarang: ${nowDieng} Dieng  ·  ${nowEt} ET  ·  ${nowGmt} GMT`;
+  }
+  $("#convIn").addEventListener("input", updateConv);
+  $("#convFrom").addEventListener("change", updateConv);
+  setInterval(updateConv, 15000);
+
+  function updatePreview(){
+    const p = $("#partner").value.trim();
+    const z = $("#tz").value;
+    const t = $("#topic").value.trim();
+    const d = $("#date").value;
+    const tm = $("#time").value;
+    let h = "";
+    if(p || t) h += `<div class="t">${esc(makeTitle(p || "Mitra", z, t || "Topik"))}</div>`;
+    if(d && tm){
+      const u = zonedToUtc(d, tm, z);
+      h += `<div>${esc(tm)} ${z} → <span class="w">${esc(dTime(u))} Dieng</span> · ${esc(dDay(u))}</div>`;
+      h += `<div class="meta" style="margin-top:4px">🌍 ${esc(worldLine(u))}</div>`;
+    }
+    $("#preview").innerHTML = h || "Isi formulir untuk melihat pratinjau.";
+  }
+
+  function addEvent(e){
+    events.push(e);
+    events.sort((a, b) => a.start - b.start);
+    save(KEY, events);
+    render();
+  }
+
+  $("#form").addEventListener("submit", ev => {
+    ev.preventDefault();
+    const link = safeUrl($("#link").value.trim());
+    if(!link){ alert("Tautan harus diawali http:// atau https://"); return; }
+    const z = $("#tz").value;
+    const start = zonedToUtc($("#date").value, $("#time").value, z);
+    addEvent({
+      id: "e" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+      partner: $("#partner").value.trim(),
+      tz: z,
+      topic: $("#topic").value.trim(),
+      start,
+      dur: +$("#dur").value,
+      platform: $("#platform").value,
+      link
+    });
+    toast("Tersimpan", "Rapat ditambahkan ke kalender bersama.", null, true);
+    $("#topic").value = "";
+    updatePreview();
+  });
+
+  ["partner", "tz", "topic", "date", "time"].forEach(id =>
+    $("#" + id).addEventListener("input", updatePreview)
+  );
+
+  function del(id){
+    if(!confirm("Hapus jadwal ini?")) return;
+    events = events.filter(e => e.id !== id);
+    save(KEY, events);
+    render();
+  }
+
+  $("#btnClearAll").addEventListener("click", () => {
+    if(!events.length){ alert("Belum ada jadwal."); return; }
+    if(!confirm("Hapus SEMUA jadwal? Tindakan ini tidak bisa dibatalkan.")) return;
+    events = [];
+    fired = {};
+    save(KEY, events);
+    save(FIRED, fired);
+    render();
+    toast("Dikosongkan", "Semua jadwal telah dihapus.", null, true);
+  });
+
+  function card(e){
+    const now = Date.now();
+    const end = e.start + e.dur * 60000;
+    const live = now >= e.start && now < end;
+    const past = now >= end;
+    const soon = !live && !past && e.start - now <= 30 * 60000;
+    return `<div class="ev ${e.tz} ${past ? "past" : ""} ${live ? "live" : ""}">
+      <div class="time"><b>${dTime(e.start)}</b><small>Dieng</small></div>
+      <div class="body">
+        <div class="title">${esc(makeTitle(e.partner, e.tz, e.topic))}</div>
+        <div class="meta">
+          <span class="badge ${e.tz}">${e.tz}</span>
+          ${live ? '<span class="badge live">SEDANG BERLANGSUNG</span>' : ""}
+          ${soon ? '<span class="badge soon">SEGERA</span>' : ""}
+          ${srcTime(e.start, e.tz)} ${e.tz} (${ZNAME[e.tz]}) · ${e.dur} mnt · ${esc(e.platform)}
+        </div>
+        <div class="meta">📍 ${esc(e.link)}</div>
+        <div class="wl">🌍 ${esc(worldLine(e.start))}</div>
+        <div class="actions">
+          <a class="btn sm" href="${esc(e.link)}" target="_blank" rel="noopener noreferrer">Gabung</a>
+          <button class="btn ghost sm" data-copy="${e.id}">Salin tautan</button>
+          <button class="btn ghost sm" data-ics="${e.id}">.ics</button>
+          <button class="btn danger sm" data-del="${e.id}">Hapus</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function renderAgenda(){
+    const now = Date.now();
+    const showPast = $("#showPast").checked;
+    let list = events.filter(e => showPast || e.start + e.dur * 60000 > now);
+    if(selDay) list = list.filter(e => dKey(e.start) === selDay);
+    if(!list.length) return `<div class="empty">Belum ada jadwal${selDay ? " pada hari ini" : ""}.<br>Tambahkan lewat formulir.</div>`;
+    let out = selDay ? `<button class="btn ghost sm" data-clearday>✕ Hapus filter hari</button>` : "";
+    let last = "";
+    list.forEach(e => {
+      const k = dKey(e.start);
+      if(k !== last){ out += `<div class="day-h">${esc(dDay(e.start))}</div>`; last = k; }
+      out += card(e);
+    });
+    return out;
+  }
+
+  function renderMonth(){
+    const y = cursor.getFullYear();
+    const m = cursor.getMonth();
+    const first = new Date(y, m, 1);
+    const startDow = (first.getDay() + 6) % 7;
+    const days = new Date(y, m + 1, 0).getDate();
+    const todayKey = dKey(Date.now());
+    let h = `<div class="cal-nav">
+      <button class="btn ghost sm" data-nav="-1">◀</button>
+      <b>${new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric" }).format(first)}</b>
+      <button class="btn ghost sm" data-nav="1">▶</button>
+    </div><div class="grid">`;
+    ["Sen","Sel","Rab","Kam","Jum","Sab","Min"].forEach(d => h += `<div class="dow">${d}</div>`);
+    for(let i = 0; i < startDow; i++) h += `<div></div>`;
+    for(let d = 1; d <= days; d++){
+      const key = `${y}-${pad(m + 1)}-${pad(d)}`;
+      const evs = events.filter(e => dKey(e.start) === key);
+      h += `<div class="cell ${key === todayKey ? "today" : ""} ${key === selDay ? "sel" : ""}" data-day="${key}">
+        <b>${d}</b>` +
+        evs.slice(0, 3).map(e => `<span class="dot ${e.tz}">${dTime(e.start)} ${esc(e.partner)}</span>`).join("") +
+        (evs.length > 3 ? `<span class="note">+${evs.length - 3}</span>` : "") +
+      `</div>`;
+    }
+    return h + `</div><p class="note">Klik tanggal untuk melihat agenda hari itu.</p>`;
+  }
+
+  function render(){
+    $("#view").innerHTML = view === "agenda" ? renderAgenda() : renderMonth();
+    document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.view === view));
+  }
+
+  document.querySelectorAll(".tab").forEach(t =>
+    t.addEventListener("click", () => { view = t.dataset.view; render(); })
+  );
+  $("#showPast").addEventListener("change", render);
+
+  $("#view").addEventListener("click", ev => {
+    const t = ev.target.closest("button, .cell");
+    if(!t) return;
+    if(t.dataset.del) del(t.dataset.del);
+    else if(t.dataset.copy){
+      const e = events.find(x => x.id === t.dataset.copy);
+      if(e) copy(e.link);
+    }
+    else if(t.dataset.ics){
+      const e = events.find(x => x.id === t.dataset.ics);
+      if(e) downloadIcs([e]);
+    }
+    else if(t.dataset.nav){
+      cursor = new Date(cursor.getFullYear(), cursor.getMonth() + +t.dataset.nav, 1);
+      render();
+    }
+    else if(t.dataset.day){
+      selDay = selDay === t.dataset.day ? null : t.dataset.day;
+      if(selDay){ view = "agenda"; $("#showPast").checked = true; }
+      render();
+    }
+    else if(t.hasAttribute("data-clearday")){
+      selDay = null;
+      render();
+    }
+  });
+
+  function copy(txt){
+    (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject())
+      .then(() => toast("Disalin", "Tautan rapat disalin.", null, true))
+      .catch(() => { prompt("Salin tautan:", txt); });
+  }
+
+  const icsDate = ms => new Date(ms).toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
+  const icsEsc = s => String(s).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
+
+  function downloadIcs(list){
+    let s = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Ring Satu//Video Conference//ID\r\nCALSCALE:GREGORIAN\r\nX-WR-CALNAME:Jadwal Video Conference Mitra (Dieng)\r\n";
+    list.forEach(e => {
+      s += "BEGIN:VEVENT\r\nUID:" + e.id + "@ring-satu\r\n";
+      s += "DTSTAMP:" + icsDate(Date.now()) + "\r\n";
+      s += "DTSTART:" + icsDate(e.start) + "\r\n";
+      s += "DTEND:" + icsDate(e.start + e.dur * 60000) + "\r\n";
+      s += "SUMMARY:" + icsEsc(makeTitle(e.partner, e.tz, e.topic)) + "\r\n";
+      s += "LOCATION:" + icsEsc(e.link) + "\r\nURL:" + e.link + "\r\n";
+      s += "DESCRIPTION:" + icsEsc(e.platform + " · " + srcTime(e.start, e.tz) + " " + e.tz + " · tampil " + dTime(e.start) + " Dieng") + "\r\n";
+      REMINDERS.forEach(m => {
+        s += "BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:Rapat " + m + " menit lagi\r\nTRIGGER:-PT" + m + "M\r\nEND:VALARM\r\n";
+      });
+      s += "END:VEVENT\r\n";
+    });
+    s += "END:VCALENDAR\r\n";
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([s], { type: "text/calendar" }));
+    a.download = list.length === 1 ? "rapat-" + list[0].id + ".ics" : "jadwal-video-conference-dieng.ics";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+  $("#btnIcsAll").addEventListener("click", () => {
+    events.length ? downloadIcs(events) : alert("Belum ada jadwal.");
+  });
+
+  function toast(title, msg, link, go){
+    const d = document.createElement("div");
+    d.className = "toast" + (go ? " go" : "");
+    d.innerHTML = `<button aria-label="Tutup">×</button><b>${esc(title)}</b>${esc(msg)}` +
+      (link ? ` <a href="${esc(link)}" target="_blank" rel="noopener noreferrer">Gabung sekarang</a>` : "");
+    d.querySelector("button").onclick = () => d.remove();
+    $("#toasts").appendChild(d);
+    setTimeout(() => d.remove(), link ? 60000 : 4000);
+  }
+
+  function beep(){
+    try{
+      const c = new (window.AudioContext || window.webkitAudioContext)();
+      const o = c.createOscillator();
+      const g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      o.frequency.value = 880;
+      g.gain.value = 0.08;
+      o.start();
+      o.stop(c.currentTime + 0.25);
+    }catch(e){}
+  }
+
+  function updateNotifBtn(){
+    const b = $("#btnNotif");
+    if(!("Notification" in window)){
+      b.textContent = "Notifikasi tidak didukung";
+      b.disabled = true;
+      return;
+    }
+    b.textContent = Notification.permission === "granted" ? "🔔 Notifikasi aktif" : "🔔 Aktifkan notifikasi";
+  }
+  $("#btnNotif").addEventListener("click", () => {
+    if("Notification" in window) Notification.requestPermission().then(updateNotifBtn);
+  });
+
+  function checkReminders(){
+    const now = Date.now();
+    events.forEach(e => {
+      REMINDERS.forEach(m => {
+        const at = e.start - m * 60000;
+        const k = e.id + ":" + m;
+        if(!fired[k] && now >= at && now < at + 120000 && now < e.start){
+          fired[k] = 1;
+          save(FIRED, fired);
+          const title = m === 30 ? "⏰ 30 menit lagi — persiapan" : "🚪 5 menit lagi — masuk waiting room";
+          const body = makeTitle(e.partner, e.tz, e.topic) + " · " + dTime(e.start) + " Dieng";
+          toast(title, body, e.link, m === 5);
+          beep();
+          if("Notification" in window && Notification.permission === "granted"){
+            try{
+              const n = new Notification(title, { body, tag: k });
+              n.onclick = () => { window.open(e.link, "_blank", "noopener"); };
+            }catch(x){}
+          }
+        }
+      });
+    });
+  }
+
+  $("#btnSample").addEventListener("click", () => {
+    const base = dKey(Date.now());
+    const mk = (add, hh, mm, p, z, t, link, plat) => {
+      const [y, mo, d] = base.split("-").map(Number);
+      const dt = new Date(Date.UTC(y, mo - 1, d + add));
+      const ds = dt.getUTCFullYear() + "-" + pad(dt.getUTCMonth() + 1) + "-" + pad(dt.getUTCDate());
+      return {
+        id: "s" + Math.random().toString(36).slice(2, 8),
+        partner: p, tz: z, topic: t,
+        start: zonedToUtc(ds, pad(hh) + ":" + pad(mm), z),
+        dur: 60, platform: plat, link
+      };
+    };
+    events.push(
+      mk(1, 9, 0, "Mitra NY", "ET", "Sinkronisasi Proyek", "https://zoom.us/j/1234567890", "Zoom"),
+      mk(2, 10, 30, "Mitra Denver", "MT", "Review Kontrak", "https://meet.google.com/abc-defg-hij", "Google Meet"),
+      mk(3, 8, 0, "Mitra LA", "PT", "Demo Produk", "https://teams.microsoft.com/l/meetup-join/contoh", "Microsoft Teams"),
+      mk(0, 14, 0, "Tim Jakarta", "WIB", "Standup Harian", "https://zoom.us/j/111222333", "Zoom")
+    );
+    events.sort((a, b) => a.start - b.start);
+    save(KEY, events);
+    render();
+    toast("Contoh data", "4 jadwal contoh ditambahkan.", null, true);
+  });
+
+  const t0 = new Date();
+  $("#date").value = new Intl.DateTimeFormat("en-CA", { timeZone: WIB }).format(t0);
+  updateNotifBtn();
+  updatePreview();
+  updateConv();
+  tick();
+  render();
+  checkReminders();
+  setInterval(tick, 1000);
+  setInterval(checkReminders, 15000);
+  setInterval(() => { if(view === "agenda") render(); }, 60000);
+  window.addEventListener("storage", () => {
+    events = load(KEY, []);
+    fired = load(FIRED, {});
+    render();
+  });
+})();
+</script>
+</body>
+</html>
